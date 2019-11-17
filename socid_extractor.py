@@ -14,6 +14,14 @@ schemes = {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
         'regex': r'"display_name":"(?P<name>.*?)","uid":"(?P<uid>\d+)","locale":"\w+","login":"(?P<username>.*?)"',
      },
+     'Yandex Music user profile': {
+        'flags': ['musicCspLogger'],
+        'regex': r'{"uid":"(?P<uid>\d+)","login":"(?P<username>.+?)","name":"(?P<name>.+?)"}',
+     },
+     'Yandex Znatoki user profile': {
+        'flags': ['Ya.Znatoki'],
+        'regex': r'displayName&quot;:&quot;(?P<name>[^&]+?)&quot;,&quot;uuid&quot;:(?P<yandex_uid>\d+),&quot;.+?login&quot;:&quot;(?P<username>[^&]+?)&quot;.+?&quot;id&quot;:&quot;(?P<uid>[\w-]+)&quot'
+     },
      'VK user profile': {
         'flags': ['var vk =', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<uid>\d+).*?(,"loc":"(?P<username>.*?)")?,"back":"(?P<name>.*?)"'
