@@ -14,6 +14,6 @@ facebook_uid: 1726256597385716
 
 ## Platforms
 
-VK, OK, Facebook, Yandex (disk, albums), Instagram, Medium, Reddit, GitHub, Habrahabr, My.mail.ru
+VK (user), OK (user), Facebook (user, group), Yandex (disk, albums, znatoki, music), Instagram, Medium, Reddit, GitHub, Habrahabr, My.mail.ru, Behance, 500px.
 
 Check `test_socid_extractor.py` for examples.

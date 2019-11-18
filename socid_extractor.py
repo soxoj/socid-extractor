@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import sys
 import re
 
@@ -17,6 +18,7 @@ schemes = {
      'Yandex Music user profile': {
         'flags': ['musicCspLogger'],
         'regex': r'{"uid":"(?P<uid>\d+)","login":"(?P<username>.+?)","name":"(?P<name>.+?)"}',
+        # TODO: fix random order, add lastName and firstName
      },
      'Yandex Znatoki user profile': {
         'flags': ['Ya.Znatoki'],
@@ -66,16 +68,51 @@ schemes = {
         'flags': ['my.mail.ru', 'models/user/journal'],
         'regex': r'"name": "(?P<name>[^"]+)",\s+"id": "(?P<uid>\d+)",[\s\S]+?"email": "(?P<username>[^@]+)@mail.ru"',
      },
+     'Behance': {
+        'flags': ['cdn.behance.net'],
+        'regex': r'{"id":(?P<uid>\d+),"first_name":"(?P<first_name>[^"]+)","last_name":"(?P<last_name>[^"]+)","username":"(?P<username>[^"]+)"',
+     },
+     '500px': {
+        'flags': ['//assetcdn.500px.org'],
+        'regex': r'{"userdata":{"id":.+?"groups":\[\]}}',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['userdata']['id'],
+            'username': lambda x: x['userdata']['username'],
+            'name': lambda x: x['userdata']['fullname'],
+            'qq_username': lambda x: x['userdata']['contacts']['qq'],
+            'website': lambda x: x['userdata']['contacts']['website'],
+            'blog': lambda x: x['userdata']['contacts']['blog'],
+            'lastfm_username': lambda x: x['userdata']['contacts']['lastfm'],
+            'facebook_uid': lambda x: x['userdata']['contacts']['facebook'],
+            'msn_username': lambda x: x['userdata']['contacts']['MSN'],
+            'facebook_page': lambda x: x['userdata']['contacts']['facebookpage'],
+            'livejournal_username': lambda x: x['userdata']['contacts']['livejournal'],
+            'instagram_username': lambda x: x['userdata']['contacts']['instagram'],
+            'twitter_username': lambda x: x['userdata']['contacts']['twitter'],
+            'skype_username': lambda x: x['userdata']['contacts']['skype'],
+            'thumblr_username': lambda x: x['userdata']['contacts']['thumblr'],
+            'gtalk_username': lambda x: x['userdata']['contacts']['gtalk'],
+            'icq_uid': lambda x: x['userdata']['contacts']['icq'],
+            'flickr_username': lambda x: x['userdata']['contacts']['flickr'],
+            'lookatme_username': lambda x: x['userdata']['contacts']['LOOKATME'],
+            'googleplus_uid': lambda x: x['userdata']['contacts']['googleplus'],
+        }
+     },
 }
 
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
 }
+
+cookies = {
+    'ilo0': '1',
+} 
 
 
 def parse(url):
-    page = requests.get(url, headers=headers, allow_redirects=True)
+    page = requests.get(url, headers=headers, cookies=cookies, allow_redirects=True)
     return page.text
 
 
@@ -89,7 +126,15 @@ def extract(page):
             continue
         info = re.search(scheme_data['regex'], page)
         if info:
-            return {a: b for a, b in info.groupdict().items() if b}
+            if scheme_data.get('extract_json', False):
+                values = {}
+                json_data = json.loads(info.group(0))
+                for name, get_field in scheme_data['fields'].items():
+                    values[name] = str(get_field(json_data))
+            else:
+                values = info.groupdict()
+
+            return {a: b for a, b in values.items() if b}
         else:
             print('Could not extract!')
     return {}

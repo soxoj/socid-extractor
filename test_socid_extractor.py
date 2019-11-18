@@ -110,3 +110,25 @@ def test_yandex_znatoki_user_profile():
     assert info.get('yandex_uid') == '980797984'
     assert info.get('username') == 'uid-hwcuuacg'
     assert info.get('name') == 'Настя Р.'
+
+def test_behance():
+    info = extract(parse('https://www.behance.net/Skyratov'))
+
+    assert info.get('uid') == '39065909'
+    assert info.get('username') == 'Skyratov'
+    assert info.get('last_name') == 'Skuratov'
+    assert info.get('first_name') == 'Vasiliy'
+
+def test_500px():
+    info = extract(parse('https://500px.com/the-maksimov'))
+
+    assert info.get('uid') == '23896'
+    assert info.get('username') == 'The-Maksimov'
+    assert info.get('name') == 'Maxim Maximov'
+    assert info.get('qq_uid') == None
+    assert info.get('fb_uid') == None
+    assert info.get('instagram_username') == 'the.maksimov'
+    assert info.get('twitter_username') == 'The_Maksimov'
+    assert info.get('website') == 'vk.com/id156603747'
+    assert info.get('facebook_page') == 'facebook.com/the.maksimov'
+    assert info.get('facebook_uid') == '100001789363632'
