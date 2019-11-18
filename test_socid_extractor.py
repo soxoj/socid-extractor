@@ -3,7 +3,7 @@ from socid_extractor import parse, extract
 
 
 def test_vk_user_profile_full():
-    info = extract(parse('https://vk.com/idsvyatoslavs'))
+    info = extract(parse('https://vk.com/idsvyatoslavs')[0])
 
     assert info.get('uid') == '134173165'
     assert info.get('username') == 'idsvyatoslavs'
@@ -11,7 +11,7 @@ def test_vk_user_profile_full():
 
 
 def test_vk_user_profile_no_username():
-    info = extract(parse('https://vk.com/id568161939'))
+    info = extract(parse('https://vk.com/id568161939')[0])
 
     assert info.get('uid') == '568161939'
     assert info.get('username') == None
@@ -19,20 +19,20 @@ def test_vk_user_profile_no_username():
 
 
 def test_yandex_disk():
-    info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb'))
+    info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb')[0])
 
     assert info.get('uid') == '106917461'
     assert info.get('name') == 'samografova.viktoria'
 
 
 def test_instagram():
-    info = extract(parse('https://www.instagram.com/xenia_sobchak/'))
+    info = extract(parse('https://www.instagram.com/xenia_sobchak/')[0])
 
     assert info.get('uid') == '21965519'
     assert info.get('username') == 'xenia_sobchak'
 
 def test_medium():
-    info = extract(parse('https://medium.com/@lys1n'))
+    info = extract(parse('https://medium.com/@lys1n')[0])
 
     assert info.get('uid') == '4894fec6b289'
     assert info.get('username') == 'lys1n'
@@ -41,70 +41,70 @@ def test_medium():
     assert info.get('facebook_uid') == '1726256597385716'
 
 def test_ok():
-    info = extract(parse('https://ok.ru/profile/46054003'))
+    info = extract(parse('https://ok.ru/profile/46054003')[0])
 
     assert info.get('uid') == '46054003'
 
 def test_habr():
-    info = extract(parse('https://habr.com/ru/users/m1rko/'))
+    info = extract(parse('https://habr.com/ru/users/m1rko/')[0])
 
     assert info.get('uid') == '1371978'
     assert info.get('username') == 'm1rko'
 
 def test_twitter():
-    info = extract(parse('https://twitter.com/esquireru'))
+    info = extract(parse('https://twitter.com/esquireru')[0])
 
     assert info.get('uid') == '163060799'
     assert info.get('username') == 'Esquire Russia'
     assert info.get('name') == 'esquireru'
 
 def test_reddit():
-    info = extract(parse('https://www.reddit.com/user/sadlad111/'))
+    info = extract(parse('https://www.reddit.com/user/sadlad111/')[0])
 
     assert info.get('uid') == 't2_4zmkfq8k'
     assert info.get('username') == 'sadlad111'
 
 def test_facebook_user_profile():
-    info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/'))
+    info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
 
     assert info.get('uid') == '1486042157'
     assert info.get('username') == 'anatolijsharij'
 
 def test_facebook_group():
-    info = extract(parse('https://www.facebook.com/discordapp/'))
+    info = extract(parse('https://www.facebook.com/discordapp/')[0])
 
     assert info.get('uid') == '858412104226521'
     assert info.get('username') == 'discordapp'
 
 def test_github():
-    info = extract(parse('https://github.com/soxoj'))
+    info = extract(parse('https://github.com/soxoj')[0])
 
     assert info.get('uid') == '31013580'
     assert info.get('username') == 'soxoj'
 
 def test_yandex_disk_photos():
-    info = extract(parse('https://yadi.sk/a/oiySK_wg3Vv5p4'))
+    info = extract(parse('https://yadi.sk/a/oiySK_wg3Vv5p4')[0])
 
     assert info.get('uid') == '38569641'
     assert info.get('username') == 'nikitina-nm'
     assert info.get('name') == 'Вербочка'
 
 def test_my_mail():
-    info = extract(parse('https://my.mail.ru/mail/zubovo/'))
+    info = extract(parse('https://my.mail.ru/mail/zubovo/')[0])
 
     assert info.get('uid') == '13425818'
     assert info.get('name') == 'Олег Зубов'
     assert info.get('username') == 'zubovo'
 
 def test_yandex_music_user_profile():
-    info = extract(parse('https://music.yandex.ru/users/pritisk/playlists'))
+    info = extract(parse('https://music.yandex.ru/users/pritisk/playlists')[0])
 
     assert info.get('uid') == '16480689'
     assert info.get('username') == 'pritisk'
     assert info.get('name') == 'pritisk'
 
 def test_yandex_znatoki_user_profile():
-    info = extract(parse('https://yandex.ru/znatoki/user/e3795016-b18e-58ba-9112-21c301e53f37/'))
+    info = extract(parse('https://yandex.ru/znatoki/user/e3795016-b18e-58ba-9112-21c301e53f37/')[0])
 
     assert info.get('uid') == 'e3795016-b18e-58ba-9112-21c301e53f37'
     assert info.get('yandex_uid') == '980797984'
@@ -112,7 +112,7 @@ def test_yandex_znatoki_user_profile():
     assert info.get('name') == 'Настя Р.'
 
 def test_behance():
-    info = extract(parse('https://www.behance.net/Skyratov'))
+    info = extract(parse('https://www.behance.net/Skyratov', 'ilo0=1')[0])
 
     assert info.get('uid') == '39065909'
     assert info.get('username') == 'Skyratov'
@@ -120,7 +120,7 @@ def test_behance():
     assert info.get('first_name') == 'Vasiliy'
 
 def test_500px():
-    info = extract(parse('https://500px.com/the-maksimov'))
+    info = extract(parse('https://500px.com/the-maksimov')[0])
 
     assert info.get('uid') == '23896'
     assert info.get('username') == 'The-Maksimov'
@@ -132,3 +132,31 @@ def test_500px():
     assert info.get('website') == 'vk.com/id156603747'
     assert info.get('facebook_page') == 'facebook.com/the.maksimov'
     assert info.get('facebook_uid') == '100001789363632'
+
+def test_google_documents():
+    cookies = open('google.test.cookies').read()
+    info = extract(parse('https://docs.google.com/spreadsheets/d/1HtZKMLRXNsZ0HjtBmo0Gi03nUPiJIA4CC4jTYbCAnXw/edit#gid=0', cookies)[0])
+
+    assert info.get('org_domain') == 'breakoutcommerce.com'
+    assert info.get('org_name') == 'Gooten'
+
+def test_bitbucket():
+    info = extract(parse('https://bitbucket.org/arny/')[0])
+
+    assert info.get('uid') == '57ad342a-ec8f-42cb-af05-98175b72b8db'
+    assert info.get('username') == 'arny'
+    assert info.get('created_at') == '2009-11-23T10:41:04.355755+00:00'
+
+def test_steam():
+    info = extract(parse('https://steamcommunity.com/id/GabrielSantosMariano/')[0])
+
+    assert info.get('uid') == '76561198315585536'
+    assert info.get('username') == 'GabrielSantosMariano'
+    assert info.get('name') == 'Gabriel! Santos, Mariano.'
+
+def test_steam_hidden():
+    info = extract(parse('https://steamcommunity.com/id/Elvoc/')[0])
+
+    assert info.get('uid') == '76561197976127725'
+    assert info.get('username') == 'Elvoc'
+    assert info.get('name') == 'Elvoc'

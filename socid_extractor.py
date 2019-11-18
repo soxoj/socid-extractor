@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+import argparse
 import json
+import logging
 import sys
 import re
+from http.cookies import SimpleCookie
 
 import requests
 
@@ -69,12 +72,13 @@ schemes = {
         'regex': r'"name": "(?P<name>[^"]+)",\s+"id": "(?P<uid>\d+)",[\s\S]+?"email": "(?P<username>[^@]+)@mail.ru"',
      },
      'Behance': {
-        'flags': ['cdn.behance.net'],
+        'flags': ['behance.net', 'beconfig-store_state'],
+        'message': 'Cookies required, ensure you added --cookies "ilo0=1"',
         'regex': r'{"id":(?P<uid>\d+),"first_name":"(?P<first_name>[^"]+)","last_name":"(?P<last_name>[^"]+)","username":"(?P<username>[^"]+)"',
      },
      '500px': {
         'flags': ['//assetcdn.500px.org'],
-        'regex': r'{"userdata":{"id":.+?"groups":\[\]}}',
+        'regex': r'({"userdata":{"id":.+?"groups":\[\]}})',
         'extract_json': True,
         'fields': {
             'uid': lambda x: x['userdata']['id'],
@@ -99,6 +103,41 @@ schemes = {
             'googleplus_uid': lambda x: x['userdata']['contacts']['googleplus'],
         }
      },
+     'Google document': {
+        'flags': ['_docs_flag_initialData'],
+        'regex': r'{"docs-ails":"docs_\w+".+?"docs-(comp|fsd|dcr)":\w+}',
+        'extract_json': True,
+        'message': 'Auth cookied requires, add through --cookies in format "a=1;b=2"n\nTry to run twice to get result.',
+        'fields': {
+            'your_ls_uid': lambda x: x.get('docs-offline-lsuid'),
+            'your_cpf': lambda x: x.get('docs-cpf'),
+            'your_username': lambda x: x.get('docs-offline-ue') or x.get('docs-hue'),
+            'your_uid': lambda x: x['docs-pid'],
+            'org_name': lambda x: x['docs-doddn'],
+            'org_domain': lambda x: x['docs-dodn'],
+        }
+     },
+     'Bitbucket': {
+        'flags': ['bitbucket.org/account'],
+        'regex': r'{"section": {"profile.+?"whats_new_feed":.+?}}',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['global']['targetUser']['uuid'].strip('{}'),
+            'username': lambda x: x['global']['targetUser']['nickname'],
+            'created_at': lambda x: x['global']['targetUser']['created_on'],
+            'is_service': lambda x: x['global']['targetUser']['is_staff'],
+        }
+     },
+     'Steam': {
+        'flags': ['store.steampowered.com'],
+        'regex': r'{"url":".+?}(?=;)',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['steamid'],
+            'name': lambda x: x['personaname'],
+            'username': lambda x: [y for y in x['url'].split('/') if y][-1],
+        }
+     }
 }
 
 
@@ -106,31 +145,46 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
 }
 
-cookies = {
-    'ilo0': '1',
-} 
+
+def parse_cookies(cookies_str):
+    cookies = SimpleCookie()
+    cookies.load(cookies_str)
+    logging.debug(cookies)
+    return {key: morsel.value for key, morsel in cookies.items()}
 
 
-def parse(url):
-    page = requests.get(url, headers=headers, cookies=cookies, allow_redirects=True)
-    return page.text
+def parse(url, cookies_str=''):
+    cookies = parse_cookies(cookies_str)
+    page = requests.get(url,headers=headers, cookies=cookies, allow_redirects=True)
+    logging.debug(page.text)
+    logging.debug(page.status_code)
+    return page.text, page.status_code
 
 
 def extract(page):
     for scheme_name, scheme_data in schemes.items():
         flags = scheme_data['flags']
         found = all([flag in page for flag in flags])
+
         if found:
-            print('%s has been detected' % scheme_name)
+            logging.info('%s has been detected' % scheme_name)
+            if 'message' in scheme_data:
+                print(scheme_data['message'])
         else:
             continue
+
         info = re.search(scheme_data['regex'], page)
+
         if info:
             if scheme_data.get('extract_json', False):
                 values = {}
+                logging.debug(info.group(0))
+
                 json_data = json.loads(info.group(0))
+                logging.debug(json.dumps(json_data, indent=4, sort_keys=True))
+
                 for name, get_field in scheme_data['fields'].items():
-                    values[name] = str(get_field(json_data))
+                    values[name] = str(get_field(json_data) or '')
             else:
                 values = info.groupdict()
 
@@ -141,8 +195,27 @@ def extract(page):
 
 
 if __name__ == '__main__':
-    url = sys.argv[1]
-    page = parse(url)
+    parser = argparse.ArgumentParser(description='Extract accounts\' identifiers from pages.')
+    parser.add_argument('url', help='url to parse')
+    parser.add_argument('--cookies', default='', help='cookies to make http requests with auth')
+    parser.add_argument('--debug', action='store_true', help='log debug information')
+
+    args = parser.parse_args()
+
+    log_level = logging.INFO if not args.debug else logging.DEBUG
+
+    logging.basicConfig(level=log_level, format='-'*40 + '\n%(levelname)s: %(message)s')
+
+    url = args.url
+    page, status = parse(url, args.cookies)
+
+    if status != 200:
+        logging.info('Answer code {}, something went wrong'.format(status))
+
     info = extract(page)
+    if not info:
+        sys.exit()
+
+    logging.info('Result\n' + '-'*40)
     for key, value in info.items():
         print('%s: %s' % (key, value))

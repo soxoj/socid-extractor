@@ -1,5 +1,5 @@
 # socid_extractor
-Extract accounts' identifiers from personal pages on various platforms
+Extract accounts' identifiers from personal pages on various platforms.
 
 ## Using
 ```
@@ -14,6 +14,6 @@ facebook_uid: 1726256597385716
 
 ## Platforms
 
-VK (user), OK (user), Facebook (user, group), Yandex (disk, albums, znatoki, music), Instagram, Medium, Reddit, GitHub, Habrahabr, My.mail.ru, Behance, 500px.
+VK (user), OK (user), Facebook (user, group), Google (all documents), Yandex (disk, albums, znatoki, music), Instagram, Medium, Reddit, GitHub, Bitbucket, Habrahabr, My.mail.ru, Behance, 500px, Steam.
 
 Check `test_socid_extractor.py` for examples.
