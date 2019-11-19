@@ -9,7 +9,6 @@ def test_vk_user_profile_full():
     assert info.get('username') == 'idsvyatoslavs'
     assert info.get('name') == 'Святослав Степанов'
 
-
 def test_vk_user_profile_no_username():
     info = extract(parse('https://vk.com/id568161939')[0])
 
@@ -17,13 +16,11 @@ def test_vk_user_profile_no_username():
     assert info.get('username') == None
     assert info.get('name') == 'Юляшка Заболотная'
 
-
 def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb')[0])
 
     assert info.get('uid') == '106917461'
     assert info.get('name') == 'samografova.viktoria'
-
 
 def test_instagram():
     info = extract(parse('https://www.instagram.com/xenia_sobchak/')[0])
@@ -160,3 +157,10 @@ def test_steam_hidden():
     assert info.get('uid') == '76561197976127725'
     assert info.get('username') == 'Elvoc'
     assert info.get('name') == 'Elvoc'
+
+def test_yandex_realty_offer():
+    cookies = open('yandex.test.cookies').read()
+    info = extract(parse('https://realty.yandex.ru/offer/363951114410351104/', cookies)[0])
+
+    assert info.get('uid') == '86903473'
+    assert info.get('name') == 'Севостьянова Мария Владимировна'

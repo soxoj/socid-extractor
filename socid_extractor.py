@@ -27,6 +27,22 @@ schemes = {
         'flags': ['Ya.Znatoki'],
         'regex': r'displayName&quot;:&quot;(?P<name>[^&]+?)&quot;,&quot;uuid&quot;:(?P<yandex_uid>\d+),&quot;.+?login&quot;:&quot;(?P<username>[^&]+?)&quot;.+?&quot;id&quot;:&quot;(?P<uid>[\w-]+)&quot'
      },
+     'Yandex Realty offer': {
+        'flags': ['realty.yandex.ru/offer'],
+        'regex': r'{"routing":{"locationBeforeTransitions.+?}(?=;)',
+        'extract_json': True,
+        'fields': {
+            'your_yuid': lambda x: x['user']['yuid'],
+            'your_uid': lambda x: x['user']['uid'],
+            'your_wallet_balance': lambda x: x['user']['walletInfo'].get('balance'),
+            'your_emails': lambda x: ', '.join(x['user']['emails']),
+            'your_name': lambda x: x['user'].get('displayName'),
+            'your_username': lambda x: x['user'].get('defaultEmail'),
+            'your_phone': lambda x: x['user'].get('defaultPhone'),
+            'uid': lambda x: x['cards']['offers']['author']['id'],
+            'name': lambda x: decode_ya_str(x['cards']['offers']['author']['agentName'])
+        }
+     },
      'VK user profile': {
         'flags': ['var vk =', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<uid>\d+).*?(,"loc":"(?P<username>.*?)")?,"back":"(?P<name>.*?)"'
@@ -146,6 +162,12 @@ headers = {
 }
 
 
+def decode_ya_str(val):
+    try:
+        return val.encode('iso-8859-1').decode('utf-8')
+    except:
+        return val
+
 def parse_cookies(cookies_str):
     cookies = SimpleCookie()
     cookies.load(cookies_str)
@@ -199,6 +221,7 @@ if __name__ == '__main__':
     parser.add_argument('url', help='url to parse')
     parser.add_argument('--cookies', default='', help='cookies to make http requests with auth')
     parser.add_argument('--debug', action='store_true', help='log debug information')
+    parser.add_argument('--file', action='store_true', help='load from file instead of URL')
 
     args = parser.parse_args()
 
@@ -206,11 +229,14 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=log_level, format='-'*40 + '\n%(levelname)s: %(message)s')
 
-    url = args.url
-    page, status = parse(url, args.cookies)
+    if not args.file:
+        url = args.url
+        page, status = parse(url, args.cookies)
 
-    if status != 200:
-        logging.info('Answer code {}, something went wrong'.format(status))
+        if status != 200:
+            logging.info('Answer code {}, something went wrong'.format(status))
+    else:
+        page = open(args.url).read()
 
     info = extract(page)
     if not info:
