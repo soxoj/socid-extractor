@@ -92,6 +92,10 @@ schemes = {
         'message': 'Cookies required, ensure you added --cookies "ilo0=1"',
         'regex': r'{"id":(?P<uid>\d+),"first_name":"(?P<first_name>[^"]+)","last_name":"(?P<last_name>[^"]+)","username":"(?P<username>[^"]+)"',
      },
+     'Blogger': {
+        'flags': ['www.blogger.com/static', 'blogspot.com/feeds/posts'],
+        'regex': r'www.blogger.com\/feeds\/(?P<blog_id>\d+)\/posts\/default" \/>\n<link rel="me" href="https:\/\/www.blogger.com\/profile/(?P<uid>\d+)" \/>',
+     },
      '500px': {
         'flags': ['//assetcdn.500px.org'],
         'regex': r'({"userdata":{"id":.+?"groups":\[\]}})',
