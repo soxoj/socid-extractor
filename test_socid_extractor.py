@@ -164,3 +164,20 @@ def test_yandex_realty_offer():
 
     assert info.get('uid') == '86903473'
     assert info.get('name') == 'Севостьянова Мария Владимировна'
+
+def test_gitlab():
+    cookies = open('gitlab.test.cookies').read()
+    info = extract(parse('https://gitlab.com/markglenfletcher', cookies)[0])
+
+    assert info.get('uid') == '419655'
+
+def test_blogger():
+    info = extract(parse('https://b0ltay.blogspot.ru')[0])
+
+    assert info.get('uid') == '10725121405978587846'
+    assert info.get('blog_id') == '9057808199412143402'
+
+def test_d3():
+    info = extract(parse('https://d3.ru/user/deer00hunter')[0])
+
+    assert info.get('uid') == '75504'

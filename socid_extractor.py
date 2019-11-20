@@ -96,6 +96,14 @@ schemes = {
         'flags': ['www.blogger.com/static', 'blogspot.com/feeds/posts'],
         'regex': r'www.blogger.com\/feeds\/(?P<blog_id>\d+)\/posts\/default" \/>\n<link rel="me" href="https:\/\/www.blogger.com\/profile/(?P<uid>\d+)" \/>',
      },
+     'D3.ru': {
+        'flags': ['feedSettingsHandler.subscribe(this', 'd3.ru/static'],
+        'regex': r"feedSettingsHandler.subscribe\(this, 'users', '(?P<uid>\d+)'",
+     },
+     'Gitlab': {
+        'flags': ['gitlab-static.net'],
+        'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
+     },
      '500px': {
         'flags': ['//assetcdn.500px.org'],
         'regex': r'({"userdata":{"id":.+?"groups":\[\]}})',
