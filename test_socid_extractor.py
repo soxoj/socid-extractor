@@ -181,3 +181,9 @@ def test_d3():
     info = extract(parse('https://d3.ru/user/deer00hunter')[0])
 
     assert info.get('uid') == '75504'
+
+def test_stack_exchange():
+    info = extract(parse('https://stackoverflow.com/users/758202/zzart')[0])
+
+    assert info.get('uid') == '758202'
+    assert info.get('stack_exchange_uid') == '395311'

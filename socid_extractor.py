@@ -165,7 +165,11 @@ schemes = {
             'name': lambda x: x['personaname'],
             'username': lambda x: [y for y in x['url'].split('/') if y][-1],
         }
-     }
+     },
+     'Stack Overflow & similar': {
+        'flags': ['StackExchange.user.init'],
+        'regex': r'StackExchange.user.init\({ userId: (?P<uid>\d+), accountId: (?P<stack_exchange_uid>\d+) }\);',
+     },
 }
 
 
