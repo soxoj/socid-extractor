@@ -29,7 +29,7 @@ schemes = {
      },
      'Yandex Realty offer': {
         'flags': ['realty.yandex.ru/offer'],
-        'regex': r'{"routing":{"locationBeforeTransitions.+?}(?=;)',
+        'regex': r'({"routing":{"locationBeforeTransitions.+?});',
         'extract_json': True,
         'fields': {
             'your_yuid': lambda x: x['user']['yuid'],
@@ -133,9 +133,9 @@ schemes = {
      },
      'Google document': {
         'flags': ['_docs_flag_initialData'],
-        'regex': r'{"docs-ails":"docs_\w+".+?"docs-(comp|fsd|dcr)":\w+}',
+        'regex': r'({"docs-ails":"docs_\w+".+?"docs-(comp|fsd|dcr)":\w+})',
         'extract_json': True,
-        'message': 'Auth cookied requires, add through --cookies in format "a=1;b=2"n\nTry to run twice to get result.',
+        'message': 'Auth cookies requires, add through --cookies in format "a=1;b=2"n\nTry to run twice to get result.',
         'fields': {
             'your_ls_uid': lambda x: x.get('docs-offline-lsuid'),
             'your_cpf': lambda x: x.get('docs-cpf'),
@@ -147,7 +147,7 @@ schemes = {
      },
      'Bitbucket': {
         'flags': ['bitbucket.org/account'],
-        'regex': r'{"section": {"profile.+?"whats_new_feed":.+?}}',
+        'regex': r'({"section": {"profile.+?"whats_new_feed":.+?}})',
         'extract_json': True,
         'fields': {
             'uid': lambda x: x['global']['targetUser']['uuid'].strip('{}'),
@@ -158,7 +158,7 @@ schemes = {
      },
      'Steam': {
         'flags': ['store.steampowered.com'],
-        'regex': r'{"url":".+?}(?=;)',
+        'regex': r'({"url":".+?});',
         'extract_json': True,
         'fields': {
             'uid': lambda x: x['steamid'],
@@ -169,6 +169,20 @@ schemes = {
      'Stack Overflow & similar': {
         'flags': ['StackExchange.user.init'],
         'regex': r'StackExchange.user.init\({ userId: (?P<uid>\d+), accountId: (?P<stack_exchange_uid>\d+) }\);',
+     },
+     'SoundCloud': {
+        'flags': [],
+        'regex': r'catch\(t\){}}\)},(\[{"id":.+?)\);',
+        'extract_json': True,
+        'message': 'Run with auth cookies to get your ids.',
+        'fields': {
+            'your_uid': lambda x: x[-2]['data'][0].get('id'),
+            'your_name': lambda x: x[-2]['data'][0].get('full_name'),
+            'your_username': lambda x: x[-2]['data'][0].get('username'),
+            'uid': lambda x: x[-1]['data'][0]['id'],
+            'name': lambda x: x[-1]['data'][0]['full_name'],
+            'username': lambda x: x[-1]['data'][0]['username'],
+        }
      },
 }
 
@@ -216,10 +230,16 @@ def extract(page):
         if info:
             if scheme_data.get('extract_json', False):
                 values = {}
-                logging.debug(info.group(0))
+                logging.debug(info.group(1))
 
-                json_data = json.loads(info.group(0))
-                logging.debug(json.dumps(json_data, indent=4, sort_keys=True))
+                json_data = json.loads(info.group(1))
+
+                loaded_json = json.dumps(json_data, indent=4, sort_keys=True)
+
+                logging.debug(loaded_json)
+                if logging.root.level == logging.DEBUG:
+                    with open('debug_extracted.json', 'w') as f:
+                        f.write(loaded_json)
 
                 for name, get_field in scheme_data['fields'].items():
                     values[name] = str(get_field(json_data) or '')

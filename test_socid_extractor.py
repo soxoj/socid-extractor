@@ -187,3 +187,10 @@ def test_stack_exchange():
 
     assert info.get('uid') == '758202'
     assert info.get('stack_exchange_uid') == '395311'
+
+def test_soundcloud():
+    info = extract(parse('https://soundcloud.com/danielpatterson')[0])
+
+    assert info.get('uid') == '78365'
+    assert info.get('username') == 'danielpatterson'
+    assert info.get('name') == 'Daniel Patterson'
