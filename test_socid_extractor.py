@@ -194,3 +194,10 @@ def test_soundcloud():
     assert info.get('uid') == '78365'
     assert info.get('username') == 'danielpatterson'
     assert info.get('name') == 'Daniel Patterson'
+
+def test_vcru():
+    info = extract(parse('https://vc.ru/u/6587-pavel-stolyarov')[0])
+
+    assert info.get('uid') == '6587'
+    assert info.get('username') == '6587-pavel-stolyarov'
+    assert info.get('name') == 'Павел Столяров'

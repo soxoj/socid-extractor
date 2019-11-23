@@ -171,7 +171,7 @@ schemes = {
         'regex': r'StackExchange.user.init\({ userId: (?P<uid>\d+), accountId: (?P<stack_exchange_uid>\d+) }\);',
      },
      'SoundCloud': {
-        'flags': [],
+        'flags': ['eventlogger.soundcloud.com'],
         'regex': r'catch\(t\){}}\)},(\[{"id":.+?)\);',
         'extract_json': True,
         'message': 'Run with auth cookies to get your ids.',
@@ -182,6 +182,16 @@ schemes = {
             'uid': lambda x: x[-1]['data'][0]['id'],
             'name': lambda x: x[-1]['data'][0]['full_name'],
             'username': lambda x: x[-1]['data'][0]['username'],
+        }
+     },
+     'VC.ru': {
+        'flags': ['static-osnova.gcdn.co'],
+        'regex': r'({"module.page":{.+});',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['module.page']['subsite']['id'],
+            'name': lambda x: x['module.page']['subsite']['name'],
+            'username': lambda x: x['module.page']['subsite']['url'].split('/')[-1],
         }
      },
 }
