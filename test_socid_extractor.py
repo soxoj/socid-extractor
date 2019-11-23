@@ -7,14 +7,14 @@ def test_vk_user_profile_full():
 
     assert info.get('uid') == '134173165'
     assert info.get('username') == 'idsvyatoslavs'
-    assert info.get('name') == 'Святослав Степанов'
+    assert info.get('name') in ('Святослав Степанов', 'Svyatoslav Stepanov')
 
 def test_vk_user_profile_no_username():
     info = extract(parse('https://vk.com/id568161939')[0])
 
     assert info.get('uid') == '568161939'
     assert info.get('username') == None
-    assert info.get('name') == 'Юляшка Заболотная'
+    assert info.get('name') in ('Юляшка Заболотная', 'Yulyashka Zabolotnaya')
 
 def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb')[0])
@@ -130,7 +130,7 @@ def test_500px():
     assert info.get('facebook_page') == 'facebook.com/the.maksimov'
     assert info.get('facebook_uid') == '100001789363632'
 
-def test_google_documents():
+def test_google_documents_cookies():
     cookies = open('google.test.cookies').read()
     info = extract(parse('https://docs.google.com/spreadsheets/d/1HtZKMLRXNsZ0HjtBmo0Gi03nUPiJIA4CC4jTYbCAnXw/edit#gid=0', cookies)[0])
 
@@ -158,14 +158,14 @@ def test_steam_hidden():
     assert info.get('username') == 'Elvoc'
     assert info.get('name') == 'Elvoc'
 
-def test_yandex_realty_offer():
+def test_yandex_realty_offer_cookies():
     cookies = open('yandex.test.cookies').read()
     info = extract(parse('https://realty.yandex.ru/offer/363951114410351104/', cookies)[0])
 
     assert info.get('uid') == '86903473'
     assert info.get('name') == 'Севостьянова Мария Владимировна'
 
-def test_gitlab():
+def test_gitlab_cookies():
     cookies = open('gitlab.test.cookies').read()
     info = extract(parse('https://gitlab.com/markglenfletcher', cookies)[0])
 
