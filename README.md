@@ -21,13 +21,12 @@ facebook_uid: 1726256597385716
 
 ## Platforms
 
-Over 20 services: VK (user), OK (user), Facebook (user, group), Google (all documents), Yandex (disk, albums, znatoki, music, realty), Instagram, Medium, Reddit, GitHub, Bitbucket, Habrahabr, My.mail.ru, Behance, 500px, Steam, Last.fm, Blogger, SoundCloud, D3, VC.ru.
+Over 20 services: VK (user), OK (user), Facebook (user, group), Google (all documents), Yandex (disk, albums, znatoki, music, realty), Instagram, Medium, Reddit, GitHub, Bitbucket, Habrahabr, My.mail.ru, Behance, 500px, Steam, Last.fm, Blogger, SoundCloud, D3, VC.ru, LiveJournal.
 
 Check `test_socid_extractor.py` for examples.
 
 ## TODO
 
 - [ ] Twitch - API requests only, [Chrome extension available](https://chrome.google.com/webstore/detail/twitch-username-and-user/laonpoebfalkjijglbjbnkfndibbcoon)
-- [ ] LiveJournal
 - [ ] Jira
 - [ ] Disqus

@@ -201,3 +201,12 @@ def test_vcru():
     assert info.get('uid') == '6587'
     assert info.get('username') == '6587-pavel-stolyarov'
     assert info.get('name') == 'Павел Столяров'
+
+def test_livejournal():
+    info = extract(parse('https://julia-klay.livejournal.com/')[0])
+
+    assert info.get('uid') == '83505610'
+    assert info.get('name') == 'julia_klay'
+    assert info.get('username') == 'julia_klay'
+    assert info.get('is_personal') == 'True'
+    assert info.get('is_community') == 'False'

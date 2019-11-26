@@ -194,6 +194,25 @@ schemes = {
             'username': lambda x: x['module.page']['subsite']['url'].split('/')[-1],
         }
      },
+     'LiveJournal': {
+        'flags': ['Site.journal'],
+        'regex': r'Site.journal = ({".+?"});',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['id'],
+            'is_paid': lambda x: x['is_paid'],
+            'is_news': lambda x: x['is_news'],
+            'is_identity': lambda x: x['is_identity'],
+            'is_medius': lambda x: x['is_medius'],
+            'is_permanent': lambda x: x['is_permanent'],
+            'is_community': lambda x: x['is_community'],
+            'is_personal': lambda x: x['is_personal'],
+            'is_suspended': lambda x: x['is_suspended'],
+            'is_bad_content': lambda x: x['is_bad_content'],
+            'username': lambda x: x['username'],
+            'name': lambda x: x['display_username'],
+        }
+     },
 }
 
 
@@ -252,7 +271,8 @@ def extract(page):
                         f.write(loaded_json)
 
                 for name, get_field in scheme_data['fields'].items():
-                    values[name] = str(get_field(json_data) or '')
+                    value = get_field(json_data)
+                    values[name] = str(value) if value != None else ''
             else:
                 values = info.groupdict()
 
