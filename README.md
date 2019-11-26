@@ -27,7 +27,7 @@ Check `test_socid_extractor.py` for examples.
 
 ## TODO
 
-- [ ] Twitch
+- [ ] Twitch - API requests only, [Chrome extension available](https://chrome.google.com/webstore/detail/twitch-username-and-user/laonpoebfalkjijglbjbnkfndibbcoon)
 - [ ] LiveJournal
 - [ ] Jira
 - [ ] Disqus
