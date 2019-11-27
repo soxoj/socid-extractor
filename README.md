@@ -28,5 +28,5 @@ Check `test_socid_extractor.py` for examples.
 ## TODO
 
 - [ ] Twitch - API requests only, [Chrome extension available](https://chrome.google.com/webstore/detail/twitch-username-and-user/laonpoebfalkjijglbjbnkfndibbcoon)
-- [ ] Jira
-- [ ] Disqus
+- [ ] Jira - auth required for profile page
+- [ ] Disqus - API -requests only, [example](https://disqus.com/api/3.0/users/details?user=username%3Arohfsim&attach=userFlaggedUser&api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F)
