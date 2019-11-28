@@ -210,3 +210,9 @@ def test_livejournal():
     assert info.get('username') == 'julia_klay'
     assert info.get('is_personal') == 'True'
     assert info.get('is_community') == 'False'
+
+def test_myspace():
+    info = extract(parse('https://myspace.com/katelynryry')[0])
+
+    assert info.get('uid') == '8158005'
+    assert info.get('username') == 'katelynryry'

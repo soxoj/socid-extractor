@@ -185,7 +185,7 @@ schemes = {
         }
      },
      'VC.ru': {
-        'flags': ['static-osnova.gcdn.co'],
+        'flags': ['property="og:site_name" content="vc.ru"'],
         'regex': r'({"module.page":{.+});',
         'extract_json': True,
         'fields': {
@@ -211,6 +211,15 @@ schemes = {
             'is_bad_content': lambda x: x['is_bad_content'],
             'username': lambda x: x['username'],
             'name': lambda x: x['display_username'],
+        }
+     },
+     'MySpace': {
+        'flags': ['myspacecdn.com'],
+        'regex': r'context = ({.+?});',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['displayProfileId'],
+            'username': lambda x: x['filterStreamUrl'].split('/')[2],
         }
      },
 }
