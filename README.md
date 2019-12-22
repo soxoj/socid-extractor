@@ -4,9 +4,11 @@ Extract accounts' identifiers from personal pages on various platforms.
 ## When it may be useful
 
 - Checking that the account was previously known even if all public info has changed
+- Getting additional info by the account UID ([Google](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43), [Instagram](https://osintcurio.us/2019/10/01/searching-instagram-part-2/), etc.)
 - Searching by commonly used cross-service UIDs (Facebook, Yandex, etc.)
   - DB leaks of forums and platforms in SQL format
   - Indexed links that contain target profile ID
+- Searching for tracking data by comparison with other IDs - (how it works)[https://www.eff.org/wp/behind-the-one-way-mirror], (how can it be used)[https://www.nytimes.com/interactive/2019/12/19/opinion/location-tracking-cell-phone.html].
 
 ## Using
 ```
