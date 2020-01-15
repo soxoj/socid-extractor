@@ -56,10 +56,10 @@ def test_twitter():
     assert info.get('name') == 'esquireru'
 
 def test_reddit():
-    info = extract(parse('https://www.reddit.com/user/sadlad111/')[0])
+    info = extract(parse('https://www.reddit.com/user/postvolta/')[0])
 
-    assert info.get('uid') == 't2_4zmkfq8k'
-    assert info.get('username') == 'sadlad111'
+    assert info.get('uid') == 't2_dexuehm'
+    assert info.get('username') == 'postvolta'
 
 def test_facebook_user_profile():
     info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
@@ -98,7 +98,7 @@ def test_yandex_music_user_profile():
 
     assert info.get('uid') == '16480689'
     assert info.get('username') == 'pritisk'
-    assert info.get('name') == 'pritisk'
+    assert info.get('name') == 'Юрий Притиск'
 
 def test_yandex_znatoki_user_profile():
     info = extract(parse('https://yandex.ru/znatoki/user/e3795016-b18e-58ba-9112-21c301e53f37/')[0])
@@ -106,7 +106,7 @@ def test_yandex_znatoki_user_profile():
     assert info.get('uid') == 'e3795016-b18e-58ba-9112-21c301e53f37'
     assert info.get('yandex_uid') == '980797984'
     assert info.get('username') == 'uid-hwcuuacg'
-    assert info.get('name') == 'Настя Р.'
+    assert info.get('name') == 'Настя Рогозинская'
 
 def test_behance():
     info = extract(parse('https://www.behance.net/Skyratov', 'ilo0=1')[0])
