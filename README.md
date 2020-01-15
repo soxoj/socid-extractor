@@ -8,7 +8,11 @@ Extract accounts' identifiers from personal pages on various platforms.
 - Searching by commonly used cross-service UIDs (Facebook, Yandex, etc.)
   - DB leaks of forums and platforms in SQL format
   - Indexed links that contain target profile ID
-- Searching for tracking data by comparison with other IDs - (how it works)[https://www.eff.org/wp/behind-the-one-way-mirror], (how can it be used)[https://www.nytimes.com/interactive/2019/12/19/opinion/location-tracking-cell-phone.html].
+- Searching for tracking data by comparison with other IDs - [how it works](https://www.eff.org/wp/behind-the-one-way-mirror), [how can it be used](https://www.nytimes.com/interactive/2019/12/19/opinion/location-tracking-cell-phone.html).
+
+### Other extract methods
+
+- [Obtaining Google IDs from albums and contacts](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43)
 
 ## Using
 ```
