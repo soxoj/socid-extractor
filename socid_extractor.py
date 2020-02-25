@@ -133,7 +133,7 @@ schemes = {
      },
      'Google document': {
         'flags': ['_docs_flag_initialData'],
-        'regex': r'({"docs-ails":"docs_\w+".+?"docs-(comp|fsd|dcr)":\w+})',
+        'regex': r'({"docs-ails":"docs_\w+".+?});',
         'extract_json': True,
         'message': 'Auth cookies requires, add through --cookies in format "a=1;b=2"n\nTry to run twice to get result.',
         'fields': {
