@@ -41,6 +41,17 @@ schemes = {
             'name': lambda x: decode_ya_str(x['cards']['offers']['author']['agentName'])
         }
      },
+     'Yandex Collections': {
+        'flags': ['<meta name="collections"', 'https://yandex.uz/collections'],
+        'regex': r'(?:id="restoreData">)(.+?)<\/script>',
+        'extract_json': True,
+        'fields': {
+            'id': lambda x: list(x['entities']['users'].values())[1]['id'],
+            'uid': lambda x: list(x['entities']['users'].values())[1]['uid'],
+            'username': lambda x: list(x['entities']['users'].values())[1]['login'],
+            'name': lambda x: list(x['entities']['users'].values())[1]['display_name'],
+        },
+     },
      'VK user profile': {
         'flags': ['var vk =', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<uid>\d+).*?(,"loc":"(?P<username>.*?)")?,"back":"(?P<name>.*?)"'
@@ -244,7 +255,7 @@ def parse_cookies(cookies_str):
 
 def parse(url, cookies_str='', timeout=3):
     cookies = parse_cookies(cookies_str)
-    page = requests.get(url,headers=headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
+    page = requests.get(url, headers=headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
     logging.debug(page.text)
     logging.debug(page.status_code)
     return page.text, page.status_code
@@ -286,5 +297,5 @@ def extract(page):
 
             return {a: b for a, b in values.items() if b}
         else:
-            print('Could not extract!')
+            logging.info('Could not extract!')
     return {}
