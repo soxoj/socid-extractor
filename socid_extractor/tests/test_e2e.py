@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-from socid_extractor import parse, extract
+import pytest
+
+from ..main import parse, extract
 
 
 def test_vk_user_profile_full():
@@ -14,7 +16,7 @@ def test_vk_user_profile_no_username():
 
     assert info.get('uid') == '568161939'
     assert info.get('username') == None
-    assert info.get('name') in ('Юляшка Заболотная', 'Yulyashka Zabolotnaya')
+    assert info.get('name') in ('Юля Заболотная', 'Yulya Zabolotnaya')
 
 def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb')[0])
@@ -48,6 +50,7 @@ def test_habr():
     assert info.get('uid') == '1371978'
     assert info.get('username') == 'm1rko'
 
+@pytest.mark.skip(reason="broken, https://github.com/soxoj/socid_extractor/issues/3")
 def test_twitter():
     info = extract(parse('https://twitter.com/esquireru')[0])
 

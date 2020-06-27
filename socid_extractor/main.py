@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-import argparse
 import json
 import logging
 import sys
@@ -53,7 +51,7 @@ schemes = {
      },
      'Medium': {
         'flags': ['https://medium.com', 'com.medium.reader'],
-        'regex': r'"User:.*?{"id":"(?P<uid>.*?)",.*?,"username":"(?P<username>.*?)",.*?,"name":"(?P<name>.*?)",.*?,"twitterScreenName":"(?P<twitter_username>.*?)","facebookAccountId":"(?P<facebook_uid>.*?)"',
+        'regex': r'{"id":"(?P<uid>[\w_-]+)","__typename":"User","isSuspended":\w+,"username":"(?P<username>.+?)",.*?"name":"(?P<name>.+?)","bio":".+?",("twitterScreenName":"(?P<twitter_username>.*?)")?(,"facebookAccountId":"(?P<facebook_uid>.*?)")?',
      },
      'Odnoklassniki': {
         'flags': ['OK.startupData'],
@@ -236,6 +234,7 @@ def decode_ya_str(val):
     except:
         return val
 
+
 def parse_cookies(cookies_str):
     cookies = SimpleCookie()
     cookies.load(cookies_str)
@@ -243,9 +242,9 @@ def parse_cookies(cookies_str):
     return {key: morsel.value for key, morsel in cookies.items()}
 
 
-def parse(url, cookies_str=''):
+def parse(url, cookies_str='', timeout=3):
     cookies = parse_cookies(cookies_str)
-    page = requests.get(url,headers=headers, cookies=cookies, allow_redirects=True)
+    page = requests.get(url,headers=headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
     logging.debug(page.text)
     logging.debug(page.status_code)
     return page.text, page.status_code
@@ -289,34 +288,3 @@ def extract(page):
         else:
             print('Could not extract!')
     return {}
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Extract accounts\' identifiers from pages.')
-    parser.add_argument('url', help='url to parse')
-    parser.add_argument('--cookies', default='', help='cookies to make http requests with auth')
-    parser.add_argument('--debug', action='store_true', help='log debug information')
-    parser.add_argument('--file', action='store_true', help='load from file instead of URL')
-
-    args = parser.parse_args()
-
-    log_level = logging.INFO if not args.debug else logging.DEBUG
-
-    logging.basicConfig(level=log_level, format='-'*40 + '\n%(levelname)s: %(message)s')
-
-    if not args.file:
-        url = args.url
-        page, status = parse(url, args.cookies)
-
-        if status != 200:
-            logging.info('Answer code {}, something went wrong'.format(status))
-    else:
-        page = open(args.url).read()
-
-    info = extract(page)
-    if not info:
-        sys.exit()
-
-    logging.info('Result\n' + '-'*40)
-    for key, value in info.items():
-        print('%s: %s' % (key, value))
