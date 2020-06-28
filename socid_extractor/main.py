@@ -10,7 +10,7 @@ import requests
 schemes = {
     'Yandex Disk file': {
         'flags': ['@yandexdisk', 'yastatic.net'],
-        'regex': r'"users":{.*?"uid":"(?P<uid>\d+)","displayName":"(?P<name>.+?)"',
+        'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<name>.+?)"',
      },
     'Yandex Disk photoalbum': {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
@@ -18,7 +18,7 @@ schemes = {
      },
      'Yandex Music user profile': {
         'flags': ['musicCspLogger'],
-        'regex': r'{"uid":"(?P<uid>\d+)","login":"(?P<username>.+?)","name":"(?P<name>.+?)"}',
+        'regex': r'{"uid":"(?P<yandex_uid>\d+)","login":"(?P<username>.+?)","name":"(?P<name>.+?)"',
         # TODO: fix random order, add lastName and firstName
      },
      'Yandex Znatoki user profile': {
@@ -37,7 +37,7 @@ schemes = {
             'your_name': lambda x: x['user'].get('displayName'),
             'your_username': lambda x: x['user'].get('defaultEmail'),
             'your_phone': lambda x: x['user'].get('defaultPhone'),
-            'uid': lambda x: x['cards']['offers']['author']['id'],
+            'yandex_uid': lambda x: x['cards']['offers']['author']['id'],
             'name': lambda x: decode_ya_str(x['cards']['offers']['author']['agentName'])
         }
      },
@@ -47,9 +47,10 @@ schemes = {
         'extract_json': True,
         'fields': {
             'id': lambda x: list(x['entities']['users'].values())[1]['id'],
-            'uid': lambda x: list(x['entities']['users'].values())[1]['uid'],
+            'yandex_uid': lambda x: list(x['entities']['users'].values())[1]['uid'],
             'username': lambda x: list(x['entities']['users'].values())[1]['login'],
             'name': lambda x: list(x['entities']['users'].values())[1]['display_name'],
+            'yandex_public_id': lambda x: list(x['entities']['users'].values())[1]['public_id'],
         },
      },
      'VK user profile': {
@@ -140,7 +141,7 @@ schemes = {
             'googleplus_uid': lambda x: x['userdata']['contacts']['googleplus'],
         }
      },
-     'Google document': {
+     'Google Document': {
         'flags': ['_docs_flag_initialData'],
         'regex': r'({"docs-ails":"docs_\w+".+?});',
         'extract_json': True,
@@ -153,6 +154,11 @@ schemes = {
             'org_name': lambda x: x['docs-doddn'],
             'org_domain': lambda x: x['docs-dodn'],
         }
+     },
+     'Google Maps contributions': {
+        'flags': ['/maps/preview/opensearch.xml', '<title>  Google Maps  </title>'],
+        'message': 'Auth cookies requires, add through --cookies in format "a=1;b=2"n\nTry to run twice to get result.',
+        'regex': r'\["Contributions by (?P<name>.+?)","\d+ Contributions"',
      },
      'Bitbucket': {
         'flags': ['bitbucket.org/account'],

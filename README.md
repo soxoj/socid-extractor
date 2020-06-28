@@ -27,7 +27,7 @@ facebook_uid: 1726256597385716
 
 ## Platforms
 
-Over 20 services: VK (user), OK (user), Facebook (user, group), Google (all documents), Yandex (disk, albums, znatoki, music, realty), Instagram, Medium, Reddit, GitHub, Bitbucket, Habrahabr, My.mail.ru, Behance, 500px, Steam, Last.fm, Blogger, SoundCloud, D3, VC.ru, LiveJournal.
+Over 20 services: VK (user), OK (user), Facebook (user, group), Google (all documents, maps contributions), Yandex (disk, albums, znatoki, music, realty, collections), Instagram, Medium, Reddit, GitHub, Bitbucket, Habrahabr, My.mail.ru, Behance, 500px, Steam, Last.fm, Blogger, SoundCloud, D3, VC.ru, LiveJournal.
 
 Check `test_e2e.py` for examples.
 
