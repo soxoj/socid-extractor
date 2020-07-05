@@ -94,8 +94,19 @@ schemes = {
         'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/search\?user=(?P<username>.+?)"'
      },
      'My Mail.ru': {
-        'flags': ['my.mail.ru', 'models/user/journal'],
-        'regex': r'"name": "(?P<name>[^"]+)",\s+"id": "(?P<uid>\d+)",[\s\S]+?"email": "(?P<username>[^@]+)@mail.ru"',
+        'flags': ['my.mail.ru', 'models/user/journal">'],
+        'regex': r'journal">\s+({\s+"name":[\s\S]+?})',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('dir').split('/')[-2] if x else '',
+            'auId': lambda x: x.get('auId'),
+            'email': lambda x: x.get('email'),
+            'name': lambda x: x.get('name'),
+            'isVip': lambda x: x.get('isVip'),
+            'isCommunity': lambda x: x.get('isCommunity'),
+            'isVideoChannel': lambda x: x.get('isVideoChannel'),
+        }
      },
      'Behance': {
         'flags': ['behance.net', 'beconfig-store_state'],

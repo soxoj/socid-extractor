@@ -88,12 +88,30 @@ def test_yandex_disk_photos():
     assert info.get('username') == 'nikitina-nm'
     assert info.get('name') == 'Вербочка'
 
-def test_my_mail():
+def test_my_mail_main():
     info = extract(parse('https://my.mail.ru/mail/zubovo/')[0])
 
     assert info.get('uid') == '13425818'
     assert info.get('name') == 'Олег Зубов'
     assert info.get('username') == 'zubovo'
+    # there is no auId
+    assert info.get('email') == 'zubovo@mail.ru'
+    assert info.get('isVip') == 'False'
+    assert info.get('isCommunity') == 'False'
+    assert info.get('isVideoChannel') == 'False'
+
+def test_my_mail_communities():
+    # also video, apps, photo
+    info = extract(parse('https://my.mail.ru/mail/zubovo/communities/')[0])
+
+    assert info.get('uid') == '13425818'
+    assert info.get('name') == 'Олег Зубов'
+    assert info.get('username') == 'zubovo'
+    assert info.get('auId') == '6667000454247668890'
+    assert info.get('email') == 'zubovo@mail.ru'
+    assert info.get('isVip') == 'False'
+    assert info.get('isCommunity') == 'False'
+    assert info.get('isVideoChannel') == 'False'
 
 def test_yandex_music_user_profile():
     info = extract(parse('https://music.yandex.ru/users/pritisk/playlists')[0])
