@@ -21,7 +21,7 @@ def test_vk_user_profile_no_username():
 def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb')[0])
 
-    assert info.get('uid') == '106917461'
+    assert info.get('yandex_uid') == '106917461'
     assert info.get('name') == 'samografova.viktoria'
 
 def test_instagram():
@@ -37,7 +37,6 @@ def test_medium():
     assert info.get('username') == 'lys1n'
     assert info.get('twitter_username') == 'lys1n'
     assert info.get('name') == 'Марк Лясин'
-    assert info.get('facebook_uid') == '1726256597385716'
 
 def test_ok():
     info = extract(parse('https://ok.ru/profile/46054003')[0])
@@ -74,7 +73,7 @@ def test_facebook_group():
     info = extract(parse('https://www.facebook.com/discordapp/')[0])
 
     assert info.get('uid') == '858412104226521'
-    assert info.get('username') == 'discordapp'
+    assert info.get('username') == 'discord'
 
 def test_github():
     info = extract(parse('https://github.com/soxoj')[0])
@@ -99,7 +98,7 @@ def test_my_mail():
 def test_yandex_music_user_profile():
     info = extract(parse('https://music.yandex.ru/users/pritisk/playlists')[0])
 
-    assert info.get('uid') == '16480689'
+    assert info.get('yandex_uid') == '16480689'
     assert info.get('username') == 'pritisk'
     assert info.get('name') == 'Юрий Притиск'
 

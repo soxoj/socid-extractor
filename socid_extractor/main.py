@@ -83,11 +83,11 @@ schemes = {
      },
      'Facebook user profile': {
         'flags': ['com.facebook.katana', 'scribe_endpoint'],
-        'regex': r'"uri":"[^\"]+\/(?P<username>[^\"\\\/]+?)","entity_id":"(?P<uid>\d+)"',
+        'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
      },
      'Facebook group': {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
-        'regex': r'"uri":"[^\"]+\/(?P<username>[^\"\\\/]+?)[\\\/]+","entity_id":"(?P<uid>\d+)"',
+        'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
      },
      'GitHub': {
         'flags': ['github.githubassets.com'],
@@ -162,7 +162,7 @@ schemes = {
      },
      'Bitbucket': {
         'flags': ['bitbucket.org/account'],
-        'regex': r'({"section": {"profile.+?"whats_new_feed":.+?}})',
+        'regex': r'({.+?"section": {"profile.+?"whats_new_feed":.+?}});',
         'extract_json': True,
         'fields': {
             'uid': lambda x: x['global']['targetUser']['uuid'].strip('{}'),
