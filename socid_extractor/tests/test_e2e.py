@@ -130,7 +130,6 @@ def test_yandex_znatoki_user_profile():
 
     assert info.get('uid') == 'e3795016-b18e-58ba-9112-21c301e53f37'
     assert info.get('yandex_uid') == '980797984'
-    assert info.get('username') == 'uid-hwcuuacg'
     assert info.get('name') == 'Настя Рогозинская'
 
 def test_behance():

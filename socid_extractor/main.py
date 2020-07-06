@@ -1,3 +1,4 @@
+import html
 import json
 import logging
 import sys
@@ -23,7 +24,18 @@ schemes = {
      },
      'Yandex Znatoki user profile': {
         'flags': ['Ya.Znatoki'],
-        'regex': r'displayName&quot;:&quot;(?P<name>[^&]+?)&quot;,&quot;uuid&quot;:(?P<yandex_uid>\d+),&quot;.+?login&quot;:&quot;(?P<username>[^&]+?)&quot;.+?&quot;id&quot;:&quot;(?P<uid>[\w-]+)&quot'
+        'regex': r'id="restoreData" type="application/json">({.+?})</script>',
+        'extract_json': True,
+        'transforms': [
+            html.unescape,
+            # TODO: refactoring
+            lambda x: json.dumps(list(json.loads(x)['store']['entities']['user'].values())[0]),
+        ],
+        'fields': {
+            'name': lambda x: x['displayName'],
+            'uid': lambda x: x['id'],
+            'yandex_uid': lambda x: x['uuid'],
+        }
      },
      'Yandex Realty offer': {
         'flags': ['realty.yandex.ru/offer'],
@@ -251,7 +263,7 @@ schemes = {
 }
 
 
-headers = {
+HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
 }
 
@@ -272,7 +284,7 @@ def parse_cookies(cookies_str):
 
 def parse(url, cookies_str='', timeout=3):
     cookies = parse_cookies(cookies_str)
-    page = requests.get(url, headers=headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
+    page = requests.get(url, headers=HEADERS, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
     logging.debug(page.text)
     logging.debug(page.status_code)
     return page.text, page.status_code
@@ -295,9 +307,18 @@ def extract(page):
         if info:
             if scheme_data.get('extract_json', False):
                 values = {}
-                logging.debug(info.group(1))
+                extracted = info.group(1)
 
-                json_data = json.loads(info.group(1))
+                logging.debug(extracted)
+
+                transforms = scheme_data.get('transforms', [])
+                if transforms:
+                    for t in transforms:
+                        logging.debug(t)
+                        extracted = t(extracted)
+                        logging.debug(extracted)
+
+                json_data = json.loads(extracted)
 
                 loaded_json = json.dumps(json_data, indent=4, sort_keys=True)
 
