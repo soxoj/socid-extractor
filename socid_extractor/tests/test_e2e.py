@@ -43,6 +43,11 @@ def test_ok():
 
     assert info.get('uid') == '46054003'
 
+    info = extract(parse('https://ok.ru/andrey.ostashenya')[0])
+
+    assert info.get('username') == 'andrey.ostashenya'
+    assert info.get('uid') == '576861363171'
+
 def test_habr():
     info = extract(parse('https://habr.com/ru/users/m1rko/')[0])
 

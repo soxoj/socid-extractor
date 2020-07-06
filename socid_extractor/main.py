@@ -67,7 +67,7 @@ schemes = {
      },
      'Odnoklassniki': {
         'flags': ['OK.startupData'],
-        'regex': r'path:"/profile/(?P<uid>\d+)",state:',
+        'regex': r'path:"/(profile/)?(?P<username>.+?)",state:".+?friendId=(?P<uid>\d+?)"',
      },
      'Habrahabr': {
         'flags': ['habracdn.net'],
