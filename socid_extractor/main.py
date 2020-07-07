@@ -11,7 +11,7 @@ import requests
 schemes = {
     'Yandex Disk file': {
         'flags': ['@yandexdisk', 'yastatic.net'],
-        'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<name>.+?)"',
+        'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<username>.+?)"',
      },
     'Yandex Disk photoalbum': {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
@@ -260,6 +260,22 @@ schemes = {
             'username': lambda x: x['filterStreamUrl'].split('/')[2],
         }
      },
+     'Keybase API': {
+        'flags': ['{"status":{"code":0,"name":"OK"},"them":'],
+        'regex': r'^(.+?"them":\[{.+?}\]})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['them'][0]['id'],
+            'username': lambda x: x['them'][0]['basics']['username'],
+            'name': lambda x: x['them'][0]['profile']['full_name'],
+            'location': lambda x: x['them'][0]['profile']['location'],
+            'bio': lambda x: x['them'][0]['profile']['bio'],
+            'twitter_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['twitter'][0]['nametag'],
+            'github_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['github'][0]['nametag'],
+            'reddit_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['reddit'][0]['nametag'],
+            'hackernews_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['hackernews'][0]['nametag'],
+        }
+     }
 }
 
 
