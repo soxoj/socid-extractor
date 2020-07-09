@@ -275,6 +275,10 @@ schemes = {
             'reddit_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['reddit'][0]['nametag'],
             'hackernews_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['hackernews'][0]['nametag'],
         }
+     },
+     'Wikimapia': {
+        'flags': ['src="/js/linkrouter.js', 'container-fluid inner-page'],
+        'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
      }
 }
 
