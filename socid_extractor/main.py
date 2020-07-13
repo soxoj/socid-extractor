@@ -179,9 +179,12 @@ schemes = {
         }
      },
      'Google Maps contributions': {
-        'flags': ['/maps/preview/opensearch.xml', '<title>  Google Maps  </title>'],
-        'message': 'Auth cookies requires, add through --cookies in format "a=1;b=2"n\nTry to run twice to get result.',
-        'regex': r'\["Contributions by (?P<name>.+?)","\d+ Contributions"',
+        'flags': ['/maps/preview/opensearch.xml', '<meta content="Contributions by'],
+        'regex': r'"Contributions by (?P<name>.+?)",("(?P<contributions_count>\d+) Contribution|"(?P<contribution_level>.+?)")',
+     },
+     'Youtube Channel': {
+        'flags': ['<span itemprop="author" itemscope itemtype="http://schema.org/Person">'],
+        'regex': r'itemtype="http:\/\/schema\.org\/Person"[\s\S]+?https:\/\/plus\.google\.com\/(?P<gaia_id>\d+)">[\s\S]+?itemprop="name" content="(?P<name>.+?)"'
      },
      'Bitbucket': {
         'flags': ['bitbucket.org/account'],

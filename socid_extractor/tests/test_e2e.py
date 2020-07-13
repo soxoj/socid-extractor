@@ -241,3 +241,15 @@ def test_myspace():
 
     assert info.get('uid') == '8158005'
     assert info.get('username') == 'katelynryry'
+
+def test_youtube():
+    info = extract(parse('https://www.youtube.com/channel/UCbeOQiPo5SjX8Q_IoSooBig')[0])
+
+    assert info.get('gaia_id') == '117503292148966883754'
+    assert info.get('name') == 'Art NI'
+
+def test_google_maps():
+    info = extract(parse('https://www.google.com/maps/contrib/117503292148966883754')[0])
+
+    assert info.get('contribution_level') == 'Level 3 Local Guide | 113 Points'
+    assert info.get('name') == 'Art NI'
