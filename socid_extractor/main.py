@@ -270,13 +270,13 @@ schemes = {
         'fields': {
             'uid': lambda x: x['them'][0]['id'],
             'username': lambda x: x['them'][0]['basics']['username'],
-            'name': lambda x: x['them'][0]['profile']['full_name'],
-            'location': lambda x: x['them'][0]['profile']['location'],
-            'bio': lambda x: x['them'][0]['profile']['bio'],
-            'twitter_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['twitter'][0]['nametag'],
-            'github_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['github'][0]['nametag'],
-            'reddit_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['reddit'][0]['nametag'],
-            'hackernews_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group']['hackernews'][0]['nametag'],
+            'name': lambda x: x['them'][0].get('profile',{}).get('full_name'),
+            'location': lambda x: x['them'][0].get('profile',{}).get('location'),
+            'bio': lambda x: x['them'][0].get('profile',{}).get('bio'),
+            'twitter_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('twitter', [{}])[0].get('nametag'),
+            'github_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('github', [{}])[0].get('nametag'),
+            'reddit_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('reddit', [{}])[0].get('nametag'),
+            'hackernews_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('hackernews', [{}])[0].get('nametag'),
         }
      },
      'Wikimapia': {
