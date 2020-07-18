@@ -17,10 +17,17 @@ schemes = {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
         'regex': r'"display_name":"(?P<name>.*?)","uid":"(?P<uid>\d+)","locale":"\w+","login":"(?P<username>.*?)"',
      },
-     'Yandex Music user profile': {
-        'flags': ['musicCspLogger'],
-        'regex': r'{"uid":"(?P<yandex_uid>\d+)","login":"(?P<username>.+?)","name":"(?P<name>.+?)"',
-        # TODO: fix random order, add lastName and firstName
+     # https://music.yandex.ru/handlers/library.jsx?owner=
+     'Yandex Music AJAX request': {
+        'flags': ['{"success":true,"verified'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'fields': {
+            'yandex_uid': lambda x: x['owner']['uid'],
+            'username': lambda x: x['owner']['login'],
+            'name': lambda x: x['owner']['name'],
+            'links': lambda x: [link for links in x['profiles'] for link in links['addresses']],
+        }
      },
      'Yandex Znatoki user profile': {
         'flags': ['Ya.Znatoki'],
