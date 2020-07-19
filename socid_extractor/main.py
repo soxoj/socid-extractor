@@ -11,7 +11,7 @@ import requests
 schemes = {
     'Yandex Disk file': {
         'flags': ['@yandexdisk', 'yastatic.net'],
-        'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<username>.+?)"',
+        'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<name>.+?)"',
      },
     'Yandex Disk photoalbum': {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
@@ -291,7 +291,7 @@ schemes = {
         'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
      },
      'Vimeo': {
-        'flags': '',
+        'flags': ['i.vimeocdn.com', 'vimeo://app.vimeo.com/users/'],
         'regex': r'"app_config":({"user":.+?})},\"coach_notes',
         'extract_json': True,
         'fields': {

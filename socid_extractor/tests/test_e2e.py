@@ -22,7 +22,7 @@ def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb')[0])
 
     assert info.get('yandex_uid') == '106917461'
-    assert info.get('username') == 'samografova.viktoria'
+    assert info.get('name') == 'samografova.viktoria'
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_instagram():
@@ -90,8 +90,7 @@ def test_github():
 def test_yandex_disk_photos():
     info = extract(parse('https://yadi.sk/a/oiySK_wg3Vv5p4')[0])
 
-    assert info.get('uid') == '38569641'
-    assert info.get('username') == 'nikitina-nm'
+    assert info.get('yandex_uid') == '38569641'
     assert info.get('name') == 'Вербочка'
 
 def test_my_mail_main():
@@ -119,8 +118,9 @@ def test_my_mail_communities():
     assert info.get('isCommunity') == 'False'
     assert info.get('isVideoChannel') == 'False'
 
+@pytest.mark.skip(reason="empty result, additional header needed")
 def test_yandex_music_user_profile():
-    info = extract(parse('https://music.yandex.ru/users/pritisk/playlists')[0])
+    info = extract(parse('https://music.yandex.ru/handlers/library.jsx?owner=pritisk')[0])
 
     assert info.get('yandex_uid') == '16480689'
     assert info.get('username') == 'pritisk'
@@ -236,6 +236,7 @@ def test_livejournal():
     assert info.get('is_personal') == 'True'
     assert info.get('is_community') == 'False'
 
+@pytest.mark.skip(reason="doesnt work without proxy, 503 error")
 def test_myspace():
     info = extract(parse('https://myspace.com/katelynryry')[0])
 
