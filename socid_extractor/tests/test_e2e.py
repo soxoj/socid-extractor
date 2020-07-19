@@ -253,3 +253,14 @@ def test_google_maps():
 
     assert info.get('contribution_level') == 'Level 3 Local Guide | 113 Points'
     assert info.get('name') == 'Art NI'
+
+def test_vimeo():
+    info = extract(parse('https://vimeo.com/alexaimephotography')[0])
+
+    assert info.get('uid') == '75857717'
+    assert info.get('name') == 'AlexAimePhotography'
+    assert info.get('username') == 'alexaimephotography'
+    assert info.get('location') == 'France'
+    assert info.get('created_at') == '2017-12-06 06:49:28'
+    assert info.get('is_staff') == 'False'
+    assert info.get('links') == "['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']"

@@ -289,6 +289,21 @@ schemes = {
      'Wikimapia': {
         'flags': ['src="/js/linkrouter.js', 'container-fluid inner-page'],
         'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
+     },
+     'Vimeo': {
+        'flags': '',
+        'regex': r'"app_config":({"user":.+?})},\"coach_notes',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['user']['id'],
+            'name': lambda x: x['user']['display_name'],
+            'username': lambda x: x['user']['name'],
+            'location': lambda x: x['user']['location'],
+            'created_at': lambda x: x['user']['join_date']['raw'],
+            'account_type': lambda x: x['user']['account_type'],
+            'is_staff': lambda x: x['user']['is_staff'],
+            'links': lambda x: [a['url'] for a in x['user']['links']],
+        }
      }
 }
 
