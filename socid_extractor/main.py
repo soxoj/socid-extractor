@@ -304,6 +304,26 @@ schemes = {
             'is_staff': lambda x: x['user']['is_staff'],
             'links': lambda x: [a['url'] for a in x['user']['links']],
         }
+     },
+     'DeviantArt': {
+        'flags': ['window.deviantART = '],
+        'regex': r'({\\"username\\":\\".+?\",\\"country.+?legacyTextEditUrl.+?})},\\"\d+\\":{\\"id',
+        'extract_json': True,
+        'transforms': [
+            lambda x: x.replace('\\"', '"'),
+            lambda x: x.replace('\\\\"', '\''),
+            lambda x: x.replace('\\\\u002F', '/'),
+        ],
+        'fields': {
+            'country': lambda x: x['country'],
+            'registered_for_seconds': lambda x: x['deviantFor'],
+            'gender': lambda x: x['gender'],
+            'username': lambda x: x['username'],
+            'twitter_username': lambda x: x['twitterUsername'],
+            'website': lambda x: x['website'],
+            'links': lambda x: [y['value'] for y in x['socialLinks']],
+            'tagline': lambda x: x['tagline'],
+        }
      }
 }
 

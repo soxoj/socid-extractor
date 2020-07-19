@@ -255,6 +255,17 @@ def test_google_maps():
     assert info.get('contribution_level') == 'Level 3 Local Guide | 113 Points'
     assert info.get('name') == 'Art NI'
 
+def test_deviantart():
+    info = extract(parse('https://www.deviantart.com/muse1908')[0])
+
+    assert info.get('country') == 'France'
+    assert int(info.get('registered_for_seconds')) > 476254777
+    assert info.get('gender') == 'female'
+    assert info.get('website') == 'www.patreon.com/musemercier'
+    assert info.get('username') == 'Muse1908'
+    assert info.get('links') == "['https://www.facebook.com/musemercier', 'https://www.instagram.com/muse.mercier/', 'https://www.patreon.com/musemercier']"
+    assert info.get('tagline') == 'Nothing worth having is easy...'
+
 def test_vimeo():
     info = extract(parse('https://vimeo.com/alexaimephotography')[0])
 
