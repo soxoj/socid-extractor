@@ -65,11 +65,11 @@ schemes = {
         'regex': r'(?:id="restoreData">)(.+?)<\/script>',
         'extract_json': True,
         'fields': {
-            'id': lambda x: list(x['entities']['users'].values())[1]['id'],
-            'yandex_uid': lambda x: list(x['entities']['users'].values())[1]['uid'],
-            'username': lambda x: list(x['entities']['users'].values())[1]['login'],
-            'name': lambda x: list(x['entities']['users'].values())[1]['display_name'],
-            'yandex_public_id': lambda x: list(x['entities']['users'].values())[1]['public_id'],
+            'id': lambda x: list(x['entities']['users'].values())[1].get('id'),
+            'yandex_uid': lambda x: list(x['entities']['users'].values())[1].get('uid'),
+            'username': lambda x: list(x['entities']['users'].values())[1].get('login'),
+            'name': lambda x: list(x['entities']['users'].values())[1].get('display_name'),
+            'yandex_public_id': lambda x: list(x['entities']['users'].values())[1].get('public_id'),
         },
      },
      'VK user profile': {
@@ -86,7 +86,7 @@ schemes = {
      },
      'Odnoklassniki': {
         'flags': ['OK.startupData'],
-        'regex': r'path:"/(profile/)?(?P<username>.+?)",state:".+?friendId=(?P<uid>\d+?)"',
+        'regex': r'path:"/(profile/)?(?P<ok_user_name_id>.+?)",state:".+?friendId=(?P<ok_id>\d+?)"',
      },
      'Habrahabr': {
         'flags': ['habracdn.net'],
