@@ -74,7 +74,7 @@ schemes = {
      },
      'VK user profile': {
         'flags': ['var vk =', 'change_current_info'],
-        'regex': r'Profile\.init\({"user_id":(?P<uid>\d+).*?(,"loc":"(?P<username>.*?)")?,"back":"(?P<name>.*?)"'
+        'regex': r'Profile\.init\({"user_id":(?P<vk_id>\d+).*?(,"loc":"(?P<vk_username>.*?)")?,"back":"(?P<fullname>.*?)"'
      },
      'Instagram': {
         'flags': ['instagram://user?username'],
