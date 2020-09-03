@@ -7,18 +7,17 @@ from http.cookies import SimpleCookie
 
 import requests
 
-
 schemes = {
     'Yandex Disk file': {
         'flags': ['@yandexdisk', 'yastatic.net'],
         'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<name>.+?)"',
-     },
+    },
     'Yandex Disk photoalbum': {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
         'regex': r'"display_name":"(?P<name>.*?)","uid":"(?P<uid>\d+)","locale":"\w+","login":"(?P<username>.*?)"',
-     },
-     # https://music.yandex.ru/handlers/library.jsx?owner=
-     'Yandex Music AJAX request': {
+    },
+    # https://music.yandex.ru/handlers/library.jsx?owner=
+    'Yandex Music AJAX request': {
         'flags': ['{"success":true,"verified'],
         'regex': r'^(.+)$',
         'extract_json': True,
@@ -28,8 +27,8 @@ schemes = {
             'name': lambda x: x['owner']['name'],
             'links': lambda x: [link for links in x['profiles'] for link in links['addresses']],
         }
-     },
-     'Yandex Znatoki user profile': {
+    },
+    'Yandex Znatoki user profile': {
         'flags': ['Ya.Znatoki'],
         'regex': r'id="restoreData" type="application/json">({.+?})</script>',
         'extract_json': True,
@@ -43,8 +42,8 @@ schemes = {
             'uid': lambda x: x['id'],
             'yandex_uid': lambda x: x['uuid'],
         }
-     },
-     'Yandex Realty offer': {
+    },
+    'Yandex Realty offer': {
         'flags': ['realty.yandex.ru/offer'],
         'regex': r'({"routing":{"locationBeforeTransitions.+?});',
         'extract_json': True,
@@ -59,8 +58,8 @@ schemes = {
             'yandex_uid': lambda x: x['cards']['offers']['author']['id'],
             'name': lambda x: decode_ya_str(x['cards']['offers']['author']['agentName'])
         }
-     },
-     'Yandex Collections': {
+    },
+    'Yandex Collections': {
         'flags': ['<meta name="collections"', 'https://yandex.uz/collections'],
         'regex': r'(?:id="restoreData">)(.+?)<\/script>',
         'extract_json': True,
@@ -71,48 +70,57 @@ schemes = {
             'name': lambda x: list(x['entities']['users'].values())[1].get('display_name'),
             'yandex_public_id': lambda x: list(x['entities']['users'].values())[1].get('public_id'),
         },
-     },
-     'VK user profile': {
+    },
+    'VK user profile': {
         'flags': ['var vk =', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<vk_id>\d+).*?(,"loc":"(?P<vk_username>.*?)")?,"back":"(?P<fullname>.*?)"'
-     },
-     'Instagram': {
+    },
+    'Instagram': {
         'flags': ['instagram://user?username'],
-        'regex': r'{"id":"(?P<uid>\d+)","username":"(?P<username>.*?)"}',
-     },
-     'Medium': {
+        'regex': r'window._sharedData =(.+?);</script>',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('username'),
+            'full_name': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('full_name'),
+            'id': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('id'),
+            'biography': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('biography'),
+            'business_email': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('business_email'),
+            'external_url': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('external_url'),
+        }
+    },
+    'Medium': {
         'flags': ['https://medium.com', 'com.medium.reader'],
         'regex': r'{"id":"(?P<uid>[\w_-]+)","__typename":"User","isSuspended":\w+,"username":"(?P<username>.+?)",.*?"name":"(?P<name>.+?)","bio":".+?",("twitterScreenName":"(?P<twitter_username>.*?)")?(,"facebookAccountId":"(?P<facebook_uid>.*?)")?',
-     },
-     'Odnoklassniki': {
+    },
+    'Odnoklassniki': {
         'flags': ['OK.startupData'],
         'regex': r'path:"/(profile/)?(?P<ok_user_name_id>.+?)",state:".+?friendId=(?P<ok_id>\d+?)"',
-     },
-     'Habrahabr': {
+    },
+    'Habrahabr': {
         'flags': ['habracdn.net'],
         'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/',
-     },
-     'Twitter': {
+    },
+    'Twitter': {
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
-     },
-     'Reddit': {
+    },
+    'Reddit': {
         'flags': ['www.redditstatic.com', 'displayNamePrefixed'],
         'regex': r'"displayText":"(?P<username>[^\"]+)","hasUserProfile":\w+,"hideFromRobots":\w+,"id":"(?P<uid>.+?)"',
-     },
-     'Facebook user profile': {
+    },
+    'Facebook user profile': {
         'flags': ['com.facebook.katana', 'scribe_endpoint'],
         'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
-     },
-     'Facebook group': {
+    },
+    'Facebook group': {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
         'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
-     },
-     'GitHub': {
+    },
+    'GitHub': {
         'flags': ['github.githubassets.com'],
         'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/search\?user=(?P<username>.+?)"'
-     },
-     'My Mail.ru': {
+    },
+    'My Mail.ru': {
         'flags': ['my.mail.ru', 'models/user/journal">'],
         'regex': r'journal">\s+({\s+"name":[\s\S]+?})',
         'extract_json': True,
@@ -126,25 +134,25 @@ schemes = {
             'isCommunity': lambda x: x.get('isCommunity'),
             'isVideoChannel': lambda x: x.get('isVideoChannel'),
         }
-     },
-     'Behance': {
+    },
+    'Behance': {
         'flags': ['behance.net', 'beconfig-store_state'],
         'message': 'Cookies required, ensure you added --cookies "ilo0=1"',
         'regex': r'{"id":(?P<uid>\d+),"first_name":"(?P<first_name>[^"]+)","last_name":"(?P<last_name>[^"]+)","username":"(?P<username>[^"]+)"',
-     },
-     'Blogger': {
+    },
+    'Blogger': {
         'flags': ['www.blogger.com/static', 'blogspot.com/feeds/posts'],
         'regex': r'www.blogger.com\/feeds\/(?P<blog_id>\d+)\/posts\/default" \/>\n<link rel="me" href="https:\/\/www.blogger.com\/profile/(?P<uid>\d+)" \/>',
-     },
-     'D3.ru': {
+    },
+    'D3.ru': {
         'flags': ['feedSettingsHandler.subscribe(this', 'd3.ru/static'],
         'regex': r"feedSettingsHandler.subscribe\(this, 'users', '(?P<uid>\d+)'",
-     },
-     'Gitlab': {
+    },
+    'Gitlab': {
         'flags': ['gitlab-static.net'],
         'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
-     },
-     '500px API': {
+    },
+    '500px API': {
         'flags': ['{"data":{"profile":{"id"'],
         'regex': r'^{"data":({.+})}$',
         'extract_json': True,
@@ -171,8 +179,8 @@ schemes = {
             'lookatme_username': lambda x: x['profile']['socialMedia'].get('LOOKATME'),
             'googleplus_uid': lambda x: x['profile']['socialMedia'].get('googleplus'),
         }
-     },
-     'Google Document': {
+    },
+    'Google Document': {
         'flags': ['_docs_flag_initialData'],
         'regex': r'({"docs-ails":"docs_\w+".+?});',
         'extract_json': True,
@@ -185,16 +193,16 @@ schemes = {
             'org_name': lambda x: x['docs-doddn'],
             'org_domain': lambda x: x['docs-dodn'],
         }
-     },
-     'Google Maps contributions': {
+    },
+    'Google Maps contributions': {
         'flags': ['/maps/preview/opensearch.xml', '<meta content="Contributions by'],
         'regex': r'"Contributions by (?P<name>.+?)",("(?P<contributions_count>\d+) Contribution|"(?P<contribution_level>.+?)")',
-     },
-     'Youtube Channel': {
+    },
+    'Youtube Channel': {
         'flags': ['<span itemprop="author" itemscope itemtype="http://schema.org/Person">'],
         'regex': r'itemtype="http:\/\/schema\.org\/Person"[\s\S]+?https:\/\/plus\.google\.com\/(?P<gaia_id>\d+)">[\s\S]+?itemprop="name" content="(?P<name>.+?)"'
-     },
-     'Bitbucket': {
+    },
+    'Bitbucket': {
         'flags': ['bitbucket.org/account'],
         'regex': r'({.+?"section": {"profile.+?"whats_new_feed":.+?}});',
         'extract_json': True,
@@ -204,22 +212,27 @@ schemes = {
             'created_at': lambda x: x['global']['targetUser']['created_on'],
             'is_service': lambda x: x['global']['targetUser']['is_staff'],
         }
-     },
-     'Steam': {
+    },
+    'Steam': {
         'flags': ['store.steampowered.com'],
         'regex': r'({"url":".+?});',
         'extract_json': True,
         'fields': {
             'uid': lambda x: x['steamid'],
-            'name': lambda x: x['personaname'],
+            'nickname': lambda x: x['personaname'],  # это не совсем имя, а ник
             'username': lambda x: [y for y in x['url'].split('/') if y][-1],
         }
-     },
-     'Stack Overflow & similar': {
+    },
+    'Steam Addiction': {
+        # TODO: добавить отображение предыдущих ников по ссылке /ajaxaliases/, например https://steamcommunity.com/profiles/76561198222448544/ajaxaliases/
+        'flags': ['steamcommunity.com'],
+        'regex': r'<bdi><span class="filtered_text">(?P<real_name>.+)<\/span><\/bdi>(\s*&nbsp;\s*<img class="profile_flag" src=".*">\s*(?P<country>.*)<\/div>)*',
+    },
+    'Stack Overflow & similar': {
         'flags': ['StackExchange.user.init'],
         'regex': r'StackExchange.user.init\({ userId: (?P<uid>\d+), accountId: (?P<stack_exchange_uid>\d+) }\);',
-     },
-     'SoundCloud': {
+    },
+    'SoundCloud': {
         'flags': ['eventlogger.soundcloud.com'],
         'regex': r'catch\(t\){}}\)},(\[{"id":.+?)\);',
         'extract_json': True,
@@ -232,8 +245,8 @@ schemes = {
             'name': lambda x: x[-1]['data'][0]['full_name'],
             'username': lambda x: x[-1]['data'][0]['username'],
         }
-     },
-     'VC.ru': {
+    },
+    'VC.ru': {
         'flags': ['property="og:site_name" content="vc.ru"'],
         'regex': r'({"module.page":{.+});',
         'extract_json': True,
@@ -242,8 +255,8 @@ schemes = {
             'name': lambda x: x['module.page']['subsite']['name'],
             'username': lambda x: x['module.page']['subsite']['url'].split('/')[-1],
         }
-     },
-     'LiveJournal': {
+    },
+    'LiveJournal': {
         'flags': ['Site.journal'],
         'regex': r'Site.journal = ({".+?"});',
         'extract_json': True,
@@ -261,8 +274,8 @@ schemes = {
             'username': lambda x: x['username'],
             'name': lambda x: x['display_username'],
         }
-     },
-     'MySpace': {
+    },
+    'MySpace': {
         'flags': ['myspacecdn.com'],
         'regex': r'context = ({.+?});',
         'extract_json': True,
@@ -270,28 +283,32 @@ schemes = {
             'uid': lambda x: x['displayProfileId'],
             'username': lambda x: x['filterStreamUrl'].split('/')[2],
         }
-     },
-     'Keybase API': {
+    },
+    'Keybase API': {
         'flags': ['{"status":{"code":0,"name":"OK"},"them":'],
         'regex': r'^(.+?"them":\[{.+?}\]})$',
         'extract_json': True,
         'fields': {
             'uid': lambda x: x['them'][0]['id'],
             'username': lambda x: x['them'][0]['basics']['username'],
-            'name': lambda x: x['them'][0].get('profile',{}).get('full_name'),
-            'location': lambda x: x['them'][0].get('profile',{}).get('location'),
-            'bio': lambda x: x['them'][0].get('profile',{}).get('bio'),
-            'twitter_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('twitter', [{}])[0].get('nametag'),
-            'github_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('github', [{}])[0].get('nametag'),
-            'reddit_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('reddit', [{}])[0].get('nametag'),
-            'hackernews_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('hackernews', [{}])[0].get('nametag'),
+            'name': lambda x: x['them'][0].get('profile', {}).get('full_name'),
+            'location': lambda x: x['them'][0].get('profile', {}).get('location'),
+            'bio': lambda x: x['them'][0].get('profile', {}).get('bio'),
+            'twitter_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('twitter', [{}])[
+                0].get('nametag'),
+            'github_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('github', [{}])[
+                0].get('nametag'),
+            'reddit_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('reddit', [{}])[
+                0].get('nametag'),
+            'hackernews_username': lambda x:
+            x['them'][0]['proofs_summary']['by_presentation_group'].get('hackernews', [{}])[0].get('nametag'),
         }
-     },
-     'Wikimapia': {
+    },
+    'Wikimapia': {
         'flags': ['src="/js/linkrouter.js', 'container-fluid inner-page'],
         'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
-     },
-     'Vimeo': {
+    },
+    'Vimeo': {
         'flags': ['i.vimeocdn.com', 'vimeo://app.vimeo.com/users/'],
         'regex': r'"app_config":({"user":.+?})},\"coach_notes',
         'extract_json': True,
@@ -305,8 +322,8 @@ schemes = {
             'is_staff': lambda x: x['user']['is_staff'],
             'links': lambda x: [a['url'] for a in x['user']['links']],
         }
-     },
-     'DeviantArt': {
+    },
+    'DeviantArt': {
         'flags': ['window.deviantART = '],
         'regex': r'({\\"username\\":\\".+?\",\\"country.+?legacyTextEditUrl.+?})},\\"\d+\\":{\\"id',
         'extract_json': True,
@@ -325,9 +342,8 @@ schemes = {
             'links': lambda x: [y['value'] for y in x['socialLinks']],
             'tagline': lambda x: x['tagline'],
         }
-     }
+    }
 }
-
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
