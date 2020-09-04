@@ -42,12 +42,13 @@ Sony A7ii"""
 
 
 def test_medium():
-    info = extract(parse('https://medium.com/@lys1n')[0])
+    info = extract(parse('https://medium.com/@lys1n', timeout=10)[0])
 
-    assert info.get('uid') == '4894fec6b289'
-    assert info.get('username') == 'lys1n'
+    assert info.get('medium_id') == '4894fec6b289'
+    assert info.get('medium_username') == 'lys1n'
+    assert info.get('fullname') == 'Марк Лясин'
     assert info.get('twitter_username') == 'lys1n'
-    assert info.get('name') == 'Марк Лясин'
+    assert info.get('is_suspended') == 'False'
 
 
 def test_ok():
@@ -78,11 +79,20 @@ def test_twitter():
 
 
 def test_reddit():
-    info = extract(parse('https://www.reddit.com/user/postvolta/')[0])
+    info = extract(parse('https://www.reddit.com/user/Diascamara/', timeout=10)[0])
 
-    assert info.get('uid') == 't2_dexuehm'
-    assert info.get('username') == 'postvolta'
-
+    assert info.get('reddit_id') == 't5_a8vxj'
+    assert info.get('reddit_username') == 'Diascamara'
+    assert info.get('display_name') == 'Diascamara'
+    assert info.get('is_employee') == 'False'
+    assert info.get('is_nsfw') == 'False'
+    assert info.get('is_mod') == 'True'
+    assert info.get('is_following') == 'True'
+    assert info.get('has_user_profile') == 'True'
+    assert info.get('created_utc') == '1515201725'
+    assert info.get('hide_from_robots') == 'False'
+    assert int(info.get('total_karma')) > int(30000)
+    assert int(info.get('post_karma')) > int(7000)
 
 def test_facebook_user_profile():
     info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
@@ -177,7 +187,7 @@ def test_500px():
     assert info.get('instagram_username') == 'the.maksimov'
     assert info.get('twitter_username') == 'The_Maksimov'
     assert info.get('website') == 'vk.com/id156603747'
-    assert info.get('facebook_uid') == 'facebook.com/the.maksimov'
+    assert info.get('facebook_link') == 'facebook.com/the.maksimov'
 
 
 def test_google_documents_cookies():
