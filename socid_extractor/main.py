@@ -90,7 +90,23 @@ schemes = {
     },
     'Medium': {
         'flags': ['https://medium.com', 'com.medium.reader'],
-        'regex': r'{"id":"(?P<uid>[\w_-]+)","__typename":"User","isSuspended":\w+,"username":"(?P<username>.+?)",.*?"name":"(?P<name>.+?)","bio":".+?",("twitterScreenName":"(?P<twitter_username>.*?)")?(,"facebookAccountId":"(?P<facebook_uid>.*?)")?',
+        'regex': r'({"__typename":"User".+?}),"Collection',
+        'extract_json': True,
+        'fields': {
+            'medium_id': lambda x: x.get('id'),
+            'medium_username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name'),
+            'bio': lambda x: x.get('bio'),
+            'twitter_username': lambda x: x.get('twitterScreenName'),
+            'is_suspended': lambda x: x.get('isSuspended'),
+            'facebook_uid': lambda x: x.get('facebookAccountId'),
+            'is_suspended': lambda x: x.get('isSuspended'),
+            'is_blocking': lambda x: x.get('isBlocking'),
+            'is_muting': lambda x: x.get('isMuting'),
+            'is_suspended': lambda x: x.get('isSuspended'),
+            'post_counts': lambda x: x.get('userPostCounts'),
+            'all': lambda x: x,
+        }
     },
     'Odnoklassniki': {
         'flags': ['OK.startupData'],
@@ -103,10 +119,6 @@ schemes = {
     'Twitter': {
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
-    },
-    'Reddit': {
-        'flags': ['www.redditstatic.com', 'displayNamePrefixed'],
-        'regex': r'"displayText":"(?P<username>[^\"]+)","hasUserProfile":\w+,"hideFromRobots":\w+,"id":"(?P<uid>.+?)"',
     },
     'Facebook user profile': {
         'flags': ['com.facebook.katana', 'scribe_endpoint'],
@@ -165,7 +177,7 @@ schemes = {
             'website': lambda x: x['profile']['socialMedia'].get('website'),
             'blog': lambda x: x['profile']['socialMedia'].get('blog'),
             'lastfm_username': lambda x: x['profile']['socialMedia'].get('lastfm'),
-            'facebook_uid': lambda x: x['profile']['socialMedia'].get('facebook'),
+            'facebook_link': lambda x: x['profile']['socialMedia'].get('facebook'),
             'msn_username': lambda x: x['profile']['socialMedia'].get('MSN'),
             'facebook_page': lambda x: x['profile']['socialMedia'].get('facebookpage'),
             'livejournal_username': lambda x: x['profile']['socialMedia'].get('livejournal'),
@@ -212,6 +224,28 @@ schemes = {
             'created_at': lambda x: x['global']['targetUser']['created_on'],
             'is_service': lambda x: x['global']['targetUser']['is_staff'],
         }
+    },
+    'Reddit': {
+        'flags': ['<link rel="canonical" href="https://www.reddit.com/user/'],
+        'regex': r'___r = ({.+?});<\/script><script>',
+        'extract_json': True,
+        'transforms': [
+            lambda x: json.dumps(list(json.loads(x)['users']['models'].values())[0]),
+        ],
+        'fields': {
+            'reddit_id': lambda x: x['profileId'],
+            'reddit_username': lambda x: x['username'],
+            'display_name': lambda x: x['displayName'],
+            'is_employee': lambda x: x['isEmployee'],
+            'is_nsfw': lambda x: x['isNSFW'],
+            'is_mod': lambda x: x['isMod'],
+            'is_following': lambda x: x['isFollowing'],
+            'has_user_profile': lambda x: x['hasUserProfile'],
+            'hide_from_robots': lambda x: x['hideFromRobots'],
+            'created_utc': lambda x: x['createdUtc'],
+            'total_karma': lambda x: x['totalKarma'],
+            'post_karma': lambda x: x['postKarma'],
+        },
     },
     'Steam': {
         'flags': ['store.steampowered.com'],
@@ -415,7 +449,7 @@ def extract(page):
             else:
                 values = info.groupdict()
 
-            return {a: b for a, b in values.items() if b}
+            return {a: b for a, b in values.items() if b or type(b) == bool}
         else:
             logging.info('Could not extract!')
     return {}
