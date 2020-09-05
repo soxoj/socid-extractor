@@ -332,3 +332,13 @@ def test_vimeo():
     assert info.get('is_staff') == 'False'
     assert info.get(
         'links') == "['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']"
+
+
+def test_gravatar():
+    info = extract(parse('https://en.gravatar.com/kostbebix.json')[0])
+    assert info.get('gravatar_id') == '17467145'
+    assert info.get('gravatar_username') == 'kostbebix'
+    assert info.get('fullname') == 'kost BebiX'
+    assert info.get('location') == 'Kiev, Ukraine'
+    assert info.get('emails') == "['k.bx@ya.ru']"
+    assert info.get('links') == "['http://www.blogger.com/profile/05385916050136636671', 'http://twitter.com/kost_bebix']"
