@@ -75,6 +75,19 @@ schemes = {
         'flags': ['var vk =', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<vk_id>\d+).*?(,"loc":"(?P<vk_username>.*?)")?,"back":"(?P<fullname>.*?)"'
     },
+    'Gravatar': {
+        'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
+        'regex': r'^(.+?)$',
+        'extract_json': True,
+        'fields': {
+            'gravatar_id': lambda x: x['entry'][0]['id'],
+            'gravatar_username': lambda x: x['entry'][0]['preferredUsername'],
+            'fullname': lambda x: x['entry'][0]['displayName'],
+            'location': lambda x: x['entry'][0].get('currentLocation'),
+            'emails': lambda x: [y['value'] for y in x['entry'][0].get('emails', [])],
+            'links': lambda x: [y['url'] for y in x['entry'][0].get('accounts', [])],
+        }
+    },
     'Instagram': {
         'flags': ['instagram://user?username'],
         'regex': r'window._sharedData =(.+?);</script>',
