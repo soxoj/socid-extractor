@@ -88,6 +88,22 @@ schemes = {
             'external_url': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('external_url'),
         }
     },
+    'EyeEm': {
+        'flags': ['https://www.eyeem.com/node-static/img'],
+        'regex': r'__APOLLO_STATE__ = ({.+?});\n',
+        'extract_json': True,
+        'fields': {
+            'eyeem_id': lambda x: list(x.values())[0]['id'],
+            'eyeem_username': lambda x: list(x.values())[0]['nickname'],
+            'fullname': lambda x: list(x.values())[0]['fullname'],
+            'bio': lambda x: list(x.values())[0]['description'],
+            'followers': lambda x: list(x.values())[0]['totalFollowers'],
+            'friends': lambda x: list(x.values())[0]['totalFriends'],
+            'liked_photos': lambda x: list(x.values())[0]['totalLikedPhotos'],
+            'photos': lambda x: list(x.values())[0]['totalPhotos'],
+            'facebook_uid': lambda x: extract_facebook_uid(list(x.values())[0]['thumbUrl'])
+        }
+    },
     'Medium': {
         'flags': ['https://medium.com', 'com.medium.reader'],
         'regex': r'({"__typename":"User".+?}),"Collection',
@@ -383,6 +399,12 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
 }
 
+
+def extract_facebook_uid(link):
+    avatar_re = re.search(r'graph.facebook.com/(\w+)/picture', link)
+    if avatar_re:
+        return avatar_re.group(1)
+    return None
 
 def decode_ya_str(val):
     try:
