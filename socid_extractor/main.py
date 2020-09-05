@@ -254,6 +254,41 @@ schemes = {
             'is_service': lambda x: x['global']['targetUser']['is_staff'],
         }
     },
+    # TODO: Pinterest API request
+    'Pinterest profile/board page': {
+        'flags': ['https://s.pinimg.com/webapp/'],
+        'regex': r'<script id="initial-state" type="application/json">({.+?})</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['resourceResponses'][0]['response']['data'],
+            lambda x: x['user'] if 'user' in x else x.get('owner'),
+            json.dumps,
+        ],
+        'fields': {
+            'pinterest_id': lambda x: x.get('id'),
+            'pintereset_username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('full_name'),
+            'bio': lambda x: x.get('about'),
+            'type': lambda x: x.get('type'),
+            'image': lambda x: x.get('image_xlarge_url'),
+            'board_count': lambda x: x.get('board_count'),
+            'pin_count': lambda x: x.get('pin_count'),
+            'location': lambda x: x.get('location'),
+            'country': lambda x: x.get('country'),
+            'follower_count': lambda x: x.get('follower_count'),
+            'following_count': lambda x: x.get('following_count'),
+            'website_is_verified': lambda x: x.get('domain_verified'),
+            'website': lambda x: x.get('domain_url'),
+            'is_indexed': lambda x: x.get('indexed'),
+            'is_partner': lambda x: x.get('is_partner'),
+            'is_tastemaker': lambda x: x.get('is_tastemaker'),
+            'is_verified_merchant': lambda x: x.get('is_verified_merchant'),
+            'verified_identity': lambda x: x.get('verified_identity'),
+            'locale': lambda x: x.get('locale'),
+            'website': lambda x: x.get('domain_url'),
+        }
+    },
     'Reddit': {
         'flags': ['<link rel="canonical" href="https://www.reddit.com/user/'],
         'regex': r'___r = ({.+?});<\/script><script>',
