@@ -321,6 +321,20 @@ def test_deviantart():
     assert info.get('tagline') == 'Nothing worth having is easy...'
 
 
+def test_eyeem():
+    info = extract(parse('https://www.eyeem.com/u/blue')[0])
+
+    assert info.get('eyeem_id') == '38760'
+    assert info.get('eyeem_username') == 'blue'
+    assert info.get('fullname') == 'Blue Lee'
+    assert info.get('bio') == 'hello!^_^'
+    assert info.get('followers') == '8'
+    assert info.get('friends') == '0'
+    assert info.get('liked_photos') == '0'
+    assert info.get('photos') == '3'
+    assert info.get('facebook_uid') == '1610716256'
+
+
 def test_vimeo():
     info = extract(parse('https://vimeo.com/alexaimephotography')[0])
 
