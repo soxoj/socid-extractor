@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import pytest
 
-from ..main import parse, extract
+from socid_extractor.main import parse, extract
 
 
 def test_vk_user_profile_full():
@@ -382,7 +382,7 @@ def test_pinterest_api():
     assert info.get('group_board_count') == '0'
     assert info.get('following_count') == '16'
     assert info.get('board_count') == '11'
-    assert info.get('pin_count') == '103'
+    assert int(info.get('pin_count')) > 100
 
 
 def test_pinterest_profile():
@@ -402,7 +402,7 @@ def test_pinterest_profile():
     assert info.get('follower_count') == '2'
     assert info.get('following_count') == '16'
     assert info.get('board_count') == '11'
-    assert info.get('pin_count') == '103'
+    assert int(info.get('pin_count')) > 100
 
 
 def test_pinterest_board():
@@ -418,3 +418,21 @@ def test_pinterest_board():
     assert info.get('is_partner') == 'False'
     assert info.get('is_tastemaker') == 'False'
     assert info.get('locale') == 'hu-HU'
+
+
+def test_yandex_collections_api():
+    info = extract(parse('http://yandex.uz/collections/api/users/gebial')[0])
+
+    assert info.get('yandex_public_id') == '20vpvmmwpnwyb0dpbnjvy3k14c'
+    assert info.get('fullname') == 'yellow_lolo'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/62162/enc-325ec489adfdc84e00cb76315a5e214dc95d51408754cd21321958be4b59647a/islands-200'
+    assert info.get('sex') == 'm'
+    assert info.get('likes') == '0'
+    assert info.get('cards') == '0'
+    assert info.get('boards') == '0'
+    assert info.get('is_passport') == 'True'
+    assert info.get('is_restricted') == 'False'
+    assert info.get('is_forbid') == 'False'
+    assert info.get('is_verified') == 'False'
+    assert info.get('is_km') == 'False'
+    assert info.get('is_business') == 'False'

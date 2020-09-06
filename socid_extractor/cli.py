@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
 import argparse
 import logging
 import sys
 
-from main import parse, extract
+from .main import parse, extract
 
-
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser(description='Extract accounts\' identifiers from pages.')
     parser.add_argument('url', help='url to parse')
     parser.add_argument('--cookies', default='', help='cookies to make http requests with auth')
@@ -35,3 +33,7 @@ if __name__ == '__main__':
     logging.info('Result\n' + '-'*40)
     for key, value in info.items():
         print('%s: %s' % (key, value))
+
+
+if __name__ == '__main__':
+    run()
