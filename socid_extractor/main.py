@@ -7,6 +7,9 @@ from http.cookies import SimpleCookie
 
 import requests
 
+from .utils import *
+
+
 schemes = {
     'Yandex Disk file': {
         'flags': ['@yandexdisk', 'yastatic.net'],
@@ -60,16 +63,59 @@ schemes = {
         }
     },
     'Yandex Collections': {
-        'flags': ['<meta name="collections"', 'https://yandex.uz/collections'],
+        'flags': ['<meta name="collections"', '/collections'],
         'regex': r'(?:id="restoreData">)(.+?)<\/script>',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: list(x['entities']['users'].values())[1],
+            json.dumps,
+        ],
         'fields': {
-            'id': lambda x: list(x['entities']['users'].values())[1].get('id'),
-            'yandex_uid': lambda x: list(x['entities']['users'].values())[1].get('uid'),
-            'username': lambda x: list(x['entities']['users'].values())[1].get('login'),
-            'name': lambda x: list(x['entities']['users'].values())[1].get('display_name'),
-            'yandex_public_id': lambda x: list(x['entities']['users'].values())[1].get('public_id'),
-        },
+            'id': lambda x: x.get('id'),
+            'yandex_public_id': lambda x: x.get('public_id'),
+            'fullname': lambda x: x.get('display_name'),
+            'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
+            'sex': lambda x: x.get('sex'),
+            'description': lambda x: x.get('description'),
+            'phone_id': lambda x: x.get('phone_id'),
+            'company_info': lambda x: x.get('company_info'),
+            'likes': lambda x: x['stats'].get('likes'),
+            'cards': lambda x: x['stats'].get('cards'),
+            'boards': lambda x: x['stats'].get('boards'),
+            # TODO: other stats
+            'is_passport': lambda x: x.get('is_passport'),
+            'is_restricted': lambda x: x.get('is_restricted'),
+            'is_forbid': lambda x: x.get('is_forbid'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'is_km': lambda x: x.get('is_km'),
+            'is_business': lambda x: x.get('is_business'),
+
+        }
+    },
+    'Yandex Collections API': {
+        'flags': ['channel_subscriptions', 'subscriptions_on_self_boards'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'fields': {
+            'yandex_public_id': lambda x: x.get('public_id'),
+            'fullname': lambda x: x.get('display_name'),
+            'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
+            'sex': lambda x: x.get('sex'),
+            'description': lambda x: x.get('description'),
+            'phone_id': lambda x: x.get('phone_id'),
+            'company_info': lambda x: x.get('company_info'),
+            'likes': lambda x: x['stats'].get('likes'),
+            'cards': lambda x: x['stats'].get('cards'),
+            'boards': lambda x: x['stats'].get('boards'),
+            # TODO: other stats
+            'is_passport': lambda x: x.get('is_passport'),
+            'is_restricted': lambda x: x.get('is_restricted'),
+            'is_forbid': lambda x: x.get('is_forbid'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'is_km': lambda x: x.get('is_km'),
+            'is_business': lambda x: x.get('is_business'),
+        }
     },
     'VK user profile': {
         'flags': ['var vk =', 'change_current_info'],
@@ -129,10 +175,8 @@ schemes = {
             'twitter_username': lambda x: x.get('twitterScreenName'),
             'is_suspended': lambda x: x.get('isSuspended'),
             'facebook_uid': lambda x: x.get('facebookAccountId'),
-            'is_suspended': lambda x: x.get('isSuspended'),
             'is_blocking': lambda x: x.get('isBlocking'),
             'is_muting': lambda x: x.get('isMuting'),
-            'is_suspended': lambda x: x.get('isSuspended'),
             'post_counts': lambda x: x.get('userPostCounts'),
         }
     },
@@ -320,7 +364,6 @@ schemes = {
             'is_verified_merchant': lambda x: x.get('is_verified_merchant'),
             'verified_identity': lambda x: check_empty_object(x.get('verified_identity')),
             'locale': lambda x: x.get('locale'),
-            'website': lambda x: x.get('domain_url'),
         }
     },
     'Reddit': {
@@ -480,22 +523,6 @@ schemes = {
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
 }
-
-
-def check_empty_object(res):
-    return res if res or type(res) == bool else None
-
-def extract_facebook_uid(link):
-    avatar_re = re.search(r'graph.facebook.com/(\w+)/picture', link)
-    if avatar_re:
-        return avatar_re.group(1)
-    return None
-
-def decode_ya_str(val):
-    try:
-        return val.encode('iso-8859-1').decode('utf-8')
-    except:
-        return val
 
 
 def parse_cookies(cookies_str):

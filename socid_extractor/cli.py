@@ -1,21 +1,24 @@
-#!/usr/bin/env python3
 import argparse
 import logging
 import sys
 
-from main import parse, extract
+from .main import parse, extract
 
-
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser(description='Extract accounts\' identifiers from pages.')
     parser.add_argument('url', help='url to parse')
     parser.add_argument('--cookies', default='', help='cookies to make http requests with auth')
-    parser.add_argument('--debug', action='store_true', help='log debug information')
+    parser.add_argument('-v', '--verbose', action='store_true', help='display verbose information')
+    parser.add_argument('-d', '--debug', action='store_true', help='display debug information')
     parser.add_argument('--file', action='store_true', help='load from file instead of URL')
 
     args = parser.parse_args()
 
-    log_level = logging.INFO if not args.debug else logging.DEBUG
+    log_level = logging.ERROR
+    if args.verbose:
+        log_level = logging.INFO
+    elif args.debug:
+        log_level = logging.DEBUG
 
     logging.basicConfig(level=log_level, format='-'*40 + '\n%(levelname)s: %(message)s')
 
@@ -35,3 +38,7 @@ if __name__ == '__main__':
     logging.info('Result\n' + '-'*40)
     for key, value in info.items():
         print('%s: %s' % (key, value))
+
+
+if __name__ == '__main__':
+    run()
