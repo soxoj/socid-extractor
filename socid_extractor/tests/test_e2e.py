@@ -350,9 +350,71 @@ def test_vimeo():
 
 def test_gravatar():
     info = extract(parse('https://en.gravatar.com/kostbebix.json')[0])
+
     assert info.get('gravatar_id') == '17467145'
     assert info.get('gravatar_username') == 'kostbebix'
     assert info.get('fullname') == 'kost BebiX'
     assert info.get('location') == 'Kiev, Ukraine'
     assert info.get('emails') == "['k.bx@ya.ru']"
     assert info.get('links') == "['http://www.blogger.com/profile/05385916050136636671', 'http://twitter.com/kost_bebix']"
+
+
+def test_pinterest_api():
+    info = extract(parse('https://www.pinterest.ru/resource/UserResource/get/?source_url=%2Fgergelysndorszendrenyi%2Fboards%2F&data=%7B%22options%22%3A%7B%22isPrefetch%22%3Afalse%2C%22username%22%3A%22gergelysndorszendrenyi%22%2C%22field_set_key%22%3A%22profile%22%7D%2C%22context%22%3A%7B%7D%7D&_=1599342485938')[0])
+
+    assert info.get('pinterest_id') == '730849983187756836'
+    assert info.get('pinterest_username') == 'gergelysndorszendrenyi'
+    assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
+    assert info.get('type') == 'user'
+    assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
+    assert info.get('country') == None
+    assert info.get('is_indexed') == 'True'
+    assert info.get('is_partner') == 'False'
+    assert info.get('is_tastemaker') == 'False'
+    assert info.get('is_indexed') == 'True'
+    assert info.get('has_board') == 'True'
+    assert info.get('has_board') == 'True'
+    assert info.get('is_verified_merchant') == 'False'
+    assert info.get('website') == 'https://plus.google.com/106803550602898494752'
+    assert info.get('last_pin_save_datetime') is not None
+    assert info.get('is_website_verified') == 'False'
+    assert info.get('follower_count') == '2'
+    assert info.get('group_board_count') == '0'
+    assert info.get('following_count') == '16'
+    assert info.get('board_count') == '11'
+    assert info.get('pin_count') == '103'
+
+
+def test_pinterest_profile():
+    info = extract(parse('https://www.pinterest.ru/gergelysndorszendrenyi/boards/')[0])
+
+    assert info.get('pinterest_id') == None
+    assert info.get('pinterest_username') == 'gergelysndorszendrenyi'
+    assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
+    assert info.get('type') == None
+    assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
+    assert info.get('country') == 'HU'
+    assert info.get('is_indexed') == 'True'
+    assert info.get('is_partner') == None
+    assert info.get('is_tastemaker') == None
+    assert info.get('is_indexed') == 'True'
+    assert info.get('is_website_verified') == 'False'
+    assert info.get('follower_count') == '2'
+    assert info.get('following_count') == '16'
+    assert info.get('board_count') == '11'
+    assert info.get('pin_count') == '103'
+
+
+def test_pinterest_board():
+    info = extract(parse('https://www.pinterest.ru/gergelysndorszendrenyi/garden-ideas/')[0])
+
+    assert info.get('pinterest_id') == '730849983187756836'
+    assert info.get('pinterest_username') == 'gergelysndorszendrenyi'
+    assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
+    assert info.get('type') == 'user'
+    assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
+    assert info.get('country') == 'HU'
+    assert info.get('is_indexed') == 'True'
+    assert info.get('is_partner') == 'False'
+    assert info.get('is_tastemaker') == 'False'
+    assert info.get('locale') == 'hu-HU'

@@ -134,7 +134,6 @@ schemes = {
             'is_muting': lambda x: x.get('isMuting'),
             'is_suspended': lambda x: x.get('isSuspended'),
             'post_counts': lambda x: x.get('userPostCounts'),
-            'all': lambda x: x,
         }
     },
     'Odnoklassniki': {
@@ -254,7 +253,42 @@ schemes = {
             'is_service': lambda x: x['global']['targetUser']['is_staff'],
         }
     },
-    # TODO: Pinterest API request
+    'Pinterest API': {
+        'flags': ['{"resource_response":{"status"'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['resource_response']['data'],
+            json.dumps,
+        ],
+        'fields': {
+            'pinterest_id': lambda x: x.get('id'),
+            'pinterest_username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('full_name'),
+            'bio': lambda x: x.get('about'),
+            'type': lambda x: x.get('type'),
+            'image': lambda x: x.get('image_xlarge_url'),
+            'board_count': lambda x: x.get('board_count'),
+            'pin_count': lambda x: x.get('pin_count'),
+            'location': lambda x: x.get('location'),
+            'country': lambda x: x.get('country'),
+            'follower_count': lambda x: x.get('follower_count'),
+            'following_count': lambda x: x.get('following_count'),
+            'group_board_count': lambda x: x.get('group_board_count'),
+            'last_pin_save_datetime': lambda x: x.get('last_pin_save_time'),
+            'is_website_verified': lambda x: x.get('domain_verified'),
+            'website': lambda x: x.get('website_url'),
+            'has_board': lambda x: x.get('has_board'),
+            'has_catalog': lambda x: x.get('has_catalog'),
+            'is_indexed': lambda x: x.get('indexed'),
+            'is_partner': lambda x: x.get('is_partner'),
+            'is_tastemaker': lambda x: x.get('is_tastemaker'),
+            'is_verified_merchant': lambda x: x.get('is_verified_merchant'),
+            'verified_identity': lambda x: check_empty_object(x.get('verified_identity')),
+            'locale': lambda x: x.get('locale'),
+        }
+    },
     'Pinterest profile/board page': {
         'flags': ['https://s.pinimg.com/webapp/'],
         'regex': r'<script id="initial-state" type="application/json">({.+?})</script>',
@@ -267,7 +301,7 @@ schemes = {
         ],
         'fields': {
             'pinterest_id': lambda x: x.get('id'),
-            'pintereset_username': lambda x: x.get('username'),
+            'pinterest_username': lambda x: x.get('username'),
             'fullname': lambda x: x.get('full_name'),
             'bio': lambda x: x.get('about'),
             'type': lambda x: x.get('type'),
@@ -278,13 +312,13 @@ schemes = {
             'country': lambda x: x.get('country'),
             'follower_count': lambda x: x.get('follower_count'),
             'following_count': lambda x: x.get('following_count'),
-            'website_is_verified': lambda x: x.get('domain_verified'),
+            'is_website_verified': lambda x: x.get('domain_verified'),
             'website': lambda x: x.get('domain_url'),
             'is_indexed': lambda x: x.get('indexed'),
             'is_partner': lambda x: x.get('is_partner'),
             'is_tastemaker': lambda x: x.get('is_tastemaker'),
             'is_verified_merchant': lambda x: x.get('is_verified_merchant'),
-            'verified_identity': lambda x: x.get('verified_identity'),
+            'verified_identity': lambda x: check_empty_object(x.get('verified_identity')),
             'locale': lambda x: x.get('locale'),
             'website': lambda x: x.get('domain_url'),
         }
@@ -447,6 +481,9 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
 }
 
+
+def check_empty_object(res):
+    return res if res or type(res) == bool else None
 
 def extract_facebook_uid(link):
     avatar_re = re.search(r'graph.facebook.com/(\w+)/picture', link)
