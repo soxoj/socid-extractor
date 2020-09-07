@@ -25,6 +25,8 @@ The latest development version can be installed directly from GitHub:
     $ pip3 install -U git+https://github.com/soxoj/socid_extractor.git
 
 ## Using
+
+As command-line tool:
 ```
 $ socid_extractor https://vimeo.com/alexaimephotography
 uid: 75857717
@@ -34,6 +36,14 @@ location: France
 created_at: 2017-12-06 06:49:28
 is_staff: False
 links: ['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']
+```
+
+As Python library:
+```
+>>> import socid_extractor, requests
+>>> r = requests.get('https://vimeo.com/alexaimephotography')
+>>> socid_extractor.extract(r.text)
+{'uid': '75857717', 'name': 'AlexAimePhotography', 'username': 'alexaimephotography', 'location': 'France', 'created_at': '2017-12-06 06:49:28', 'is_staff': 'False', 'links': "['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']"}
 ```
 
 ## Platforms
