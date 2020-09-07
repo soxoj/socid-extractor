@@ -436,3 +436,21 @@ def test_yandex_collections_api():
     assert info.get('is_verified') == 'False'
     assert info.get('is_km') == 'False'
     assert info.get('is_business') == 'False'
+
+
+def test_tiktok():
+    info = extract(parse('https://www.tiktok.com/@red')[0])
+
+    assert info.get('tiktok_id') == '6667977707978850310'
+    assert info.get('tiktok_username') == 'red'
+    assert info.get('fullname') == '(RED)'
+    assert info.get('bio') == 'Whether AIDS or COVID-19, we can’t beat pandemics without strong health systems.'
+    assert info.get('image') == 'https://p16-sign-va.tiktokcdn.com/musically-maliva-obj/1640501411023894~c5_720x720.jpeg?x-expires=1599584400&x-signature=TSasAcXyRvd54GIL%2FxrCrMdRRk0%3D'
+    assert info.get('is_verified') == 'True'
+    assert info.get('is_secret') == 'False'
+    assert info.get('sec_uid') == 'MS4wLjABAAAAVAp3JR-xHP7UnaDt4S9T9eyPqRDwgGiBRnzdZRm63jIGWy5s39a027nKJlu_UjOZ'
+    assert info.get('followingCount') == '391'
+    assert info.get('followerCount') == '36800'
+    assert info.get('heartCount') == '275900'
+    assert info.get('videoCount') == '100'
+    assert info.get('diggCount') == '0'

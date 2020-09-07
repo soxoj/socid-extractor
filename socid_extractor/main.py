@@ -421,6 +421,31 @@ schemes = {
             'username': lambda x: x[-1]['data'][0]['username'],
         }
     },
+    'TikTok': {
+        'flags': ['tiktokcdn.com/tiktok/falcon/'],
+        'regex': r'<script id="__NEXT_DATA__" type="application/json" crossorigin="anonymous">(.+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['props']['pageProps']['userInfo'],
+            json.dumps,
+        ],
+        'fields': {
+            'tiktok_id': lambda x: x['user']['id'],
+            'tiktok_username': lambda x: x['user']['uniqueId'],
+            'fullname': lambda x: x['user']['nickname'],
+            'bio': lambda x: x['user']['signature'],
+            'image': lambda x: x['user']['avatarMedium'],
+            'is_verified': lambda x: x['user']['verified'],
+            'is_secret': lambda x: x['user']['secret'],
+            'sec_uid': lambda x: x['user']['secUid'],
+            'followingCount': lambda x: x['stats']['followingCount'],
+            'followerCount': lambda x: x['stats']['followerCount'],
+            'heartCount': lambda x: x['stats']['heartCount'],
+            'videoCount': lambda x: x['stats']['videoCount'],
+            'diggCount': lambda x: x['stats']['diggCount'],
+        }
+    },
     'VC.ru': {
         'flags': ['property="og:site_name" content="vc.ru"'],
         'regex': r'({"module.page":{.+});',
