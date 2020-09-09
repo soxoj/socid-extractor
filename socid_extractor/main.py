@@ -334,7 +334,7 @@ schemes = {
         }
     },
     'Pinterest profile/board page': {
-        'flags': ['https://s.pinimg.com/webapp/'],
+        'flags': ['https://s.pinimg.com/webapp/', 'content="Pinterest"'],
         'regex': r'<script id="initial-state" type="application/json">({.+?})</script>',
         'extract_json': True,
         'transforms': [
@@ -427,7 +427,7 @@ schemes = {
         'extract_json': True,
         'transforms': [
             json.loads,
-            lambda x: x['props']['pageProps']['userInfo'],
+            lambda x: x['props']['pageProps'].get('userInfo', {}),
             json.dumps,
         ],
         'fields': {
@@ -595,12 +595,15 @@ def extract(page):
 
                 json_data = json.loads(extracted)
 
-                loaded_json = json.dumps(json_data, indent=4, sort_keys=True)
+                if json_data == {}:
+                    continue
 
-                logging.debug(loaded_json)
+                loaded_json_str = json.dumps(json_data, indent=4, sort_keys=True)
+
+                logging.debug(loaded_json_str)
                 if logging.root.level == logging.DEBUG:
                     with open('debug_extracted.json', 'w') as f:
-                        f.write(loaded_json)
+                        f.write(loaded_json_str)
 
                 for name, get_field in scheme_data['fields'].items():
                     value = get_field(json_data)
