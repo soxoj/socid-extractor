@@ -21,10 +21,10 @@ def test_vk_user_profile_no_username():
 
 
 def test_yandex_disk():
-    info = extract(parse('https://yadi.sk/d/KDk-D4vhGFbhb')[0])
+    info = extract(parse('https://yadi.sk/d/4qSag9y57pG7Bg')[0])
 
-    assert info.get('yandex_uid') == '106917461'
-    assert info.get('name') == 'samografova.viktoria'
+    assert info.get('yandex_uid') == '860520577'
+    assert info.get('name') == 'УРПН Эпид. надзор Яшин Р.С'
 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
@@ -335,6 +335,7 @@ def test_eyeem():
     assert info.get('facebook_uid') == '1610716256'
 
 
+@pytest.mark.skip(reason="Broken, now API only: https://api.vimeo.com/users/alexaimephotography")
 def test_vimeo():
     info = extract(parse('https://vimeo.com/alexaimephotography')[0])
 
@@ -445,12 +446,12 @@ def test_tiktok():
     assert info.get('tiktok_username') == 'red'
     assert info.get('fullname') == '(RED)'
     assert info.get('bio') == 'Whether AIDS or COVID-19, we can’t beat pandemics without strong health systems.'
-    assert info.get('image') == 'https://p16-sign-va.tiktokcdn.com/musically-maliva-obj/1640501411023894~c5_720x720.jpeg?x-expires=1599584400&x-signature=TSasAcXyRvd54GIL%2FxrCrMdRRk0%3D'
+    assert 'tiktokcdn.com' in info.get('image')
     assert info.get('is_verified') == 'True'
     assert info.get('is_secret') == 'False'
     assert info.get('sec_uid') == 'MS4wLjABAAAAVAp3JR-xHP7UnaDt4S9T9eyPqRDwgGiBRnzdZRm63jIGWy5s39a027nKJlu_UjOZ'
-    assert info.get('followingCount') == '391'
-    assert info.get('followerCount') == '36800'
-    assert info.get('heartCount') == '275900'
-    assert info.get('videoCount') == '100'
+    assert int(info.get('followingCount')) > 300
+    assert int(info.get('followerCount')) > 36000
+    assert int(info.get('heartCount')) > 275900
+    assert int(info.get('videoCount')) > 50
     assert info.get('diggCount') == '0'
