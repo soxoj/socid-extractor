@@ -509,7 +509,7 @@ schemes = {
         'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
     },
     'Vimeo': {
-        'flags': ['i.vimeocdn.com', 'vimeo://app.vimeo.com/users/'],
+        'flags': ['https://i.vimeocdn.com/favicon/main-touch'],
         'regex': r'"app_config":({"user":.+?})},\"coach_notes',
         'extract_json': True,
         'fields': {
