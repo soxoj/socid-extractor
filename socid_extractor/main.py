@@ -383,7 +383,7 @@ schemes = {
             'is_following': lambda x: x['isFollowing'],
             'has_user_profile': lambda x: x['hasUserProfile'],
             'hide_from_robots': lambda x: x['hideFromRobots'],
-            'created_utc': lambda x: x['createdUtc'],
+            'created_utc': lambda x: timestamp_to_datetime(x['createdUtc']),
             'total_karma': lambda x: x['totalKarma'],
             'post_karma': lambda x: x['postKarma'],
         },
@@ -541,6 +541,31 @@ schemes = {
             'website': lambda x: x['website'],
             'links': lambda x: [y['value'] for y in x['socialLinks']],
             'tagline': lambda x: x['tagline'],
+        }
+    },
+    'Flickr': {
+        'flags': ['api.flickr.com'],
+        'regex': r'modelExport:(.*),[\s\S]*auth',
+        'extract_json': True,
+        'transforms': [
+            lambda x: x.replace('%20', ' '),
+            lambda x: x.replace('%2C', ','),
+        ],
+        'fields': {
+            'pathAlias': lambda x: x['main']['photostream-models'][0]['owner']['pathAlias'],
+            'username': lambda x: x['main']['photostream-models'][0]['owner']['username'],
+            'realname': lambda x: x['main']['photostream-models'][0]['owner'].get('realname'),
+            'location': lambda x: x['main']['person-profile-models'][0].get('location'),
+            
+            'followerCount': lambda x: x['main']['person-contacts-count-models'][0]['followerCount'],
+            'followingCount': lambda x: x['main']['person-contacts-count-models'][0]['followingCount'],
+
+            'dateCreated': lambda x: timestamp_to_datetime(x['main']['photostream-models'][0]['owner']['dateCreated']),
+            'nsid': lambda x: x['main']['photostream-models'][0]['owner']['id'],
+
+            'isPro': lambda x: x['main']['photostream-models'][0]['owner'].get('isPro'),
+            'isDeleted': lambda x: x['main']['photostream-models'][0]['owner'].get('isDeleted'),
+            'isAdFree': lambda x: x['main']['photostream-models'][0]['owner'].get('isAdFree'),            
         }
     }
 }
