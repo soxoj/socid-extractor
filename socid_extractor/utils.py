@@ -21,3 +21,7 @@ def decode_ya_str(val):
         return val.encode('iso-8859-1').decode('utf-8')
     except:
         return val
+
+def timestamp_to_datetime(timestamp):
+    dt = datetime.fromtimestamp(timestamp)
+    return dt
