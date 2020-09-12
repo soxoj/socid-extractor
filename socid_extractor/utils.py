@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 
 def check_empty_object(res):
@@ -23,5 +24,8 @@ def decode_ya_str(val):
         return val
 
 def timestamp_to_datetime(timestamp):
-    dt = datetime.fromtimestamp(timestamp)
-    return dt
+    t = int(timestamp)
+    if not t:
+        return ''
+    else:
+        return datetime.fromtimestamp(t)
