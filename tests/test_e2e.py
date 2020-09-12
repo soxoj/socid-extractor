@@ -312,7 +312,7 @@ def test_deviantart():
     info = extract(parse('https://www.deviantart.com/muse1908')[0])
 
     assert info.get('country') == 'France'
-    assert info.get('created_at') in ('2005-06-16 18:17:41', '2005-06-16 14:17:41')
+    assert '2005-06-16' in info.get('created_at')
     assert info.get('gender') == 'female'
     assert info.get('website') == 'www.patreon.com/musemercier'
     assert info.get('username') == 'Muse1908'
@@ -456,9 +456,9 @@ def test_tiktok():
     assert int(info.get('video_count')) > 50
     assert info.get('digg_count') == '0'
 
+
 def test_flickr():
     info = extract(parse('https://www.flickr.com/photos/alexaimephotography2020/')[0])
-
 
     assert info.get('flickr_id') == '187482857@N04'
     assert info.get('flickr_username') == 'alexaimephotography2020'
@@ -471,3 +471,27 @@ def test_flickr():
     assert info.get('created_at') in ('2020-03-17 07:18:59', '2020-03-17 04:18:59')
     assert info.get('is_pro') == 'False'
     assert info.get('is_deleted') == 'False'
+
+def test_telegram():
+    info = extract(parse('https://t.me/BotFather')[0])
+
+    assert info.get('telegram_username') == 'BotFather'
+    assert info.get('about') == 'BotFather is the one bot to rule them all. Use it to create new bot accounts and manage your existing bots.'
+
+
+def test_mssg():
+    info = extract(parse('https://mssg.me/mr.adam')[0])
+
+    assert info.get('fullname') == 'Mr.Adam'
+    assert info.get('about') == 'Бизнесмен'
+    assert info.get('messengers') == "['whatsapp', 'messenger']"
+    assert info.get('messenger_values') == "['+77026924715', 'adamcigelnik']"
+
+
+def test_patreon():
+    info = extract(parse('https://www.patreon.com/annetlovart')[0])
+
+    assert info.get('patreon_id') == '33913189'
+    assert info.get('patreon_username') == 'annetlovart'
+    assert info.get('fullname') == 'Annet Lovart'
+    assert info.get('links') == "['https://www.facebook.com/322598031832479', 'https://www.instagram.com/annet_lovart', 'https://twitter.com/annet_lovart', 'https://youtube.com/channel/UClDg4ntlOW_1j73zqSJxHHQ']"
