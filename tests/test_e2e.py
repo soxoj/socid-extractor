@@ -312,7 +312,7 @@ def test_deviantart():
     info = extract(parse('https://www.deviantart.com/muse1908')[0])
 
     assert info.get('country') == 'France'
-    assert int(info.get('registered_for_seconds')) > 476254777
+    assert info.get('created_at') in ('2005-06-16 18:17:41', '2005-06-16 14:17:41')
     assert info.get('gender') == 'female'
     assert info.get('website') == 'www.patreon.com/musemercier'
     assert info.get('username') == 'Muse1908'

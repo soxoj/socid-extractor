@@ -447,7 +447,7 @@ schemes = {
         }
     },
     'VC.ru': {
-        'flags': ['property="og:site_name" content="vc.ru"'],
+        'flags': ['property="og:site_name" content="vc.ru"', '"subsite":{"id"'],
         'regex': r'({"module.page":{.+});',
         'extract_json': True,
         'fields': {
@@ -534,7 +534,7 @@ schemes = {
         ],
         'fields': {
             'country': lambda x: x['country'],
-            'registered_for_seconds': lambda x: timestamp_to_datetime(x['deviantFor']),
+            'created_at': lambda x: timestamp_to_datetime(x['deviantFor']),
             'gender': lambda x: x['gender'],
             'username': lambda x: x['username'],
             'twitter_username': lambda x: x['twitterUsername'],
