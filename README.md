@@ -14,10 +14,6 @@ Extract accounts' identifiers and other info from personal pages on popular site
 
 [Maigret](https://github.com/soxoj/maigret) - powerful namechecker, generate a report with all available info from accounts found. 
 
-### Other extract methods
-
-- [Obtaining Google IDs from albums and contacts](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43)
-
 ## Installation
 
 The latest development version can be installed directly from GitHub:
@@ -26,7 +22,7 @@ The latest development version can be installed directly from GitHub:
 
 ## Using
 
-As command-line tool:
+As a command-line tool:
 ```
 $ socid_extractor https://vimeo.com/alexaimephotography
 uid: 75857717
@@ -38,7 +34,7 @@ is_staff: False
 links: ['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']
 ```
 
-As Python library:
+As a Python library:
 ```
 >>> import socid_extractor, requests
 >>> r = requests.get('https://vimeo.com/alexaimephotography')
@@ -46,8 +42,21 @@ As Python library:
 {'uid': '75857717', 'name': 'AlexAimePhotography', 'username': 'alexaimephotography', 'location': 'France', 'created_at': '2017-12-06 06:49:28', 'is_staff': 'False', 'links': "['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']"}
 ```
 
-## Platforms
+## Sites
 
-Over 20 services: VK (user), OK (user), Facebook (user, group), Google (all documents, maps contributions), Yandex (disk, albums, znatoki, music, realty, collections), Mail.ru (my.mail.ru user mainpage, photo, video, games, communities), Instagram, Medium, Reddit, GitHub, Bitbucket, Gravatar, Habrahabr, Behance, 500px, Steam, Last.fm, Blogger, SoundCloud, D3, VC.ru, LiveJournal, Keybase, Wikimapia, etc.
+- Google (all documents pages, maps contributions), cookies required
+- Yandex (disk, albums, znatoki, music, realty, collections), cookies required to prevent captcha blocks
+- Facebook (user & group pages)
+- Instagram
+- Reddit
+- Medium
+- Flickr
+- TikTok
+- GitHub
+- VK (user page)
+- OK (user page)
+- Mail.ru (my.mail.ru user mainpage, photo, video, games, communities)
 
-Check `tests/test_e2e.py` for examples.
+...and many others.
+
+Check [tests file](./tests/test_e2e.py) for extracted data examples.
