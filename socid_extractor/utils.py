@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 
 def check_empty_object(res):
@@ -21,3 +22,11 @@ def decode_ya_str(val):
         return val.encode('iso-8859-1').decode('utf-8')
     except:
         return val
+
+def timestamp_to_datetime(t):
+    if not t:
+        return ''
+    else:
+        if len(str(t)) < 10:
+            t = round(datetime.today().timestamp()) - t #погрешность в секунду, лол
+        return datetime.fromtimestamp(int(t))
