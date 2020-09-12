@@ -89,7 +89,7 @@ def test_reddit():
     assert info.get('is_mod') == 'True'
     assert info.get('is_following') == 'True'
     assert info.get('has_user_profile') == 'True'
-    assert info.get('created_at') == '2018-01-06 04:22:05'
+    assert info.get('created_at') in ('2018-01-06 04:22:05', '2018-01-06 01:22:05')
     assert info.get('hide_from_robots') == 'False'
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
@@ -468,6 +468,6 @@ def test_flickr():
     assert int(info.get('photo_count')) > 140
     assert int(info.get('follower_count')) > 180
     assert int(info.get('following_count')) > 70
-    assert info.get('created_at') == '2020-03-17 07:18:59'
+    assert info.get('created_at') in ('2020-03-17 07:18:59', '2020-03-17 04:18:59')
     assert info.get('is_pro') == 'False'
     assert info.get('is_deleted') == 'False'
