@@ -156,7 +156,7 @@ schemes = {
             'eyeem_username': lambda x: list(x.values())[0]['nickname'],
             'fullname': lambda x: list(x.values())[0]['fullname'],
             'bio': lambda x: list(x.values())[0]['description'],
-            'followers': lambda x: list(x.values())[0]['totalFollowers'],
+            'follower_count': lambda x: list(x.values())[0]['totalFollowers'],
             'friends': lambda x: list(x.values())[0]['totalFriends'],
             'liked_photos': lambda x: list(x.values())[0]['totalLikedPhotos'],
             'photos': lambda x: list(x.values())[0]['totalPhotos'],
@@ -383,7 +383,7 @@ schemes = {
             'is_following': lambda x: x['isFollowing'],
             'has_user_profile': lambda x: x['hasUserProfile'],
             'hide_from_robots': lambda x: x['hideFromRobots'],
-            'created_utc': lambda x: timestamp_to_datetime(x['createdUtc']),
+            'created_at': lambda x: timestamp_to_datetime(x['createdUtc']),
             'total_karma': lambda x: x['totalKarma'],
             'post_karma': lambda x: x['postKarma'],
         },
@@ -439,11 +439,11 @@ schemes = {
             'is_verified': lambda x: x['user']['verified'],
             'is_secret': lambda x: x['user']['secret'],
             'sec_uid': lambda x: x['user']['secUid'],
-            'followingCount': lambda x: x['stats']['followingCount'],
-            'followerCount': lambda x: x['stats']['followerCount'],
-            'heartCount': lambda x: x['stats']['heartCount'],
-            'videoCount': lambda x: x['stats']['videoCount'],
-            'diggCount': lambda x: x['stats']['diggCount'],
+            'following_count': lambda x: x['stats']['followingCount'],
+            'follower_count': lambda x: x['stats']['followerCount'],
+            'heart_count': lambda x: x['stats']['heartCount'],
+            'video_count': lambda x: x['stats']['videoCount'],
+            'digg_count': lambda x: x['stats']['diggCount'],
         }
     },
     'VC.ru': {
@@ -544,28 +544,30 @@ schemes = {
         }
     },
     'Flickr': {
-        'flags': ['api.flickr.com'],
+        'flags': ['api.flickr.com', 'photostream-models', 'person-profile-models'],
         'regex': r'modelExport:(.*),[\s\S]*auth',
         'extract_json': True,
         'transforms': [
             lambda x: x.replace('%20', ' '),
             lambda x: x.replace('%2C', ','),
+            json.loads,
+            lambda x: x['main'],
+            json.dumps,
         ],
         'fields': {
-            'pathAlias': lambda x: x['main']['photostream-models'][0]['owner']['pathAlias'],
-            'username': lambda x: x['main']['photostream-models'][0]['owner']['username'],
-            'realname': lambda x: x['main']['photostream-models'][0]['owner'].get('realname'),
-            'location': lambda x: x['main']['person-profile-models'][0].get('location'),
-            
-            'followerCount': lambda x: x['main']['person-contacts-count-models'][0]['followerCount'],
-            'followingCount': lambda x: x['main']['person-contacts-count-models'][0]['followingCount'],
-
-            'dateCreated': lambda x: timestamp_to_datetime(x['main']['photostream-models'][0]['owner']['dateCreated']),
-            'nsid': lambda x: x['main']['photostream-models'][0]['owner']['id'],
-
-            'isPro': lambda x: x['main']['photostream-models'][0]['owner'].get('isPro'),
-            'isDeleted': lambda x: x['main']['photostream-models'][0]['owner'].get('isDeleted'),
-            'isAdFree': lambda x: x['main']['photostream-models'][0]['owner'].get('isAdFree'),            
+            'flickr_id': lambda x: x['photostream-models'][0]['owner']['id'],
+            'flickr_username': lambda x: x['photostream-models'][0]['owner'].get('pathAlias'),
+            'flickr_nickname': lambda x: x['photostream-models'][0]['owner']['username'],
+            'fullname': lambda x: x['photostream-models'][0]['owner'].get('realname'),
+            'location': lambda x: x['person-profile-models'][0].get('location'),
+            'image': lambda x: 'https:' + x['photostream-models'][0]['owner']['buddyicon']['retina'],
+            'photo_count': lambda x: x['person-profile-models'][0]['photoCount'],
+            'follower_count': lambda x: x['person-contacts-count-models'][0]['followerCount'],
+            'following_count': lambda x: x['person-contacts-count-models'][0]['followingCount'],
+            'created_at': lambda x: timestamp_to_datetime(x['photostream-models'][0]['owner'].get('dateCreated', 0)),
+            'is_pro': lambda x: x['photostream-models'][0]['owner'].get('isPro'),
+            'is_deleted': lambda x: x['photostream-models'][0]['owner'].get('isDeleted'),
+            'is_ad_free': lambda x: x['photostream-models'][0]['owner'].get('isAdFree'),
         }
     }
 }

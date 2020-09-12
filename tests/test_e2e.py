@@ -89,7 +89,7 @@ def test_reddit():
     assert info.get('is_mod') == 'True'
     assert info.get('is_following') == 'True'
     assert info.get('has_user_profile') == 'True'
-    assert info.get('created_utc') == '1515201725'
+    assert info.get('created_at') in ('2018-01-06 04:22:05', '2018-01-06 01:22:05')
     assert info.get('hide_from_robots') == 'False'
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
@@ -328,7 +328,7 @@ def test_eyeem():
     assert info.get('eyeem_username') == 'blue'
     assert info.get('fullname') == 'Blue Lee'
     assert info.get('bio') == 'hello!^_^'
-    assert info.get('followers') == '8'
+    assert info.get('follower_count') == '8'
     assert info.get('friends') == '0'
     assert info.get('liked_photos') == '0'
     assert info.get('photos') == '3'
@@ -450,8 +450,24 @@ def test_tiktok():
     assert info.get('is_verified') == 'True'
     assert info.get('is_secret') == 'False'
     assert info.get('sec_uid') == 'MS4wLjABAAAAVAp3JR-xHP7UnaDt4S9T9eyPqRDwgGiBRnzdZRm63jIGWy5s39a027nKJlu_UjOZ'
-    assert int(info.get('followingCount')) > 300
-    assert int(info.get('followerCount')) > 36000
-    assert int(info.get('heartCount')) > 275900
-    assert int(info.get('videoCount')) > 50
-    assert info.get('diggCount') == '0'
+    assert int(info.get('following_count')) > 300
+    assert int(info.get('follower_count')) > 36000
+    assert int(info.get('heart_count')) > 275900
+    assert int(info.get('video_count')) > 50
+    assert info.get('digg_count') == '0'
+
+def test_flickr():
+    info = extract(parse('https://www.flickr.com/photos/alexaimephotography2020/')[0])
+
+
+    assert info.get('flickr_id') == '187482857@N04'
+    assert info.get('flickr_username') == 'alexaimephotography2020'
+    assert info.get('flickr_nickname') == 'aaphotography2020'
+    assert info.get('fullname') == 'alexaim%E9 photography'
+    assert info.get('image') == 'https://farm66.staticflickr.com/65535/buddyicons/187482857@N04_r.jpg?1584445364#187482857@N04'
+    assert int(info.get('photo_count')) > 140
+    assert int(info.get('follower_count')) > 180
+    assert int(info.get('following_count')) > 70
+    assert info.get('created_at') in ('2020-03-17 07:18:59', '2020-03-17 04:18:59')
+    assert info.get('is_pro') == 'False'
+    assert info.get('is_deleted') == 'False'
