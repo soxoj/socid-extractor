@@ -23,9 +23,10 @@ def decode_ya_str(val):
     except:
         return val
 
-def timestamp_to_datetime(timestamp):
-    t = int(timestamp)
+def timestamp_to_datetime(t):
     if not t:
         return ''
     else:
-        return datetime.fromtimestamp(t)
+        if len(str(t)) < 10:
+            t = round(datetime.today().timestamp()) - t #погрешность в секунду, лол
+        return datetime.fromtimestamp(int(t))
