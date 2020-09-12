@@ -287,7 +287,7 @@ schemes = {
         'regex': r'itemtype="http:\/\/schema\.org\/Person"[\s\S]+?https:\/\/plus\.google\.com\/(?P<gaia_id>\d+)">[\s\S]+?itemprop="name" content="(?P<name>.+?)"'
     },
     'Bitbucket': {
-        'flags': ['bitbucket.org/account'],
+        'flags': ['https://api.bitbucket.org'],
         'regex': r'({.+?"section": {"profile.+?"whats_new_feed":.+?}});',
         'extract_json': True,
         'fields': {
@@ -534,7 +534,7 @@ schemes = {
         ],
         'fields': {
             'country': lambda x: x['country'],
-            'registered_for_seconds': lambda x: x['deviantFor'],
+            'registered_for_seconds': lambda x: timestamp_to_datetime(x['deviantFor']),
             'gender': lambda x: x['gender'],
             'username': lambda x: x['username'],
             'twitter_username': lambda x: x['twitterUsername'],
