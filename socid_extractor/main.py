@@ -576,27 +576,25 @@ schemes = {
         'extract_json': True,
         'fields': {
             'fullname': lambda x: x['card']['profile']['fullname'],
-            'category': lambda x: x['card']['profile']['category'],
+            'about': lambda x: x['card']['profile']['category'],
             'messengers': lambda x: [y.get('messenger') for y in x['card']['messengers']],
             'messenger_values': lambda x: [y.get('name') for y in x['card']['messengers']],
        }
     },
-    # Для использования api берем id, вставляем сюда https://www.patreon.com/api/user/ , например https://www.patreon.com/api/user/33913189
     'Patreon': {
         'flags': ['www.patreon.com/api'],
         'regex': r'Object.assign\(window.patreon.bootstrap, ([\s\S]*)\);[\s\S]*Object.assign\(window.patreon.campaignFeatures, {}\);',
         'extract_json': True,
         'fields': {
-            'full_name': lambda x: x['campaign']['included'][0]['attributes']['full_name'],
-            'vanity': lambda x: x['campaign']['included'][0]['attributes']['vanity'],
-            'id': lambda x: x['campaign']['included'][0]['id'],
-            #'app_name': lambda x : [ y['attributes'].get('app_name') for y in x['campaign']['included'] if y['attributes'].get('app_name')],
-            'external_profile_url': lambda x : [ y['attributes'].get('external_profile_url') for y in x['campaign']['included'] if y['attributes'].get('app_name')],
+            'patreon_id': lambda x: x['campaign']['included'][0]['id'],
+            'patreon_username': lambda x: x['campaign']['included'][0]['attributes']['vanity'],
+            'fullname': lambda x: x['campaign']['included'][0]['attributes']['full_name'],
+            'links': lambda x : [ y['attributes'].get('external_profile_url') for y in x['campaign']['included'] if y['attributes'].get('app_name')],
         }
     },
     'Telegram': {
         'flags': ['tg://resolve?domain='],
-        'regex': r'"og:title" content="(?P<name>.+)">[\s\S]*"og:description" content="(?P<description>.+)">',
+        'regex': r'"og:title" content="(?P<telegram_username>.+)">[\s\S]*"og:description" content="(?P<about>.+)">',
     }
 }
 
