@@ -595,6 +595,29 @@ schemes = {
     'Telegram': {
         'flags': ['tg://resolve?domain='],
         'regex': r'"og:title" content="(?P<telegram_username>.+)">[\s\S]*"og:description" content="(?P<about>.+)">',
+    },
+    'BuzzFeed': {
+        'flags': ['window.BZFD = window.BZFD'],
+        'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['props']['pageProps'],
+            json.dumps,
+        ],
+        'fields':{
+            'user_uuid': lambda x: x['user_uuid'],
+            'id': lambda x: x['user']['id'],
+            'displayName': lambda x: x['user']['displayName'],
+            'buzzfeed_username': lambda x: x['user']['username'],
+            'bio': lambda x: x['user']['bio'],
+            'posts': lambda x: x['buzz_count'],
+            'memberSince': lambda x: timestamp_to_datetime(x['user']['memberSince']),
+            'isCommunityUser': lambda x: x['user']['isCommunityUser'],
+            'deleted': lambda x: x['user']['deleted'],
+            #'social_names': lambda x: [y.get('name') for y in x['user']['social']],
+            'social_links': lambda x: [y.get('url') for y in x['user']['social']],     
+        }
     }
 }
 
