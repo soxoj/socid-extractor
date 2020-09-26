@@ -42,7 +42,12 @@ def run():
     if args.match:
         extracted = []
         for acc in args.match:
-            extracted.append(extract(get_site_response(acc, args.cookies)))
+            extracted_acc_info = extract(get_site_response(acc, args.cookies))
+            if not extracted_acc_info:
+                print(f'No info extracted by link {acc}\n'
+                    'Please check if user exists and socid_extractor supports this site.')
+                return
+            extracted.append(extracted_acc_info)
 
         all_fields = list(reduce(lambda x, y: x.union(y), [set(a.keys()) for a in extracted]))
         # pair matching
