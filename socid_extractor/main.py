@@ -389,7 +389,7 @@ schemes = {
         },
     },
     'Steam': {
-        'flags': ['store.steampowered.com'],
+        'flags': ['store.steampowered.com', 'profile_header_bg_texture'],
         'regex': r'({"url":".+?});',
         'extract_json': True,
         'fields': {
@@ -582,7 +582,7 @@ schemes = {
        }
     },
     'Patreon': {
-        'flags': ['www.patreon.com/api'],
+        'flags': ['www.patreon.com/api', 'pledge_url'],
         'regex': r'Object.assign\(window.patreon.bootstrap, ([\s\S]*)\);[\s\S]*Object.assign\(window.patreon.campaignFeatures, {}\);',
         'extract_json': True,
         'fields': {
