@@ -24,7 +24,7 @@ def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/4qSag9y57pG7Bg')[0])
 
     assert info.get('yandex_uid') == '860520577'
-    assert info.get('name') == 'УРПН Эпид. надзор Яшин Р.С'
+    assert info.get('name') == 'ФК Нижний Новгород'
 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
@@ -90,7 +90,7 @@ def test_reddit():
     assert info.get('is_following') == 'True'
     assert info.get('has_user_profile') == 'True'
     assert info.get('created_at') in ('2018-01-06 04:22:05', '2018-01-06 01:22:05')
-    assert info.get('hide_from_robots') == 'False'
+    assert info.get('hide_from_robots') == 'True'
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
 
