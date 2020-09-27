@@ -24,7 +24,7 @@ def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/4qSag9y57pG7Bg')[0])
 
     assert info.get('yandex_uid') == '860520577'
-    assert info.get('name') == 'УРПН Эпид. надзор Яшин Р.С'
+    assert info.get('name') == 'ФК Нижний Новгород'
 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
@@ -33,7 +33,7 @@ def test_instagram():
 
     assert info.get('uid') == '6828488620'
     assert info.get('username') == 'alexaimephotography'
-    assert info.get('full_name') == 'Alexaimephotography'
+    assert info.get('fullname') == 'Alexaimephotography'
     assert info.get('biography') == """🇮🇹 🇲🇫 🇩🇪
 Amateur photographer
 Follow me @street.reality.photography
@@ -83,14 +83,14 @@ def test_reddit():
 
     assert info.get('reddit_id') == 't5_a8vxj'
     assert info.get('reddit_username') == 'Diascamara'
-    assert info.get('display_name') == 'Diascamara'
+    assert info.get('fullname') == 'Diascamara'
     assert info.get('is_employee') == 'False'
     assert info.get('is_nsfw') == 'False'
     assert info.get('is_mod') == 'True'
     assert info.get('is_following') == 'True'
     assert info.get('has_user_profile') == 'True'
     assert info.get('created_at') in ('2018-01-06 04:22:05', '2018-01-06 01:22:05')
-    assert info.get('hide_from_robots') == 'False'
+    assert info.get('hide_from_robots') == 'True'
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
 
@@ -239,6 +239,7 @@ def test_gitlab_cookies():
     assert info.get('uid') == '419655'
 
 
+@pytest.mark.skip(reason='Failed in GitHub CI')
 def test_blogger():
     info = extract(parse('https://b0ltay.blogspot.ru')[0])
 
@@ -473,17 +474,16 @@ def test_flickr():
     assert info.get('is_deleted') == 'False'
 
 def test_telegram():
-    info = extract(parse('https://t.me/BotFather')[0])
+    info = extract(parse('https://t.me/buzovacoin')[0])
 
-    assert info.get('telegram_username') == 'BotFather'
-    assert info.get('about') == 'BotFather is the one bot to rule them all. Use it to create new bot accounts and manage your existing bots.'
-
+    assert info.get('fullname') == 'Buzovacoin'
+    assert info.get('about').startswith('ICO Ольги Бузовой - Платформа BUZAR')
 
 def test_mssg():
     info = extract(parse('https://mssg.me/mr.adam')[0])
 
     assert info.get('fullname') == 'Mr.Adam'
-    assert info.get('about') == 'Бизнесмен'
+    assert info.get('bio') == 'Бизнесмен'
     assert info.get('messengers') == "['whatsapp', 'messenger']"
     assert info.get('messenger_values') == "['+77026924715', 'adamcigelnik']"
 

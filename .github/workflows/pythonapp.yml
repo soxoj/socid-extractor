@@ -1,6 +1,6 @@
 name: Python application
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -26,6 +26,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pip install pytest pytest-rerunfailures
+        pip install pytest==6.0.1 pytest-rerunfailures
         # do not run tests required auth with secrets
         pytest -k 'not cookies' --reruns 3 --reruns-delay 1
