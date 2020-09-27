@@ -474,11 +474,10 @@ def test_flickr():
     assert info.get('is_deleted') == 'False'
 
 def test_telegram():
-    info = extract(parse('https://t.me/BotFather')[0])
+    info = extract(parse('https://t.me/buzovacoin')[0])
 
-    assert info.get('telegram_username') == 'BotFather'
-    assert info.get('about') == 'BotFather is the one bot to rule them all. Use it to create new bot accounts and manage your existing bots.'
-
+    assert info.get('fullname') == 'Buzovacoin'
+    assert info.get('about').startswith('ICO Ольги Бузовой - Платформа BUZAR')
 
 def test_mssg():
     info = extract(parse('https://mssg.me/mr.adam')[0])

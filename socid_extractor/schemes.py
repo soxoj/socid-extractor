@@ -593,9 +593,10 @@ schemes = {
                                 y['attributes'].get('app_name')],
         }
     },
+    # TODO: add image
     'Telegram': {
         'flags': ['tg://resolve?domain='],
-        'regex': r'"og:title" content="(?P<telegram_username>.+)">[\s\S]*"og:description" content="(?P<about>.+)">',
+        'regex': r'"og:title" content="(?P<fullname>.+)">[\s\S]*"og:description" content="(?P<about>.+)">',
     },
     'BuzzFeed': {
         'flags': ['window.BZFD = window.BZFD'],
