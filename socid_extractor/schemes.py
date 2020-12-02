@@ -620,5 +620,14 @@ schemes = {
             # 'social_names': lambda x: [y.get('name') for y in x['user']['social']],
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
         }
+    },
+    'vBulletinEngine': {
+        'flags': ['vBulletin.register_control'],
+        'bs': True,
+        'fields': {
+            'status': lambda x: x.find('span', {'class': 'online-status'}).findAll('span')[1].text,
+            'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
+            'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
+        }
     }
 }

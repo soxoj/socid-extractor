@@ -1,5 +1,6 @@
 import logging
 from http.cookies import SimpleCookie
+from bs4 import BeautifulSoup as bs
 
 import requests
 
@@ -37,12 +38,21 @@ def extract(page):
         else:
             continue
 
-        info = re.search(scheme_data['regex'], page)
+        use_regexp_group = 'regex' in scheme_data
+        use_html_parser = 'bs' in scheme_data
 
-        if info:
+        if not any([use_regexp_group, use_html_parser]):
+            logging.info('Could not extract!')
+
+        values = {}
+
+        if use_regexp_group:
+            regexp_group = re.search(scheme_data['regex'], page)
+            if not regexp_group:
+                continue
+
             if scheme_data.get('extract_json', False):
-                values = {}
-                extracted = info.group(1)
+                extracted = regexp_group.group(1)
 
                 logging.debug('Extracted: %s', extracted)
 
@@ -69,9 +79,15 @@ def extract(page):
                     value = get_field(json_data)
                     values[name] = str(value) if value != None else ''
             else:
-                values = info.groupdict()
+                values = regexp_group.groupdict()
 
-            return {a: b for a, b in values.items() if b or type(b) == bool}
-        else:
-            logging.info('Could not extract!')
+        if use_html_parser:
+            soup = bs(page, 'html.parser')
+            for name, get_field in scheme_data['fields'].items():
+                value = get_field(soup)
+                values[name] = str(value) if value != None else ''
+
+        return {a: b for a, b in values.items() if b or type(b) == bool}
+
+    # all schemes have been checked
     return {}
