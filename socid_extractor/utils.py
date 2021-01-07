@@ -1,3 +1,4 @@
+import math
 import re
 from datetime import datetime
 
@@ -23,10 +24,11 @@ def decode_ya_str(val):
     except:
         return val
 
+
 def timestamp_to_datetime(t):
     if not t:
         return ''
-    else:
-        if len(str(t)) < 10:
-            t = round(datetime.today().timestamp()) - t #погрешность в секунду, лол
-        return datetime.fromtimestamp(int(t))
+    elif len(str(t)) < 10:
+        t = math.floor(datetime.today().timestamp()) - t
+
+    return datetime.fromtimestamp(int(t))
