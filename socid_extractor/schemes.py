@@ -87,7 +87,7 @@ schemes = {
         }
     },
     'Yandex Collections API': {
-        'flags': ['theme_subscriptions', 'subscriptions_on_self_boards'],
+        'flags': ['board_subscriptions', 'subscriptions_on_self_boards'],
         'regex': r'^(.+)$',
         'extract_json': True,
         'fields': {
