@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pytest
 
+from socid_extractor.activation import get_twitter_headers
 from socid_extractor.main import parse, extract
 
 
@@ -69,13 +70,22 @@ def test_habr():
     assert info.get('username') == 'm1rko'
 
 
-@pytest.mark.skip(reason="broken, https://github.com/soxoj/socid_extractor/issues/3")
+# @pytest.mark.skip(reason="broken, https://github.com/soxoj/socid_extractor/issues/3")
 def test_twitter():
-    info = extract(parse('https://twitter.com/esquireru')[0])
+    _, headers = get_twitter_headers({})
+    info = extract(parse('https://twitter.com/i/api/graphql/ZRnOhhXPwue_JGILb9TNug/UserByScreenName?variables=%7B%22screen_name%22%3A%22cardiakflatline%22%2C%22withHighlightedLabel%22%3Atrue%7D', headers=headers)[0])
 
-    assert info.get('uid') == '163060799'
-    assert info.get('username') == 'Esquire Russia'
-    assert info.get('name') == 'esquireru'
+    assert info.get('uid') == 'VXNlcjo0NTkyNjgxNg=='
+    assert info.get('fullname') == 'Cardiak'
+    assert info.get('bio') == '#Jersey Multi Platinum Grammy Award Winning Producer for J.Cole, DrDre,KendrickLamar, Eminem,MeekMill,RickRoss,Drake,Wale,Ace Hood,T.I,LloydBanks,Kanye,Fabolous'
+    assert info.get('created_at') == '2009-06-09 19:59:57+00:00'
+    assert info.get('image') == 'https://pbs.twimg.com/profile_images/745944619213557760/vgapfpjV.jpg'
+    assert info.get('image_bg') == 'https://pbs.twimg.com/profile_banners/45926816/1487198278'
+    assert info.get('is_protected') == 'False'
+    assert info.get('follower_count') == '46323'
+    assert info.get('following_count') == '1469'
+    assert info.get('location') == 'Los Angeles, CA'
+    assert info.get('favourites_count') == '1180'
 
 
 def test_reddit():
