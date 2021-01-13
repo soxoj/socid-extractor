@@ -88,7 +88,7 @@ schemes = {
         }
     },
     'Yandex Collections API': {
-        'flags': ['theme_subscriptions', 'subscriptions_on_self_boards'],
+        'flags': ['board_subscriptions', 'subscriptions_on_self_boards'],
         'regex': r'^(.+)$',
         'extract_json': True,
         'fields': {
@@ -639,6 +639,15 @@ schemes = {
             'deleted': lambda x: x['user']['deleted'],
             # 'social_names': lambda x: [y.get('name') for y in x['user']['social']],
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
+        }
+    },
+    'vBulletinEngine': {
+        'flags': ['vBulletin.register_control'],
+        'bs': True,
+        'fields': {
+            'status': lambda x: x.find('span', {'class': 'online-status'}).findAll('span')[1].text,
+            'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
+            'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
         }
     }
 }

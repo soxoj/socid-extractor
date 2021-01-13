@@ -22,10 +22,10 @@ def test_vk_user_profile_no_username():
 
 
 def test_yandex_disk():
-    info = extract(parse('https://yadi.sk/d/4qSag9y57pG7Bg')[0])
+    info = extract(parse('https://yadi.sk/d/xRJFp3s2QWYv8')[0])
 
-    assert info.get('yandex_uid') == '860520577'
-    assert info.get('name') == 'ФК Нижний Новгород'
+    assert info.get('yandex_uid') == '225171618'
+    assert info.get('name') == 'Trapl  Zdenek'
 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
@@ -186,7 +186,7 @@ def test_behance():
 
 
 def test_500px():
-    info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%224d02ff5c13927a3ac73b3eef306490508bc765956940c31051468cf30402a503%22%7D%7D')[0])
+    info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%225a17a9af1830b58b94a912995b7947b24f27f1301c6ea8ab71a9eb1a6a86585b%22%7D%7D')[0])
 
     assert info.get('uid') == 'dXJpOm5vZGU6VXNlcjoyMzg5Ng=='
     assert info.get('legacy_id') == '23896'
@@ -196,8 +196,8 @@ def test_500px():
     assert info.get('fb_uid') == None
     assert info.get('instagram_username') == 'the.maksimov'
     assert info.get('twitter_username') == 'The_Maksimov'
-    assert info.get('website') == 'vk.com/id156603747'
-    assert info.get('facebook_link') == 'facebook.com/the.maksimov'
+    assert info.get('website') == 'www.instagram.com/the.maksimov'
+    assert info.get('facebook_link') == 'www.facebook.com/the.maksimov'
 
 
 def test_google_documents_cookies():
@@ -315,7 +315,7 @@ def test_youtube():
 def test_google_maps():
     info = extract(parse('https://www.google.com/maps/contrib/117503292148966883754')[0])
 
-    assert info.get('contribution_level') == 'Level 3 Local Guide | 115 Points'
+    assert info.get('contribution_level') == 'Level 3 Local Guide | 132 Points'
     assert info.get('name') == 'Art NI'
 
 
@@ -368,7 +368,7 @@ def test_gravatar():
     assert info.get('fullname') == 'kost BebiX'
     assert info.get('location') == 'Kiev, Ukraine'
     assert info.get('emails') == "['k.bx@ya.ru']"
-    assert info.get('links') == "['http://www.blogger.com/profile/05385916050136636671', 'http://twitter.com/kost_bebix']"
+    assert info.get('links') == "['http://twitter.com/kost_bebix']"
 
 
 def test_pinterest_api():
@@ -445,7 +445,6 @@ def test_yandex_collections_api():
     assert info.get('is_passport') == 'True'
     assert info.get('is_restricted') == 'False'
     assert info.get('is_forbid') == 'False'
-    assert info.get('is_verified') == 'False'
     assert info.get('is_km') == 'False'
     assert info.get('is_business') == 'False'
 
