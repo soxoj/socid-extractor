@@ -1,3 +1,4 @@
+from dateutil.parser import parse as parse_datetime_str
 import html
 import json
 
@@ -187,9 +188,28 @@ schemes = {
         'flags': ['habracdn.net'],
         'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/',
     },
-    'Twitter': {
+    # unactual
+    'Twitter HTML': {
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
+    },
+    'Twitter GraphQL API': {
+        'flags': ['{"data":{"'],
+        'regex': r'^{"data":{"user":({.+})}}$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'fullname': lambda x: x.get('legacy', {}).get('name'),
+            'bio': lambda x: x.get('legacy', {}).get('description'),
+            'created_at': lambda x: parse_datetime_str(x.get('legacy', {}).get('created_at', '')),
+            'image': lambda x: x.get('legacy', {}).get('profile_image_url_https', '').replace('_normal', ''),
+            'image_bg': lambda x: x.get('legacy', {}).get('profile_banner_url'),
+            'is_protected': lambda x: x.get('legacy', {}).get('protected'),
+            'follower_count': lambda x: x.get('legacy', {}).get('followers_count'),
+            'following_count': lambda x: x.get('legacy', {}).get('friends_count'),
+            'location': lambda x: x.get('legacy', {}).get('location'),
+            'favourites_count': lambda x: x.get('legacy', {}).get('favourites_count'),
+        }
     },
     'Facebook user profile': {
         'flags': ['com.facebook.katana', 'scribe_endpoint'],
@@ -235,7 +255,7 @@ schemes = {
         'flags': ['gitlab-static.net'],
         'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
     },
-    '500px API': {
+    '500px GraphQL API': {
         'flags': ['{"data":{"profile":{"id"'],
         'regex': r'^{"data":({.+})}$',
         'extract_json': True,

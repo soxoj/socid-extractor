@@ -17,9 +17,12 @@ def parse_cookies(cookies_str):
     return {key: morsel.value for key, morsel in cookies.items()}
 
 
-def parse(url, cookies_str='', timeout=3):
+def parse(url, cookies_str='', timeout=3, headers={}):
     cookies = parse_cookies(cookies_str)
-    page = requests.get(url, headers=HEADERS, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
+    req_headers = dict(HEADERS)
+    req_headers.update(headers)
+    logging.debug(req_headers)
+    page = requests.get(url, headers=req_headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
     logging.debug('Server response: %s', page.text)
     logging.debug('Status code: %d', page.status_code)
     return page.text, page.status_code
