@@ -8,11 +8,11 @@ with open('README.md') as fh:
     long_description = fh.read()
 
 setup(name='socid_extractor',
-      version='0.0.2',
+      version='0.0.3',
       description='Extract accounts\' identifiers from personal pages on various platforms',
       long_description=long_description,
       long_description_content_type="text/markdown",
-      url='https://github.com/soxoj/socid_extractor',
+      url='https://github.com/soxoj/socid-extractor',
       entry_points={'console_scripts': ['socid_extractor = socid_extractor.cli:run']},
       packages=find_packages(),
       author='Soxoj',
