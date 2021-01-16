@@ -151,7 +151,7 @@ schemes = {
         }
     },
     'EyeEm': {
-        'flags': ['https://www.eyeem.com/node-static/img'],
+        'flags': ['window.__APOLLO_STATE__', 'cdn.eyeem.com/thumb'],
         'regex': r'__APOLLO_STATE__ = ({.+?});\n',
         'extract_json': True,
         'transforms': [
@@ -173,8 +173,13 @@ schemes = {
     },
     'Medium': {
         'flags': ['https://medium.com', 'com.medium.reader'],
-        'regex': r'({"__typename":"User".+?}),"Collection',
+        'regex': r'__APOLLO_STATE__ = ({.+})',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: [v for k,v in x.items() if k.startswith('User:')][0],
+            json.dumps,
+        ],
         'fields': {
             'medium_id': lambda x: x.get('id'),
             'medium_username': lambda x: x.get('username'),
@@ -246,9 +251,32 @@ schemes = {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
         'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
     },
-    'GitHub': {
+    'GitHub HTML': {
         'flags': ['github.githubassets.com'],
-        'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/search\?user=(?P<username>.+?)"'
+        'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/users/(?P<username>.+?)/search"'
+    },
+    # https://api.github.com/users/torvalds
+    'GitHub API': {
+        'flags': ['gists_url', 'received_events_url'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'image': lambda x: x.get('avatar_url'),
+            'created_at': lambda x: x.get('created_at'),
+            'location': lambda x: x.get('location'),
+            'follower_count': lambda x: x.get('followers'),
+            'following_count': lambda x: x.get('following'),
+            'fullname': lambda x: x.get('name'),
+            'public_gists_count': lambda x: x.get('public_gists'),
+            'public_repos_count': lambda x: x.get('public_repos'),
+            'twitter_username': lambda x: x.get('twitter_username'),
+            'is_looking_for_job': lambda x: x.get('hireable'),
+            'gravatar_id': lambda x: x.get('gravatar_id'),
+            'bio': lambda x: x.get('bio', '').strip(),
+            'is_company': lambda x: x.get('company'),
+            'blog_url': lambda x: x.get('blog'),
+        }
     },
     'My Mail.ru': {
         'flags': ['my.mail.ru', 'models/user/journal">'],
@@ -459,16 +487,24 @@ schemes = {
     },
     'SoundCloud': {
         'flags': ['eventlogger.soundcloud.com'],
-        'regex': r'catch\(t\){}}\)},(\[{"id":.+?)\);',
+        'regex': r'catch\(e\)\{\}\}\)\},(\[\{"id":.+?)\);',
         'extract_json': True,
         'message': 'Run with auth cookies to get your ids.',
         'fields': {
-            'your_uid': lambda x: x[-2]['data'][0].get('id'),
-            'your_name': lambda x: x[-2]['data'][0].get('full_name'),
-            'your_username': lambda x: x[-2]['data'][0].get('username'),
+            # 'your_uid': lambda x: x[-2]['data'][0].get('id'),
+            # 'your_name': lambda x: x[-2]['data'][0].get('full_name'),
+            # 'your_username': lambda x: x[-2]['data'][0].get('username'),
             'uid': lambda x: x[-1]['data'][0]['id'],
             'name': lambda x: x[-1]['data'][0]['full_name'],
             'username': lambda x: x[-1]['data'][0]['username'],
+            'following_count': lambda x: x[-1]['data'][0]['followings_count'],
+            'follower_count': lambda x: x[-1]['data'][0]['followers_count'],
+            'is_verified': lambda x: x[-1]['data'][0]['verified'],
+            'image': lambda x: x[-1]['data'][0]['avatar_url'],
+            'location': lambda x: x[-1]['data'][0]['city'],
+            'country_code': lambda x: x[-1]['data'][0]['country_code'],
+            'bio': lambda x: x[-1]['data'][0]['description'],
+            'created_at': lambda x: x[-1]['data'][0]['created_at'],
         }
     },
     'TikTok': {

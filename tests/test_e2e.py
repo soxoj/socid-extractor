@@ -117,10 +117,10 @@ def test_twitter():
     assert info.get('image') == 'https://pbs.twimg.com/profile_images/745944619213557760/vgapfpjV.jpg'
     assert info.get('image_bg') == 'https://pbs.twimg.com/profile_banners/45926816/1487198278'
     assert info.get('is_protected') == 'False'
-    assert info.get('follower_count') == '46323'
-    assert info.get('following_count') == '1469'
     assert info.get('location') == 'Los Angeles, CA'
-    assert info.get('favourites_count') == '1180'
+    assert 'follower_count' in info
+    assert 'following_count' in info
+    assert 'favourites_count' in info
 
 
 def test_reddit():
@@ -153,12 +153,25 @@ def test_facebook_group():
     assert info.get('username') == 'discord'
 
 
-def test_github():
+def test_github_html():
     info = extract(parse('https://github.com/soxoj')[0])
 
     assert info.get('uid') == '31013580'
     assert info.get('username') == 'soxoj'
 
+
+def test_github_api():
+    info = extract(parse('https://api.github.com/users/soxoj')[0])
+
+    assert info.get('uid') == '31013580'
+    assert info.get('image') == 'https://avatars2.githubusercontent.com/u/31013580?v=4'
+    assert info.get('created_at') == '2017-08-14T17:03:07Z'
+    assert info.get('follower_count') == '55'
+    assert info.get('following_count') == '11'
+    assert info.get('public_gists_count') == '0'
+    assert info.get('public_repos_count') == '27'
+    assert info.get('bio') == 'dev, infosec, osint'
+    assert info.get('blog_url') == 'https://t.me/s/osint_mindset'
 
 def test_yandex_disk_photos():
     info = extract(parse('https://yadi.sk/a/oiySK_wg3Vv5p4')[0])
@@ -311,6 +324,13 @@ def test_soundcloud():
     assert info.get('uid') == '78365'
     assert info.get('username') == 'danielpatterson'
     assert info.get('name') == 'Daniel Patterson'
+    assert info.get('following_count') == '23'
+    assert info.get('follower_count') == '36'
+    assert info.get('is_verified') == 'False'
+    assert info.get('image') == 'https://i1.sndcdn.com/avatars-000222811304-x9f1ao-large.jpg'
+    assert info.get('location') == 'Baton Rouge'
+    assert info.get('country_code') == 'US'
+    assert info.get('created_at') == '2009-02-27T16:08:17Z'
 
 
 def test_vcru():
@@ -485,12 +505,13 @@ def test_yandex_collections_api():
 
 
 def test_tiktok():
-    info = extract(parse('https://www.tiktok.com/@red')[0])
+    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36'}
+    info = extract(parse('https://www.tiktok.com/@red', headers=headers)[0])
 
     assert info.get('tiktok_id') == '6667977707978850310'
     assert info.get('tiktok_username') == 'red'
     assert info.get('fullname') == '(RED)'
-    assert info.get('bio') == 'Whether AIDS or COVID-19, we can’t beat pandemics without strong health systems.'
+    assert 'bio' in info
     assert 'tiktokcdn.com' in info.get('image')
     assert info.get('is_verified') == 'True'
     assert info.get('is_secret') == 'False'
