@@ -264,6 +264,9 @@ schemes = {
             'legacy_id': lambda x: x['profile']['legacyId'],
             'username': lambda x: x['profile']['username'],
             'name': lambda x: x['profile']['displayName'],
+            'created_at': lambda x: x['profile']['registeredAt'],
+            'image': lambda x: x['profile']['avatar']['images'][-1]['url'],
+            'image_bg': lambda x: x['profile']['coverPhotoUrl'],
             'qq_username': lambda x: x['profile']['socialMedia'].get('qq'),
             'website': lambda x: x['profile']['socialMedia'].get('website'),
             'blog': lambda x: x['profile']['socialMedia'].get('blog'),
@@ -528,7 +531,8 @@ schemes = {
         'flags': ['src="/js/linkrouter.js', 'container-fluid inner-page'],
         'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
     },
-    'Vimeo': {
+    # unactual
+    'Vimeo HTML': {
         'flags': ['https://i.vimeocdn.com/favicon/main-touch'],
         'regex': r'"app_config":({"user":.+?})},\"coach_notes',
         'extract_json': True,
@@ -541,6 +545,25 @@ schemes = {
             'account_type': lambda x: x['user']['account_type'],
             'is_staff': lambda x: x['user']['is_staff'],
             'links': lambda x: [a['url'] for a in x['user']['links']],
+        }
+    },
+    'Vimeo GraphQL API': {
+        'flags': ['{\n    "uri": "/users/'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['uri'].split('/')[-1],
+            'gender': lambda x: x['gender'],
+            'image': lambda x: x['pictures'].get('sizes', [{'link': ''}])[-1]['link'],
+            'bio': lambda x: x.get('bio'),
+            'location': lambda x: x['location_details'].get('formatted_address'),
+            'username': lambda x: x['name'],
+            'is_verified': lambda x: x['verified'],
+            'skills': lambda x: ','.join(x['skills']),
+            'created_at': lambda x: x['created_time'],
+            'videos': lambda x: x['metadata']['public_videos']['total'],
+            'is_looking_for_job': lambda x: x['available_for_hire'],
+            'is_working_remotely': lambda x: x['can_work_remotely'],
         }
     },
     'DeviantArt': {
