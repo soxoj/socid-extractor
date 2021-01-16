@@ -16,6 +16,8 @@ Extract accounts' identifiers and other info from personal pages on popular site
 
 ## Installation
 
+    $ pip3 install socid-extractor
+
 The latest development version can be installed directly from GitHub:
 
     $ pip3 install -U git+https://github.com/soxoj/socid_extractor.git
@@ -33,6 +35,8 @@ created_at: 2017-12-06 06:49:28
 is_staff: False
 links: ['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']
 ```
+
+Or simply `./run.py --url https://vimeo.com/alexaimephotography`
 
 As a Python library:
 ```
