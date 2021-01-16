@@ -24,7 +24,7 @@ def parse(url, cookies_str='', timeout=3, headers={}):
     req_headers.update(headers)
     logging.debug(req_headers)
     page = requests.get(url, headers=req_headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
-    logging.debug('Server response: %s', page.text)
+    logging.debug('Server response: \'%s\'', page.text)
     logging.debug('Status code: %d', page.status_code)
     return page.text, page.status_code
 
@@ -50,8 +50,9 @@ def extract(page):
         values = {}
 
         if use_regexp_group:
-            regexp_group = re.search(scheme_data['regex'], page)
+            regexp_group = re.search(scheme_data['regex'], page, re.MULTILINE)
             if not regexp_group:
+                logging.debug('Unable to extract with regexp!')
                 continue
 
             if scheme_data.get('extract_json', False):
@@ -69,6 +70,7 @@ def extract(page):
                 json_data = json.loads(extracted)
 
                 if json_data == {}:
+                    logging.debug('Unabled to extract json!')
                     continue
 
                 loaded_json_str = json.dumps(json_data, indent=4, sort_keys=True)
