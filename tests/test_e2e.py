@@ -21,6 +21,19 @@ def test_vk_user_profile_no_username():
     assert info.get('fullname') in ('Юля Заболотная', 'Yulya Zabolotnaya')
 
 
+def test_vk_closed_user_profile():
+    info = extract(parse('https://vk.com/alex')[0])
+
+    assert info.get('fullname') in ('Александр Чудаев')
+
+
+def test_vk_blocked_user_profile():
+    headers = {'User-Agent': 'Curl'}
+    info = extract(parse('https://vk.com/alexaimephotography', headers=headers)[0])
+
+    assert info.get('fullname') in ('Alex Aimé')
+
+
 def test_yandex_disk():
     info = extract(parse('https://yadi.sk/d/xRJFp3s2QWYv8')[0])
 

@@ -7,8 +7,8 @@ from setuptools import (
 with open('README.md') as fh:
     long_description = fh.read()
 
-setup(name='socid_extractor',
-      version='0.0.3',
+setup(name='socid-extractor',
+      version='0.0.4',
       description='Extract accounts\' identifiers from personal pages on various platforms',
       long_description=long_description,
       long_description_content_type="text/markdown",

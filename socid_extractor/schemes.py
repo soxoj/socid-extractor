@@ -112,8 +112,16 @@ schemes = {
         }
     },
     'VK user profile': {
-        'flags': ['var vk =', 'change_current_info'],
+        'flags': ['Profile.init({', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<vk_id>\d+).*?(,"loc":"(?P<vk_username>.*?)")?,"back":"(?P<fullname>.*?)"'
+    },
+    'VK closed user profile': {
+        'flags': ['var vk =', 'page_current_info'],
+        'regex': r'<h1 class="page_name">(?P<fullname>.*?)</h1>'
+    },
+    'VK blocked user profile': {
+        'flags': ['window.vk = {', '/images/deactivated_50.png'],
+        'regex': r'<h2 class="op_header">(?P<fullname>.+?)</h2>'
     },
     'Gravatar': {
         'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
