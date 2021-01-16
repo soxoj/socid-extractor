@@ -151,7 +151,7 @@ schemes = {
         }
     },
     'EyeEm': {
-        'flags': ['https://www.eyeem.com/node-static/img'],
+        'flags': ['window.__APOLLO_STATE__', 'cdn.eyeem.com/thumb'],
         'regex': r'__APOLLO_STATE__ = ({.+?});\n',
         'extract_json': True,
         'transforms': [
@@ -173,8 +173,13 @@ schemes = {
     },
     'Medium': {
         'flags': ['https://medium.com', 'com.medium.reader'],
-        'regex': r'({"__typename":"User".+?}),"Collection',
+        'regex': r'__APOLLO_STATE__ = ({.+})',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: [v for k,v in x.items() if k.startswith('User:')][0],
+            json.dumps,
+        ],
         'fields': {
             'medium_id': lambda x: x.get('id'),
             'medium_username': lambda x: x.get('username'),
@@ -200,6 +205,25 @@ schemes = {
     'Twitter HTML': {
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
+    },
+    # https://shadowban.eu/.api/user
+    # https://gist.github.com/superboum/ab31bc4c85c731b9e89ebda5eaed9a3a
+    'Twitter Shadowban': {
+        'flags': ['{"timestamp"', '"profile": {'],
+        'regex': r'^({.+?})$',
+        'extract_json': True,
+        'fields': {
+            'has_tweets': lambda x: x['profile'].get('has_tweets'),
+            'username': lambda x: x['profile'].get('screen_name'),
+            'is_exists': lambda x: x['profile'].get('exists'),
+            'is_suspended': lambda x: x['profile'].get('suspended'),
+            'is_protected': lambda x: x['profile'].get('protected'),
+            'has_ban': lambda x: x.get('tests', {}).get('ghost', {}).get('ban'),
+            'has_banned_in_search_suggestions': lambda x: not x['tests']['typeahead'] if x.get('tests', {}).get('typeahead') else None,
+            'has_search_ban': lambda x: not x['tests']['search'] if x.get('tests', {}).get('search') else None,
+            'has_never_replies': lambda x: not x['tests']['more_replies']['tweet'] if x.get('tests', {}).get('more_replies', {}).get('tweet') else None,
+            'is_deboosted': lambda x: x['tests']['more_replies']['ban'] if x.get('tests', {}).get('more_replies', {}).get('ban') else None,
+        }
     },
     'Twitter GraphQL API': {
         'flags': ['{"data":{"'],
@@ -227,9 +251,32 @@ schemes = {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
         'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
     },
-    'GitHub': {
+    'GitHub HTML': {
         'flags': ['github.githubassets.com'],
-        'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/search\?user=(?P<username>.+?)"'
+        'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/users/(?P<username>.+?)/search"'
+    },
+    # https://api.github.com/users/torvalds
+    'GitHub API': {
+        'flags': ['gists_url', 'received_events_url'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'image': lambda x: x.get('avatar_url'),
+            'created_at': lambda x: x.get('created_at'),
+            'location': lambda x: x.get('location'),
+            'follower_count': lambda x: x.get('followers'),
+            'following_count': lambda x: x.get('following'),
+            'fullname': lambda x: x.get('name'),
+            'public_gists_count': lambda x: x.get('public_gists'),
+            'public_repos_count': lambda x: x.get('public_repos'),
+            'twitter_username': lambda x: x.get('twitter_username'),
+            'is_looking_for_job': lambda x: x.get('hireable'),
+            'gravatar_id': lambda x: x.get('gravatar_id'),
+            'bio': lambda x: x.get('bio', '').strip(),
+            'is_company': lambda x: x.get('company'),
+            'blog_url': lambda x: x.get('blog'),
+        }
     },
     'My Mail.ru': {
         'flags': ['my.mail.ru', 'models/user/journal">'],
@@ -440,16 +487,24 @@ schemes = {
     },
     'SoundCloud': {
         'flags': ['eventlogger.soundcloud.com'],
-        'regex': r'catch\(t\){}}\)},(\[{"id":.+?)\);',
+        'regex': r'catch\(e\)\{\}\}\)\},(\[\{"id":.+?)\);',
         'extract_json': True,
         'message': 'Run with auth cookies to get your ids.',
         'fields': {
-            'your_uid': lambda x: x[-2]['data'][0].get('id'),
-            'your_name': lambda x: x[-2]['data'][0].get('full_name'),
-            'your_username': lambda x: x[-2]['data'][0].get('username'),
+            # 'your_uid': lambda x: x[-2]['data'][0].get('id'),
+            # 'your_name': lambda x: x[-2]['data'][0].get('full_name'),
+            # 'your_username': lambda x: x[-2]['data'][0].get('username'),
             'uid': lambda x: x[-1]['data'][0]['id'],
             'name': lambda x: x[-1]['data'][0]['full_name'],
             'username': lambda x: x[-1]['data'][0]['username'],
+            'following_count': lambda x: x[-1]['data'][0]['followings_count'],
+            'follower_count': lambda x: x[-1]['data'][0]['followers_count'],
+            'is_verified': lambda x: x[-1]['data'][0]['verified'],
+            'image': lambda x: x[-1]['data'][0]['avatar_url'],
+            'location': lambda x: x[-1]['data'][0]['city'],
+            'country_code': lambda x: x[-1]['data'][0]['country_code'],
+            'bio': lambda x: x[-1]['data'][0]['description'],
+            'created_at': lambda x: x[-1]['data'][0]['created_at'],
         }
     },
     'TikTok': {
