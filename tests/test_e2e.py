@@ -83,7 +83,29 @@ def test_habr():
     assert info.get('username') == 'm1rko'
 
 
-# @pytest.mark.skip(reason="broken, https://github.com/soxoj/socid_extractor/issues/3")
+def test_twitter_shadowban_no_account():
+    info = extract(parse('https://shadowban.eu/.api/sgfrgrrr')[0])
+
+    assert info.get('has_tweets') == 'False'
+    assert info.get('is_exists') == 'False'
+    assert info.get('username') == 'sgfrgrrr'
+    assert not 'is_protected' in info
+    assert not 'has_ban' in info
+    assert not 'has_search_ban' in info
+    assert not 'has_banned_in_search_suggestions' in info
+
+def test_twitter_shadowban():
+    info = extract(parse('https://shadowban.eu/.api/trump')[0])
+
+    assert info.get('has_tweets') == 'True'
+    assert info.get('is_exists') == 'True'
+    assert info.get('username') == 'Trump'
+    assert info.get('is_protected') == 'False'
+    assert info.get('has_ban') == 'False'
+    assert info.get('has_search_ban') == 'False'
+    assert info.get('has_banned_in_search_suggestions') == 'False'
+
+
 def test_twitter():
     _, headers = get_twitter_headers({})
     info = extract(parse('https://twitter.com/i/api/graphql/ZRnOhhXPwue_JGILb9TNug/UserByScreenName?variables=%7B%22screen_name%22%3A%22cardiakflatline%22%2C%22withHighlightedLabel%22%3Atrue%7D', headers=headers)[0])

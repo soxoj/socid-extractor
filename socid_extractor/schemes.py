@@ -201,6 +201,25 @@ schemes = {
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
     },
+    # https://shadowban.eu/.api/user
+    # https://gist.github.com/superboum/ab31bc4c85c731b9e89ebda5eaed9a3a
+    'Twitter Shadowban': {
+        'flags': ['{"timestamp"', '"profile": {'],
+        'regex': r'^({.+?})$',
+        'extract_json': True,
+        'fields': {
+            'has_tweets': lambda x: x['profile'].get('has_tweets'),
+            'username': lambda x: x['profile'].get('screen_name'),
+            'is_exists': lambda x: x['profile'].get('exists'),
+            'is_suspended': lambda x: x['profile'].get('suspended'),
+            'is_protected': lambda x: x['profile'].get('protected'),
+            'has_ban': lambda x: x.get('tests', {}).get('ghost', {}).get('ban'),
+            'has_banned_in_search_suggestions': lambda x: not x['tests']['typeahead'] if x.get('tests', {}).get('typeahead') else None,
+            'has_search_ban': lambda x: not x['tests']['search'] if x.get('tests', {}).get('search') else None,
+            'has_never_replies': lambda x: not x['tests']['more_replies']['tweet'] if x.get('tests', {}).get('more_replies', {}).get('tweet') else None,
+            'is_deboosted': lambda x: x['tests']['more_replies']['ban'] if x.get('tests', {}).get('more_replies', {}).get('ban') else None,
+        }
+    },
     'Twitter GraphQL API': {
         'flags': ['{"data":{"'],
         'regex': r'^{"data":{"user":({.+})}}$',
