@@ -24,7 +24,7 @@ def test_vk_user_profile_no_username():
 def test_vk_closed_user_profile():
     info = extract(parse('https://vk.com/alex')[0])
 
-    assert info.get('fullname') in ('Александр Чудаев')
+    assert info.get('fullname') in ('Александр Чудаев', 'Alexander Chudaev')
 
 
 def test_vk_blocked_user_profile():
