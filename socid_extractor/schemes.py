@@ -199,7 +199,7 @@ schemes = {
     },
     'Habrahabr': {
         'flags': ['habracdn.net'],
-        'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/',
+        'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/([\s\S]+?<img src="(?P<image>//habrastorage\.org/getpro/habr/avatars.+?)")?',
     },
     # unactual
     'Twitter HTML': {
@@ -273,9 +273,17 @@ schemes = {
             'twitter_username': lambda x: x.get('twitter_username'),
             'is_looking_for_job': lambda x: x.get('hireable'),
             'gravatar_id': lambda x: x.get('gravatar_id'),
-            'bio': lambda x: x.get('bio', '').strip(),
+            'bio': lambda x: x['bio'].strip() if x.get('bio', '') else None,
             'is_company': lambda x: x.get('company'),
             'blog_url': lambda x: x.get('blog'),
+        }
+    },
+    'Gitlab API': {
+        'flags': ['"web_url":"https://gitlab.com/'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x[0].get('id'),
         }
     },
     'My Mail.ru': {
@@ -702,7 +710,7 @@ schemes = {
     # TODO: add image
     'Telegram': {
         'flags': ['tg://resolve?domain='],
-        'regex': r'"og:title" content="(?P<fullname>.+)">[\s\S]*"og:description" content="(?P<about>.+)">',
+        'regex': r'"og:title" content="(?P<fullname>.+)">[\s\S]*"og:description" content="(?P<about>.+)">[\s\S]+?<img class="tgme_page_photo_image" src="(?P<image>.+)"',
     },
     'BuzzFeed': {
         'flags': ['window.BZFD = window.BZFD'],
