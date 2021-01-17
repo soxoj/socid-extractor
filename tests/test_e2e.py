@@ -81,6 +81,15 @@ def test_habr():
 
     assert info.get('uid') == '1371978'
     assert info.get('username') == 'm1rko'
+    assert info.get('image') == '//habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
+
+
+def test_habr_no_image():
+    info = extract(parse('https://habr.com/ru/users/ne555/')[0])
+
+    assert info.get('uid') == '1800409'
+    assert info.get('username') == 'ne555'
+    assert not 'image' in info
 
 
 def test_twitter_shadowban_no_account():
@@ -166,10 +175,10 @@ def test_github_api():
     assert info.get('uid') == '31013580'
     assert info.get('image') == 'https://avatars2.githubusercontent.com/u/31013580?v=4'
     assert info.get('created_at') == '2017-08-14T17:03:07Z'
-    assert info.get('follower_count') == '55'
-    assert info.get('following_count') == '11'
-    assert info.get('public_gists_count') == '0'
-    assert info.get('public_repos_count') == '27'
+    assert 'follower_count' in info
+    assert 'following_count' in info
+    assert 'public_gists_count' in info
+    assert 'public_repos_count' in info
     assert info.get('bio') == 'dev, infosec, osint'
     assert info.get('blog_url') == 'https://t.me/s/osint_mindset'
 
