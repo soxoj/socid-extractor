@@ -26,14 +26,14 @@ The latest development version can be installed directly from GitHub:
 
 As a command-line tool:
 ```
-$ socid_extractor https://vimeo.com/alexaimephotography
-uid: 75857717
-name: AlexAimePhotography
-username: alexaimephotography
-location: France
-created_at: 2017-12-06 06:49:28
-is_staff: False
-links: ['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']
+$ socid_extractor --url https://www.deviantart.com/muse1908
+country: France
+created_at: 2005-06-16 18:17:41
+gender: female
+username: Muse1908
+website: www.patreon.com/musemercier
+links: ['https://www.facebook.com/musemercier', 'https://www.instagram.com/muse.mercier/', 'https://www.patreon.com/musemercier']
+tagline: Nothing worth having is easy...
 ```
 
 Or simply `./run.py --url https://vimeo.com/alexaimephotography`
@@ -41,9 +41,9 @@ Or simply `./run.py --url https://vimeo.com/alexaimephotography`
 As a Python library:
 ```
 >>> import socid_extractor, requests
->>> r = requests.get('https://vimeo.com/alexaimephotography')
+>>> r = requests.get('https://www.patreon.com/annetlovart')
 >>> socid_extractor.extract(r.text)
-{'uid': '75857717', 'name': 'AlexAimePhotography', 'username': 'alexaimephotography', 'location': 'France', 'created_at': '2017-12-06 06:49:28', 'is_staff': 'False', 'links': "['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']"}
+{'patreon_id': '33913189', 'patreon_username': 'annetlovart', 'fullname': 'Annet Lovart', 'links': "['https://www.facebook.com/322598031832479', 'https://www.instagram.com/annet_lovart', 'https://twitter.com/annet_lovart', 'https://youtube.com/channel/UClDg4ntlOW_1j73zqSJxHHQ']"}
 ```
 
 ## Sites
