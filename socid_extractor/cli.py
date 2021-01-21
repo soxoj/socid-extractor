@@ -3,6 +3,7 @@ import logging
 import sys
 from functools import reduce
 
+from .activation import *
 from .main import parse, extract
 from .matching import get_similarity, get_similarity_description
 
@@ -13,8 +14,8 @@ def print_info(info):
         print('%s: %s' % (key, value))
 
 
-def get_site_response(url, cookies=None):
-    page, status = parse(url, cookies, timeout=10)
+def get_site_response(url, cookies=None, headers={}):
+    page, status = parse(url, cookies, headers=headers, timeout=10)
     if status != 200:
         logging.info('Answer code {}, something went wrong'.format(status))
     return page
@@ -28,6 +29,7 @@ def run():
     parser.add_argument('-d', '--debug', action='store_true', help='display debug information')
     parser.add_argument('--file', action='store_true', help='load from file instead of URL')
     parser.add_argument('--match', nargs=2, help='compare 2 accounts data and get matching score')
+    parser.add_argument('--activation', type=str, help='use certain type of request activation')
 
     args = parser.parse_args()
 
@@ -39,10 +41,16 @@ def run():
 
     logging.basicConfig(level=log_level, format='-' * 40 + '\n%(levelname)s: %(message)s')
 
+    headers = {}
+    if args.activation:
+        cookies, headers = globals().get(args.activation)(args.cookies)
+        logging.debug(cookies)
+        logging.debug(headers)
+
     if args.match:
         extracted = []
         for acc in args.match:
-            extracted_acc_info = extract(get_site_response(acc, args.cookies))
+            extracted_acc_info = extract(get_site_response(acc, args.cookies, headers))
             if not extracted_acc_info:
                 print(f'No info extracted by link {acc}\n'
                     'Please check if user exists and socid_extractor supports this site.')
@@ -71,7 +79,7 @@ def run():
         print(f'Average accounts similarity: {average_similarity * 100}%')
     else:
         if not args.file:
-            page = get_site_response(args.url, args.cookies)
+            page = get_site_response(args.url, args.cookies, headers)
         else:
             page = open(args.url).read()
 

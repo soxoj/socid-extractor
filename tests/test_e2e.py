@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pytest
 
+from socid_extractor.activation import get_twitter_headers
 from socid_extractor.main import parse, extract
 
 
@@ -20,11 +21,24 @@ def test_vk_user_profile_no_username():
     assert info.get('fullname') in ('Юля Заболотная', 'Yulya Zabolotnaya')
 
 
-def test_yandex_disk():
-    info = extract(parse('https://yadi.sk/d/4qSag9y57pG7Bg')[0])
+def test_vk_closed_user_profile():
+    info = extract(parse('https://vk.com/alex')[0])
 
-    assert info.get('yandex_uid') == '860520577'
-    assert info.get('name') == 'ФК Нижний Новгород'
+    assert info.get('fullname') in ('Александр Чудаев', 'Alexander Chudaev')
+
+
+def test_vk_blocked_user_profile():
+    headers = {'User-Agent': 'Curl'}
+    info = extract(parse('https://vk.com/alexaimephotography', headers=headers)[0])
+
+    assert info.get('fullname') in ('Alex Aimé')
+
+
+def test_yandex_disk():
+    info = extract(parse('https://yadi.sk/d/xRJFp3s2QWYv8')[0])
+
+    assert info.get('yandex_uid') == '225171618'
+    assert info.get('name') == 'Trapl  Zdenek'
 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
@@ -67,15 +81,55 @@ def test_habr():
 
     assert info.get('uid') == '1371978'
     assert info.get('username') == 'm1rko'
+    assert info.get('image') == '//habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
 
 
-@pytest.mark.skip(reason="broken, https://github.com/soxoj/socid_extractor/issues/3")
+def test_habr_no_image():
+    info = extract(parse('https://habr.com/ru/users/ne555/')[0])
+
+    assert info.get('uid') == '1800409'
+    assert info.get('username') == 'ne555'
+    assert not 'image' in info
+
+
+def test_twitter_shadowban_no_account():
+    info = extract(parse('https://shadowban.eu/.api/sgfrgrrr')[0])
+
+    assert info.get('has_tweets') == 'False'
+    assert info.get('is_exists') == 'False'
+    assert info.get('username') == 'sgfrgrrr'
+    assert not 'is_protected' in info
+    assert not 'has_ban' in info
+    assert not 'has_search_ban' in info
+    assert not 'has_banned_in_search_suggestions' in info
+
+def test_twitter_shadowban():
+    info = extract(parse('https://shadowban.eu/.api/trump')[0])
+
+    assert info.get('has_tweets') == 'True'
+    assert info.get('is_exists') == 'True'
+    assert info.get('username') == 'Trump'
+    assert info.get('is_protected') == 'False'
+    assert info.get('has_ban') == 'False'
+    assert info.get('has_search_ban') == 'False'
+    assert info.get('has_banned_in_search_suggestions') == 'False'
+
+
 def test_twitter():
-    info = extract(parse('https://twitter.com/esquireru')[0])
+    _, headers = get_twitter_headers({})
+    info = extract(parse('https://twitter.com/i/api/graphql/ZRnOhhXPwue_JGILb9TNug/UserByScreenName?variables=%7B%22screen_name%22%3A%22cardiakflatline%22%2C%22withHighlightedLabel%22%3Atrue%7D', headers=headers)[0])
 
-    assert info.get('uid') == '163060799'
-    assert info.get('username') == 'Esquire Russia'
-    assert info.get('name') == 'esquireru'
+    assert info.get('uid') == 'VXNlcjo0NTkyNjgxNg=='
+    assert info.get('fullname') == 'Cardiak'
+    assert info.get('bio') == '#Jersey Multi Platinum Grammy Award Winning Producer for J.Cole, DrDre,KendrickLamar, Eminem,MeekMill,RickRoss,Drake,Wale,Ace Hood,T.I,LloydBanks,Kanye,Fabolous'
+    assert info.get('created_at') == '2009-06-09 19:59:57+00:00'
+    assert info.get('image') == 'https://pbs.twimg.com/profile_images/745944619213557760/vgapfpjV.jpg'
+    assert info.get('image_bg') == 'https://pbs.twimg.com/profile_banners/45926816/1487198278'
+    assert info.get('is_protected') == 'False'
+    assert info.get('location') == 'Los Angeles, CA'
+    assert 'follower_count' in info
+    assert 'following_count' in info
+    assert 'favourites_count' in info
 
 
 def test_reddit():
@@ -108,12 +162,25 @@ def test_facebook_group():
     assert info.get('username') == 'discord'
 
 
-def test_github():
+def test_github_html():
     info = extract(parse('https://github.com/soxoj')[0])
 
     assert info.get('uid') == '31013580'
     assert info.get('username') == 'soxoj'
 
+
+def test_github_api():
+    info = extract(parse('https://api.github.com/users/soxoj')[0])
+
+    assert info.get('uid') == '31013580'
+    assert info.get('image') == 'https://avatars2.githubusercontent.com/u/31013580?v=4'
+    assert info.get('created_at') == '2017-08-14T17:03:07Z'
+    assert 'follower_count' in info
+    assert 'following_count' in info
+    assert 'public_gists_count' in info
+    assert 'public_repos_count' in info
+    assert info.get('bio') == 'dev, infosec, osint'
+    assert info.get('blog_url') == 'https://t.me/s/osint_mindset'
 
 def test_yandex_disk_photos():
     info = extract(parse('https://yadi.sk/a/oiySK_wg3Vv5p4')[0])
@@ -176,7 +243,7 @@ def test_behance():
 
 
 def test_500px():
-    info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%224d02ff5c13927a3ac73b3eef306490508bc765956940c31051468cf30402a503%22%7D%7D')[0])
+    info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%225a17a9af1830b58b94a912995b7947b24f27f1301c6ea8ab71a9eb1a6a86585b%22%7D%7D')[0])
 
     assert info.get('uid') == 'dXJpOm5vZGU6VXNlcjoyMzg5Ng=='
     assert info.get('legacy_id') == '23896'
@@ -186,8 +253,8 @@ def test_500px():
     assert info.get('fb_uid') == None
     assert info.get('instagram_username') == 'the.maksimov'
     assert info.get('twitter_username') == 'The_Maksimov'
-    assert info.get('website') == 'vk.com/id156603747'
-    assert info.get('facebook_link') == 'facebook.com/the.maksimov'
+    assert info.get('website') == 'www.instagram.com/the.maksimov'
+    assert info.get('facebook_link') == 'www.facebook.com/the.maksimov'
 
 
 def test_google_documents_cookies():
@@ -266,6 +333,13 @@ def test_soundcloud():
     assert info.get('uid') == '78365'
     assert info.get('username') == 'danielpatterson'
     assert info.get('name') == 'Daniel Patterson'
+    assert info.get('following_count') == '23'
+    assert info.get('follower_count') == '36'
+    assert info.get('is_verified') == 'False'
+    assert info.get('image') == 'https://i1.sndcdn.com/avatars-000222811304-x9f1ao-large.jpg'
+    assert info.get('location') == 'Baton Rouge'
+    assert info.get('country_code') == 'US'
+    assert info.get('created_at') == '2009-02-27T16:08:17Z'
 
 
 def test_vcru():
@@ -305,7 +379,7 @@ def test_youtube():
 def test_google_maps():
     info = extract(parse('https://www.google.com/maps/contrib/117503292148966883754')[0])
 
-    assert info.get('contribution_level') == 'Level 3 Local Guide | 115 Points'
+    assert info.get('contribution_level') == 'Level 3 Local Guide | 132 Points'
     assert info.get('name') == 'Art NI'
 
 
@@ -358,7 +432,7 @@ def test_gravatar():
     assert info.get('fullname') == 'kost BebiX'
     assert info.get('location') == 'Kiev, Ukraine'
     assert info.get('emails') == "['k.bx@ya.ru']"
-    assert info.get('links') == "['http://www.blogger.com/profile/05385916050136636671', 'http://twitter.com/kost_bebix']"
+    assert info.get('links') == "['http://twitter.com/kost_bebix']"
 
 
 def test_pinterest_api():
@@ -435,18 +509,18 @@ def test_yandex_collections_api():
     assert info.get('is_passport') == 'True'
     assert info.get('is_restricted') == 'False'
     assert info.get('is_forbid') == 'False'
-    assert info.get('is_verified') == 'False'
     assert info.get('is_km') == 'False'
     assert info.get('is_business') == 'False'
 
 
 def test_tiktok():
-    info = extract(parse('https://www.tiktok.com/@red')[0])
+    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36'}
+    info = extract(parse('https://www.tiktok.com/@red', headers=headers)[0])
 
     assert info.get('tiktok_id') == '6667977707978850310'
     assert info.get('tiktok_username') == 'red'
     assert info.get('fullname') == '(RED)'
-    assert info.get('bio') == 'Whether AIDS or COVID-19, we can’t beat pandemics without strong health systems.'
+    assert 'bio' in info
     assert 'tiktokcdn.com' in info.get('image')
     assert info.get('is_verified') == 'True'
     assert info.get('is_secret') == 'False'

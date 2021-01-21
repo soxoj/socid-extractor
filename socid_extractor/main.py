@@ -1,5 +1,6 @@
 import logging
 from http.cookies import SimpleCookie
+from bs4 import BeautifulSoup as bs
 
 import requests
 
@@ -17,10 +18,13 @@ def parse_cookies(cookies_str):
     return {key: morsel.value for key, morsel in cookies.items()}
 
 
-def parse(url, cookies_str='', timeout=3):
+def parse(url, cookies_str='', timeout=3, headers={}):
     cookies = parse_cookies(cookies_str)
-    page = requests.get(url, headers=HEADERS, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
-    logging.debug('Server response: %s', page.text)
+    req_headers = dict(HEADERS)
+    req_headers.update(headers)
+    logging.debug(req_headers)
+    page = requests.get(url, headers=req_headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
+    logging.debug('Server response: \'%s\'', page.text)
     logging.debug('Status code: %d', page.status_code)
     return page.text, page.status_code
 
@@ -37,12 +41,22 @@ def extract(page):
         else:
             continue
 
-        info = re.search(scheme_data['regex'], page)
+        use_regexp_group = 'regex' in scheme_data
+        use_html_parser = 'bs' in scheme_data
 
-        if info:
+        if not any([use_regexp_group, use_html_parser]):
+            logging.info('Could not extract!')
+
+        values = {}
+
+        if use_regexp_group:
+            regexp_group = re.search(scheme_data['regex'], page, re.MULTILINE)
+            if not regexp_group:
+                logging.debug('Unable to extract with regexp!')
+                continue
+
             if scheme_data.get('extract_json', False):
-                values = {}
-                extracted = info.group(1)
+                extracted = regexp_group.group(1)
 
                 logging.debug('Extracted: %s', extracted)
 
@@ -56,6 +70,7 @@ def extract(page):
                 json_data = json.loads(extracted)
 
                 if json_data == {}:
+                    logging.debug('Unabled to extract json!')
                     continue
 
                 loaded_json_str = json.dumps(json_data, indent=4, sort_keys=True)
@@ -69,9 +84,15 @@ def extract(page):
                     value = get_field(json_data)
                     values[name] = str(value) if value != None else ''
             else:
-                values = info.groupdict()
+                values = regexp_group.groupdict()
 
-            return {a: b for a, b in values.items() if b or type(b) == bool}
-        else:
-            logging.info('Could not extract!')
+        if use_html_parser:
+            soup = bs(page, 'html.parser')
+            for name, get_field in scheme_data['fields'].items():
+                value = get_field(soup)
+                values[name] = str(value) if value != None else ''
+
+        return {a: b for a, b in values.items() if b or type(b) == bool}
+
+    # all schemes have been checked
     return {}

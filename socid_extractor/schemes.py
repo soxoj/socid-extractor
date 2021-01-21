@@ -1,3 +1,4 @@
+from dateutil.parser import parse as parse_datetime_str
 import html
 import json
 
@@ -87,7 +88,7 @@ schemes = {
         }
     },
     'Yandex Collections API': {
-        'flags': ['theme_subscriptions', 'subscriptions_on_self_boards'],
+        'flags': ['board_subscriptions', 'subscriptions_on_self_boards'],
         'regex': r'^(.+)$',
         'extract_json': True,
         'fields': {
@@ -111,8 +112,16 @@ schemes = {
         }
     },
     'VK user profile': {
-        'flags': ['var vk =', 'change_current_info'],
+        'flags': ['Profile.init({', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<vk_id>\d+).*?(,"loc":"(?P<vk_username>.*?)")?,"back":"(?P<fullname>.*?)"'
+    },
+    'VK closed user profile': {
+        'flags': ['var vk =', 'page_current_info'],
+        'regex': r'<h1 class="page_name">(?P<fullname>.*?)</h1>'
+    },
+    'VK blocked user profile': {
+        'flags': ['window.vk = {', '/images/deactivated_50.png'],
+        'regex': r'<h2 class="op_header">(?P<fullname>.+?)</h2>'
     },
     'Gravatar': {
         'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
@@ -142,7 +151,7 @@ schemes = {
         }
     },
     'EyeEm': {
-        'flags': ['https://www.eyeem.com/node-static/img'],
+        'flags': ['window.__APOLLO_STATE__', 'cdn.eyeem.com/thumb'],
         'regex': r'__APOLLO_STATE__ = ({.+?});\n',
         'extract_json': True,
         'transforms': [
@@ -164,8 +173,13 @@ schemes = {
     },
     'Medium': {
         'flags': ['https://medium.com', 'com.medium.reader'],
-        'regex': r'({"__typename":"User".+?}),"Collection',
+        'regex': r'__APOLLO_STATE__ = ({.+})',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: [v for k,v in x.items() if k.startswith('User:')][0],
+            json.dumps,
+        ],
         'fields': {
             'medium_id': lambda x: x.get('id'),
             'medium_username': lambda x: x.get('username'),
@@ -185,11 +199,49 @@ schemes = {
     },
     'Habrahabr': {
         'flags': ['habracdn.net'],
-        'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/',
+        'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/([\s\S]+?<img src="(?P<image>//habrastorage\.org/getpro/habr/avatars.+?)")?',
     },
-    'Twitter': {
+    # unactual
+    'Twitter HTML': {
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
+    },
+    # https://shadowban.eu/.api/user
+    # https://gist.github.com/superboum/ab31bc4c85c731b9e89ebda5eaed9a3a
+    'Twitter Shadowban': {
+        'flags': ['{"timestamp"', '"profile": {'],
+        'regex': r'^({.+?})$',
+        'extract_json': True,
+        'fields': {
+            'has_tweets': lambda x: x['profile'].get('has_tweets'),
+            'username': lambda x: x['profile'].get('screen_name'),
+            'is_exists': lambda x: x['profile'].get('exists'),
+            'is_suspended': lambda x: x['profile'].get('suspended'),
+            'is_protected': lambda x: x['profile'].get('protected'),
+            'has_ban': lambda x: x.get('tests', {}).get('ghost', {}).get('ban'),
+            'has_banned_in_search_suggestions': lambda x: not x['tests']['typeahead'] if x.get('tests', {}).get('typeahead') else None,
+            'has_search_ban': lambda x: not x['tests']['search'] if x.get('tests', {}).get('search') else None,
+            'has_never_replies': lambda x: not x['tests']['more_replies']['tweet'] if x.get('tests', {}).get('more_replies', {}).get('tweet') else None,
+            'is_deboosted': lambda x: x['tests']['more_replies']['ban'] if x.get('tests', {}).get('more_replies', {}).get('ban') else None,
+        }
+    },
+    'Twitter GraphQL API': {
+        'flags': ['{"data":{"'],
+        'regex': r'^{"data":{"user":({.+})}}$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'fullname': lambda x: x.get('legacy', {}).get('name'),
+            'bio': lambda x: x.get('legacy', {}).get('description'),
+            'created_at': lambda x: parse_datetime_str(x.get('legacy', {}).get('created_at', '')),
+            'image': lambda x: x.get('legacy', {}).get('profile_image_url_https', '').replace('_normal', ''),
+            'image_bg': lambda x: x.get('legacy', {}).get('profile_banner_url'),
+            'is_protected': lambda x: x.get('legacy', {}).get('protected'),
+            'follower_count': lambda x: x.get('legacy', {}).get('followers_count'),
+            'following_count': lambda x: x.get('legacy', {}).get('friends_count'),
+            'location': lambda x: x.get('legacy', {}).get('location'),
+            'favourites_count': lambda x: x.get('legacy', {}).get('favourites_count'),
+        }
     },
     'Facebook user profile': {
         'flags': ['com.facebook.katana', 'scribe_endpoint'],
@@ -199,9 +251,40 @@ schemes = {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
         'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
     },
-    'GitHub': {
+    'GitHub HTML': {
         'flags': ['github.githubassets.com'],
-        'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/search\?user=(?P<username>.+?)"'
+        'regex': r'data-scope-id="(?P<uid>\d+)" data-scoped-search-url="/users/(?P<username>.+?)/search"'
+    },
+    # https://api.github.com/users/torvalds
+    'GitHub API': {
+        'flags': ['gists_url', 'received_events_url'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'image': lambda x: x.get('avatar_url'),
+            'created_at': lambda x: x.get('created_at'),
+            'location': lambda x: x.get('location'),
+            'follower_count': lambda x: x.get('followers'),
+            'following_count': lambda x: x.get('following'),
+            'fullname': lambda x: x.get('name'),
+            'public_gists_count': lambda x: x.get('public_gists'),
+            'public_repos_count': lambda x: x.get('public_repos'),
+            'twitter_username': lambda x: x.get('twitter_username'),
+            'is_looking_for_job': lambda x: x.get('hireable'),
+            'gravatar_id': lambda x: x.get('gravatar_id'),
+            'bio': lambda x: x['bio'].strip() if x.get('bio', '') else None,
+            'is_company': lambda x: x.get('company'),
+            'blog_url': lambda x: x.get('blog'),
+        }
+    },
+    'Gitlab API': {
+        'flags': ['"web_url":"https://gitlab.com/'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x[0].get('id'),
+        }
     },
     'My Mail.ru': {
         'flags': ['my.mail.ru', 'models/user/journal">'],
@@ -235,7 +318,7 @@ schemes = {
         'flags': ['gitlab-static.net'],
         'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
     },
-    '500px API': {
+    '500px GraphQL API': {
         'flags': ['{"data":{"profile":{"id"'],
         'regex': r'^{"data":({.+})}$',
         'extract_json': True,
@@ -244,6 +327,9 @@ schemes = {
             'legacy_id': lambda x: x['profile']['legacyId'],
             'username': lambda x: x['profile']['username'],
             'name': lambda x: x['profile']['displayName'],
+            'created_at': lambda x: x['profile']['registeredAt'],
+            'image': lambda x: x['profile']['avatar']['images'][-1]['url'],
+            'image_bg': lambda x: x['profile']['coverPhotoUrl'],
             'qq_username': lambda x: x['profile']['socialMedia'].get('qq'),
             'website': lambda x: x['profile']['socialMedia'].get('website'),
             'blog': lambda x: x['profile']['socialMedia'].get('blog'),
@@ -409,16 +495,24 @@ schemes = {
     },
     'SoundCloud': {
         'flags': ['eventlogger.soundcloud.com'],
-        'regex': r'catch\(t\){}}\)},(\[{"id":.+?)\);',
+        'regex': r'catch\(e\)\{\}\}\)\},(\[\{"id":.+?)\);',
         'extract_json': True,
         'message': 'Run with auth cookies to get your ids.',
         'fields': {
-            'your_uid': lambda x: x[-2]['data'][0].get('id'),
-            'your_name': lambda x: x[-2]['data'][0].get('full_name'),
-            'your_username': lambda x: x[-2]['data'][0].get('username'),
+            # 'your_uid': lambda x: x[-2]['data'][0].get('id'),
+            # 'your_name': lambda x: x[-2]['data'][0].get('full_name'),
+            # 'your_username': lambda x: x[-2]['data'][0].get('username'),
             'uid': lambda x: x[-1]['data'][0]['id'],
             'name': lambda x: x[-1]['data'][0]['full_name'],
             'username': lambda x: x[-1]['data'][0]['username'],
+            'following_count': lambda x: x[-1]['data'][0]['followings_count'],
+            'follower_count': lambda x: x[-1]['data'][0]['followers_count'],
+            'is_verified': lambda x: x[-1]['data'][0]['verified'],
+            'image': lambda x: x[-1]['data'][0]['avatar_url'],
+            'location': lambda x: x[-1]['data'][0]['city'],
+            'country_code': lambda x: x[-1]['data'][0]['country_code'],
+            'bio': lambda x: x[-1]['data'][0]['description'],
+            'created_at': lambda x: x[-1]['data'][0]['created_at'],
         }
     },
     'TikTok': {
@@ -508,7 +602,8 @@ schemes = {
         'flags': ['src="/js/linkrouter.js', 'container-fluid inner-page'],
         'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
     },
-    'Vimeo': {
+    # unactual
+    'Vimeo HTML': {
         'flags': ['https://i.vimeocdn.com/favicon/main-touch'],
         'regex': r'"app_config":({"user":.+?})},\"coach_notes',
         'extract_json': True,
@@ -521,6 +616,25 @@ schemes = {
             'account_type': lambda x: x['user']['account_type'],
             'is_staff': lambda x: x['user']['is_staff'],
             'links': lambda x: [a['url'] for a in x['user']['links']],
+        }
+    },
+    'Vimeo GraphQL API': {
+        'flags': ['{\n    "uri": "/users/'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['uri'].split('/')[-1],
+            'gender': lambda x: x['gender'],
+            'image': lambda x: x['pictures'].get('sizes', [{'link': ''}])[-1]['link'],
+            'bio': lambda x: x.get('bio'),
+            'location': lambda x: x['location_details'].get('formatted_address'),
+            'username': lambda x: x['name'],
+            'is_verified': lambda x: x['verified'],
+            'skills': lambda x: ','.join(x['skills']),
+            'created_at': lambda x: x['created_time'],
+            'videos': lambda x: x['metadata']['public_videos']['total'],
+            'is_looking_for_job': lambda x: x['available_for_hire'],
+            'is_working_remotely': lambda x: x['can_work_remotely'],
         }
     },
     'DeviantArt': {
@@ -596,7 +710,7 @@ schemes = {
     # TODO: add image
     'Telegram': {
         'flags': ['tg://resolve?domain='],
-        'regex': r'"og:title" content="(?P<fullname>.+)">[\s\S]*"og:description" content="(?P<about>.+)">',
+        'regex': r'"og:title" content="(?P<fullname>.+)">[\s\S]*"og:description" content="(?P<about>.+)">[\s\S]+?<img class="tgme_page_photo_image" src="(?P<image>.+)"',
     },
     'BuzzFeed': {
         'flags': ['window.BZFD = window.BZFD'],
@@ -619,6 +733,15 @@ schemes = {
             'deleted': lambda x: x['user']['deleted'],
             # 'social_names': lambda x: [y.get('name') for y in x['user']['social']],
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
+        }
+    },
+    'vBulletinEngine': {
+        'flags': ['vBulletin.register_control'],
+        'bs': True,
+        'fields': {
+            'status': lambda x: x.find('span', {'class': 'online-status'}).findAll('span')[1].text,
+            'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
+            'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
         }
     }
 }
