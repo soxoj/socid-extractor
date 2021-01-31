@@ -15,7 +15,10 @@ def extract_facebook_uid(link):
 
 
 def get_yandex_profile_pic(default_avatar_id):
-    return f'https://avatars.mds.yandex.net/get-yapic/{default_avatar_id}/islands-200'
+    if not default_avatar_id:
+        return 'https://avatars.mds.yandex.net/get-yapic/0/0-0/islands-300'
+    else:
+        return f'https://avatars.mds.yandex.net/get-yapic/{default_avatar_id}/islands-200'
 
 
 def decode_ya_str(val):

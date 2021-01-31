@@ -259,11 +259,33 @@ def test_yandex_zen_user_profile():
 
 
 def test_yandex_znatoki_user_profile():
-    info = extract(parse('https://yandex.ru/znatoki/user/e3795016-b18e-58ba-9112-21c301e53f37/')[0])
+    info = extract(parse('https://yandex.ru/q/profile/zftrw5fzczde6841qgmfn7d2ag/')[0])
 
-    assert info.get('uid') == 'e3795016-b18e-58ba-9112-21c301e53f37'
-    assert info.get('yandex_uid') == '980797984'
-    assert info.get('name') == 'Настя Рогозинская'
+    assert info.get('yandex_znatoki_id') == '39eec711-5675-56b1-beb5-a1f393d2ee66'
+    assert info.get('yandex_znatoki_uuid') == '52839599'
+    assert info.get('bio') == 'Любитель Nike, вебмастер'
+    assert info.get('name') == 'Александр Яковлев'
+    assert info.get('yandex_uid') == '52839599'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/39460/jNPmWopVPkXtTzVHWtuLfPxLq0U-1/islands-200'
+    assert info.get('is_org') == 'False'
+    assert info.get('is_banned') == 'False'
+    assert info.get('is_deleted') == 'False'
+    assert info.get('created_at') == '2019-04-08T16:23:37.576163+00:00'
+    assert info.get('last_answer_at') == '2021-01-31T06:59:42.358574+00:00'
+    assert 'rating' in info
+    assert info.get('gender') == 'm'
+    assert info.get('links') == "['https://nikefans.ru']"
+    assert info.get('verified_categories') == "['спорт']"
+    assert info.get('is_from_q') == 'False'
+    assert info.get('is_bad_or_shock') == 'False'
+    assert info.get('is_excluded_from_rating') == 'False'
+    assert info.get('teaser') == 'Люблю Nike, спорт и активный образ жизни. С 2013 года я изучаю все, что связано с брендом NIke, веду блог.'
+    assert info.get('facebook_username') == 'nikefansru/'
+    assert info.get('instagram_username') == 'nikefans.ru'
+    assert info.get('telegram_username') == 'nikefansru'
+    assert info.get('vk_username') == 'nikejoy'
+    assert 'answers_count' in info
+    assert 'following_count' in info
 
 
 def test_behance():
