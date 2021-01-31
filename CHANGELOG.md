@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.0.5] - 2021-01-31
+* updated Yandex services extractors
+
 ## [0.0.4] - 2021-01-16
 * actualized Vimeo and VK
 

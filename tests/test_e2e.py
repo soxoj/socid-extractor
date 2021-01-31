@@ -41,6 +41,18 @@ def test_yandex_disk():
     assert info.get('name') == 'Trapl  Zdenek'
 
 
+def test_yandex_reviews():
+    info = extract(parse('https://reviews.yandex.ru/user/1a7dv00dqrdgjf6qkyn8kw37jw')[0])
+
+    assert info.get('yandex_public_id') == '1a7dv00dqrdgjf6qkyn8kw37jw'
+    assert info.get('fullname') == 'Darya Gindina'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/59871/oLXpnRHSVknK56vRAYx2Iuya6U-1/islands-200'
+    assert info.get('is_verified') == 'False'
+    assert info.get('reviews_count') == '1'
+    assert info.get('following_count') == '0'
+    assert info.get('follower_count') == '0'
+
+
 @pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_instagram():
     info = extract(parse('https://www.instagram.com/alexaimephotography/')[0])
@@ -173,7 +185,7 @@ def test_github_api():
     info = extract(parse('https://api.github.com/users/soxoj')[0])
 
     assert info.get('uid') == '31013580'
-    assert info.get('image') == 'https://avatars2.githubusercontent.com/u/31013580?v=4'
+    assert info.get('image') == 'https://avatars.githubusercontent.com/u/31013580?v=4'
     assert info.get('created_at') == '2017-08-14T17:03:07Z'
     assert 'follower_count' in info
     assert 'following_count' in info
@@ -216,13 +228,34 @@ def test_my_mail_communities():
     assert info.get('isVideoChannel') == 'False'
 
 
-@pytest.mark.skip(reason="empty result, additional header needed")
 def test_yandex_music_user_profile():
-    info = extract(parse('https://music.yandex.ru/handlers/library.jsx?owner=pritisk')[0])
+    headers = {'referer': 'https://music.yandex.ru/users/pritisk/playlists'}
+    info = extract(parse('https://music.yandex.ru/handlers/library.jsx?owner=pritisk', headers=headers)[0])
 
     assert info.get('yandex_uid') == '16480689'
     assert info.get('username') == 'pritisk'
     assert info.get('name') == 'Юрий Притиск'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/29310/gK74BTyv8LrLRT0mQFIR2xcWv8-1/islands-200'
+    assert info.get('links') == '[]'
+    assert info.get('is_verified') == 'False'
+    assert info.get('liked_albums') == '0'
+    assert info.get('liked_artists') == '0'
+
+
+@pytest.mark.skip(reason="failed from github CI infra IPs")
+def test_yandex_zen_user_profile():
+    info = extract(parse('https://zen.yandex.ru/user/uyawkukxyf60ud6hjrxr2rq130')[0])
+
+    assert info.get('yandex_public_id') == 'uyawkukxyf60ud6hjrxr2rq130'
+    assert info.get('fullname') == 'Нина Кравченко'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/51169/DKXVQdtL3tZ5cayBXnnicLaKcE-1/islands-200'
+    assert info.get('messenger_guid') == 'e4615300-548b-9a46-73cf-527d47fe57ed'
+    assert info.get('links') == '[]'
+    assert info.get('type') == 'user'
+    assert int(info.get('comments_count')) > 20
+    assert info.get('status') == 'active'
+    assert 'following_count' in info
+    assert 'follower_count' in info
 
 
 def test_yandex_znatoki_user_profile():
@@ -243,7 +276,7 @@ def test_behance():
 
 
 def test_500px():
-    info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%225a17a9af1830b58b94a912995b7947b24f27f1301c6ea8ab71a9eb1a6a86585b%22%7D%7D')[0])
+    info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22105058632482dd2786fd5775745908dc928f537b28e28356b076522757d65c19%22%7D%7D')[0])
 
     assert info.get('uid') == 'dXJpOm5vZGU6VXNlcjoyMzg5Ng=='
     assert info.get('legacy_id') == '23896'
@@ -379,7 +412,7 @@ def test_youtube():
 def test_google_maps():
     info = extract(parse('https://www.google.com/maps/contrib/117503292148966883754')[0])
 
-    assert info.get('contribution_level') == 'Level 3 Local Guide | 132 Points'
+    assert info.get('contribution_level').startswith('Level 3 Local Guide')
     assert info.get('name') == 'Art NI'
 
 
