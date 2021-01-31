@@ -242,6 +242,7 @@ def test_yandex_music_user_profile():
     assert info.get('liked_artists') == '0'
 
 
+@pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_yandex_zen_user_profile():
     info = extract(parse('https://zen.yandex.ru/user/uyawkukxyf60ud6hjrxr2rq130')[0])
 
