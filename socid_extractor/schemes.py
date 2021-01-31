@@ -22,7 +22,12 @@ schemes = {
             'yandex_uid': lambda x: x['owner']['uid'],
             'username': lambda x: x['owner']['login'],
             'name': lambda x: x['owner']['name'],
+            'image': lambda x: get_yandex_profile_pic(x['owner']['avatarHash']),
             'links': lambda x: [link for links in x['profiles'] for link in links['addresses']],
+            'is_verified': lambda x: x['verified'],
+            'liked_albums': lambda x: x['counts']['likedAlbums'],
+            'liked_artists': lambda x: x['counts']['likedArtists'],
+            'has_tracks': lambda x: x['hasTracks'],
         }
     },
     'Yandex Znatoki user profile': {
@@ -110,6 +115,49 @@ schemes = {
             'is_km': lambda x: x.get('is_km'),
             'is_business': lambda x: x.get('is_business'),
         }
+    },
+    'Yandex Reviews user profile': {
+        'flags': ['isInternalYandexNet', 'ReviewFormContent'],
+        'regex': r'window.__PRELOADED_DATA = ({[\s\S]+?})\n\s+}catch',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['pageData']['initialState'],
+            json.dumps,
+        ],
+        'fields': {
+            'yandex_public_id': lambda x: x.get('pkUser', {}).get('publicId'),
+            'fullname': lambda x: decode_ya_str(x.get('pkUser', {}).get('name')),
+            'image': lambda x: get_yandex_profile_pic(x.get('pkUser', {}).get('pic')),
+            'is_verified': lambda x: x.get('pkUser', {}).get('verified'),
+            'reviews_count': lambda x: len(x.get('reviews', {}).get('all', {}).keys()),
+            'following_count': lambda x: x.get('subscription', {}).get('subscribersCount'),
+            'follower_count': lambda x: x.get('subscription', {}).get('subscriptionsCount'),
+        },
+    },
+    'Yandex Zen user profile': {
+        'flags': ['https://zen.yandex.ru/user/', 'zen-lib'],
+        'regex': r'\n\s+var data = ({"__[\s\S]+?});\n',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: list(filter(lambda y: '__serverState' in y[0], x.items())),
+            lambda x: x[0][1]['channel']['source'],
+            json.dumps,
+        ],
+        'fields': {
+            'yandex_public_id': lambda x: x.get('publicId'),
+            'fullname': lambda x: x.get('title'),
+            'image': lambda x: x.get('logo'),
+            'bio': lambda x: x.get('description'),
+            'messenger_guid': lambda x: x.get('messengerGuid'),
+            'links': lambda x: x.get('socialLinks'),
+            'type': lambda x: x.get('type'),
+            'comments_count': lambda x: x.get('userCommentsCount'),
+            'status': lambda x: x.get('socialProfileStatus'),
+            'following_count': lambda x: x.get('subscribers'),
+            'follower_count': lambda x: x.get('subscriptions'),
+        },
     },
     'VK user profile': {
         'flags': ['Profile.init({', 'change_current_info'],
@@ -209,7 +257,7 @@ schemes = {
     # https://shadowban.eu/.api/user
     # https://gist.github.com/superboum/ab31bc4c85c731b9e89ebda5eaed9a3a
     'Twitter Shadowban': {
-        'flags': ['{"timestamp"', '"profile": {'],
+        'flags': ['"timestamp"', '"profile": {', 'has_tweets'],
         'regex': r'^({.+?})$',
         'extract_json': True,
         'fields': {
