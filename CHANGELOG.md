@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.0.6] - 2021-01-31
+* updated Yandex services extractors (again)
+
 ## [0.0.5] - 2021-01-31
 * updated Yandex services extractors
 

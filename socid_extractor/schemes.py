@@ -30,16 +30,14 @@ schemes = {
             'has_tracks': lambda x: x['hasTracks'],
         }
     },
-    'Yandex Znatoki user profile': {
+    'Yandex Q (Znatoki) user profile': {
         'flags': ['Ya.Znatoki'],
         'regex': r'id="restoreData" type="application/json">({.+?})</script>',
         'extract_json': True,
         'transforms': [
             html.unescape,
             json.loads,
-            # lambda x: x['store']['page']['userStats']['id'],
-            lambda x: x['store']['entities']['user'][x['store']['page']['userStats']['id']],
-            # lambda x: x[0][-1],
+            lambda x: x['store']['entities'].get('user', {'':{}})[x['store']['page'].get('userStats', {}).get('id', '')],
             json.dumps,
         ],
         'fields': {
@@ -122,6 +120,7 @@ schemes = {
         'regex': r'^(.+)$',
         'extract_json': True,
         'fields': {
+            'id': lambda x: x.get('id'),
             'yandex_public_id': lambda x: x.get('public_id'),
             'fullname': lambda x: x.get('display_name'),
             'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
@@ -183,6 +182,10 @@ schemes = {
             'following_count': lambda x: x.get('subscribers'),
             'follower_count': lambda x: x.get('subscriptions'),
         },
+    },
+    'Yandex Bugbounty user profile': {
+        'flags': ['yandex_bug_bounty_terms_conditions', 'user__pic'],
+        'regex': r'upics\.yandex\.net\/(?P<yandex_uid>\d+)[\s\S]+<span>(?P<firstname>.+?)<\/span>\s+<em>(?P<username>.+?)<\/em>([\s\S]+?class="link">(?P<email>.+?)<\/a>)?([\s\S]+?<a href="(?P<url>.+?)" target="_blank" class="link link_social">)?',
     },
     'VK user profile': {
         'flags': ['Profile.init({', 'change_current_info'],

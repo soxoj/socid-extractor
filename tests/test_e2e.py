@@ -262,7 +262,6 @@ def test_yandex_znatoki_user_profile():
     info = extract(parse('https://yandex.ru/q/profile/zftrw5fzczde6841qgmfn7d2ag/')[0])
 
     assert info.get('yandex_znatoki_id') == '39eec711-5675-56b1-beb5-a1f393d2ee66'
-    assert info.get('yandex_znatoki_uuid') == '52839599'
     assert info.get('bio') == 'Любитель Nike, вебмастер'
     assert info.get('name') == 'Александр Яковлев'
     assert info.get('yandex_uid') == '52839599'
@@ -286,6 +285,27 @@ def test_yandex_znatoki_user_profile():
     assert info.get('vk_username') == 'nikejoy'
     assert 'answers_count' in info
     assert 'following_count' in info
+
+
+def test_yandex_bugbounty():
+    info = extract(parse('https://yandex.ru/bugbounty/researchers/canyoutestit/')[0])
+
+    assert info.get('yandex_uid') == '690526182'
+    assert info.get('firstname') == 'Артем'
+    assert info.get('username') == 'canyoutestit'
+    assert info.get('email') == 'artebel@mail.ru'
+    assert info.get('url') == 'https://facebook.com/artembelch'
+
+    info = extract(parse('https://yandex.ru/bugbounty/researchers/bdanyok/')[0])
+    assert info.get('yandex_uid') == '65212420'
+    assert info.get('firstname') == 'Данил'
+    assert info.get('username') == 'bdanyok'
+    assert info.get('email') == 'bdanyok@yandex.ru'
+
+    info = extract(parse('https://yandex.ru/bugbounty/researchers/t-a-neo/')[0])
+    assert info.get('yandex_uid') == '584521278'
+    assert info.get('firstname') == 'taneo'
+    assert info.get('username') == 't-a-neo'
 
 
 def test_behance():
