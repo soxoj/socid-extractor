@@ -30,19 +30,42 @@ schemes = {
             'has_tracks': lambda x: x['hasTracks'],
         }
     },
-    'Yandex Znatoki user profile': {
+    'Yandex Q (Znatoki) user profile': {
         'flags': ['Ya.Znatoki'],
         'regex': r'id="restoreData" type="application/json">({.+?})</script>',
         'extract_json': True,
         'transforms': [
             html.unescape,
-            # TODO: refactoring
-            lambda x: json.dumps(list(json.loads(x)['store']['entities']['user'].values())[0]),
+            json.loads,
+            lambda x: x['store']['entities'].get('user', {'':{}})[x['store']['page'].get('userStats', {}).get('id', '')],
+            json.dumps,
         ],
         'fields': {
-            'name': lambda x: x['displayName'],
-            'uid': lambda x: x['id'],
+            'yandex_znatoki_id': lambda x: x['id'],
             'yandex_uid': lambda x: x['uuid'],
+            'bio': lambda x: x['about'],
+            'name': lambda x: x['displayName'],
+            'image': lambda x: get_yandex_profile_pic(x.get('avatarId')),
+            'is_org': lambda x: x.get('authOrg'),
+            'is_banned': lambda x: x['banned'],
+            'is_deleted': lambda x: x['deleted'],
+            'created_at': lambda x: x['created'],
+            'last_answer_at': lambda x: x.get('lastAnswerTime'),
+            'rating': lambda x: x['rating'],
+            'gender': lambda x: x['sex'],
+            'links': lambda x: list(set(filter(lambda x: x, [x['url'], x.get('promoUrl'), x.get('socialContactUrl')]))),
+            'verified_categories': lambda x: x.get('verifiedIn'),
+            'is_from_q': lambda x: x.get('theqMerged'),
+            'is_bad_or_shock': lambda x: x.get('badOrShock'),
+            'is_excluded_from_rating': lambda x: x.get('excludeFromRating'),
+            'teaser': lambda x: x.get('teaser'),
+            'facebook_username': lambda x: x['socialFacebook'],
+            'instagram_username': lambda x: x['socialInstagram'],
+            'telegram_username': lambda x: x['socialTelegram'],
+            'twitter_username': lambda x: x['socialTwitter'],
+            'vk_username': lambda x: x['socialVkontakte'],
+            'answers_count': lambda x: x.get('stats', {}).get('answersCount'),
+            'following_count': lambda x: x.get('stats', {}).get('subscribersCount'),
         }
     },
     'Yandex Realty offer': {
@@ -97,6 +120,7 @@ schemes = {
         'regex': r'^(.+)$',
         'extract_json': True,
         'fields': {
+            'id': lambda x: x.get('id'),
             'yandex_public_id': lambda x: x.get('public_id'),
             'fullname': lambda x: x.get('display_name'),
             'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
@@ -158,6 +182,10 @@ schemes = {
             'following_count': lambda x: x.get('subscribers'),
             'follower_count': lambda x: x.get('subscriptions'),
         },
+    },
+    'Yandex Bugbounty user profile': {
+        'flags': ['yandex_bug_bounty_terms_conditions', 'user__pic'],
+        'regex': r'upics\.yandex\.net\/(?P<yandex_uid>\d+)[\s\S]+<span>(?P<firstname>.+?)<\/span>\s+<em>(?P<username>.+?)<\/em>([\s\S]+?class="link">(?P<email>.+?)<\/a>)?([\s\S]+?<a href="(?P<url>.+?)" target="_blank" class="link link_social">)?',
     },
     'VK user profile': {
         'flags': ['Profile.init({', 'change_current_info'],
