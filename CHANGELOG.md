@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.0.7] - 2021-01-31
+* added Tumblr (default theme) and Yandex.Market
+
 ## [0.0.6] - 2021-01-31
 * updated Yandex services extractors (again)
 

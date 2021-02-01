@@ -1,6 +1,7 @@
 from dateutil.parser import parse as parse_datetime_str
 import html
 import json
+import itertools
 
 from .utils import *
 
@@ -68,6 +69,29 @@ schemes = {
             'following_count': lambda x: x.get('stats', {}).get('subscribersCount'),
         }
     },
+    'Yandex Market user profile': {
+        'flags': ['MarketNode', '{"entity":"user"'],
+        'regex': r'{"user":({"entity":"user".+?}),"isEmptyList',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('login'),
+            'yandex_uid': lambda x: x.get('uid'),
+            'yandex_public_id': lambda x: x.get('publicId'),
+            'fullname': lambda x: x.get('publicDisplayName'),
+            'image': lambda x: x.get('avatar').replace('//', 'https://').replace('retina-50', '200'),
+            'reviews_count': lambda x: x.get('grades'),
+            'is_deleted': lambda x: x.get('isDeleted'),
+            'is_hidden_name': lambda x: x.get('isDisplayNameEmpty'),
+            'is_verified': lambda x: x.get('verified'),
+            'linked_social': lambda x: [{
+                'type': a['provider']['name'],
+                'uid': a['userid'],
+                'username': a['username'],
+                'profile_id': a['profile_id']
+            } for a in x.get('social')],
+            'links': lambda x: list(itertools.chain(*[l.get('addresses') for l in x.get('social', [])])),
+        },
+    },
     'Yandex Realty offer': {
         'flags': ['realty.yandex.ru/offer'],
         'regex': r'({"routing":{"locationBeforeTransitions.+?});',
@@ -98,7 +122,7 @@ schemes = {
             'yandex_public_id': lambda x: x.get('public_id'),
             'fullname': lambda x: x.get('display_name'),
             'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
-            'sex': lambda x: x.get('sex'),
+            'gender': lambda x: x.get('sex'),
             'description': lambda x: x.get('description'),
             'phone_id': lambda x: x.get('phone_id'),
             'company_info': lambda x: x.get('company_info'),
@@ -124,7 +148,7 @@ schemes = {
             'yandex_public_id': lambda x: x.get('public_id'),
             'fullname': lambda x: x.get('display_name'),
             'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
-            'sex': lambda x: x.get('sex'),
+            'gender': lambda x: x.get('sex'),
             'description': lambda x: x.get('description'),
             'phone_id': lambda x: x.get('phone_id'),
             'company_info': lambda x: x.get('company_info'),
@@ -818,6 +842,15 @@ schemes = {
             'status': lambda x: x.find('span', {'class': 'online-status'}).findAll('span')[1].text,
             'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
             'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
+        }
+    },
+    'Tumblr (default theme)': {
+        'flags': ['https://assets.tumblr.com'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('h1', {'class': 'blog-title'}).find('a').text,
+            'title': lambda x: x.find('div', {'class': 'title-group'}).find('span', {'class': 'description'}).text.strip(),
+            'links': lambda x: [enrich_link(a.find('a').get('href')) for a in x.find('div', {'class': 'nav-wrapper'}).find_all('li', {'class': 'nav-item nav-item--page'})],
         }
     }
 }

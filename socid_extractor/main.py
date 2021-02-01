@@ -89,8 +89,11 @@ def extract(page):
         if use_html_parser:
             soup = bs(page, 'html.parser')
             for name, get_field in scheme_data['fields'].items():
-                value = get_field(soup)
-                values[name] = str(value) if value != None else ''
+                try:
+                    value = get_field(soup)
+                    values[name] = str(value) if value != None else ''
+                except AttributeError as e:
+                    logging.debug(f'BS extract error: {e}')
 
         return {a: b for a, b in values.items() if b or type(b) == bool}
 
