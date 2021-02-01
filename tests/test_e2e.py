@@ -596,6 +596,7 @@ def test_yandex_collections_api():
     assert info.get('is_business') == 'False'
 
 
+@pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_yandex_market():
     info = extract(parse('https://market.yandex.ru/user/z16yy5a9ae7uh030t5bgpkgyqg/reviews')[0])
 
