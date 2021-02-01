@@ -270,7 +270,7 @@ def test_yandex_znatoki_user_profile():
     assert info.get('is_banned') == 'False'
     assert info.get('is_deleted') == 'False'
     assert info.get('created_at') == '2019-04-08T16:23:37.576163+00:00'
-    assert info.get('last_answer_at') == '2021-01-31T06:59:42.358574+00:00'
+    assert 'last_answer_at' in info
     assert 'rating' in info
     assert info.get('gender') == 'm'
     assert info.get('links') == "['https://nikefans.ru']"
@@ -471,6 +471,14 @@ def test_deviantart():
     assert info.get('tagline') == 'Nothing worth having is easy...'
 
 
+def test_tumblr():
+    info = extract(parse('https://alexaimephotography.tumblr.com/')[0])
+
+    assert info.get('fullname') == 'Alex Aimé Photography'
+    assert info.get('title') == 'My name is Alex Aimé, and i am a freelance photographer. Originally from Burgundy in France .I am a man of 29 years. Follow me on : www.facebook.com/AlexAimePhotography/'
+    assert info.get('links') == "['https://www.facebook.com/AlexAimePhotography/', 'https://500px.com/alexaimephotography', 'https://www.instagram.com/alexaimephotography/', 'https://www.flickr.com/photos/photoambiance/']"
+
+
 def test_eyeem():
     info = extract(parse('https://www.eyeem.com/u/blue')[0])
 
@@ -577,7 +585,7 @@ def test_yandex_collections_api():
     assert info.get('yandex_public_id') == '20vpvmmwpnwyb0dpbnjvy3k14c'
     assert info.get('fullname') == 'yellow_lolo'
     assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/62162/enc-325ec489adfdc84e00cb76315a5e214dc95d51408754cd21321958be4b59647a/islands-200'
-    assert info.get('sex') == 'm'
+    assert info.get('gender') == 'm'
     assert info.get('likes') == '0'
     assert info.get('cards') == '0'
     assert info.get('boards') == '0'
@@ -586,6 +594,23 @@ def test_yandex_collections_api():
     assert info.get('is_forbid') == 'False'
     assert info.get('is_km') == 'False'
     assert info.get('is_business') == 'False'
+
+
+@pytest.mark.skip(reason="failed from github CI infra IPs")
+def test_yandex_market():
+    info = extract(parse('https://market.yandex.ru/user/z16yy5a9ae7uh030t5bgpkgyqg/reviews')[0])
+
+    assert info.get('username') == 'katerina.jaryschckina'
+    assert info.get('yandex_uid') == '207757917'
+    assert info.get('yandex_public_id') == 'z16yy5a9ae7uh030t5bgpkgyqg'
+    assert info.get('fullname') == 'Екатерина Ярышкинa'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/15298/enc-b44c03912bc49d1ba01345b8a2a4facbf24874f4dc922b4eb50b455107676f1a/islands-200'
+    assert info.get('reviews_count') == '2'
+    assert info.get('is_deleted') == 'False'
+    assert info.get('is_hidden_name') == 'True'
+    assert info.get('is_verified') == 'False'
+    assert info.get('linked_social') == "[{'type': 'vkontakte', 'uid': '137002953', 'username': None, 'profile_id': 12075972}]"
+    assert info.get('links') == "['https://vk.com/id137002953']"
 
 
 def test_tiktok():
@@ -607,6 +632,7 @@ def test_tiktok():
     assert info.get('digg_count') == '0'
 
 
+@pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_flickr():
     info = extract(parse('https://www.flickr.com/photos/alexaimephotography2020/')[0])
 

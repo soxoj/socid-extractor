@@ -15,17 +15,23 @@ def extract_facebook_uid(link):
 
 
 def get_yandex_profile_pic(default_avatar_id):
-    if not default_avatar_id:
-        return 'https://avatars.mds.yandex.net/get-yapic/0/0-0/islands-300'
-    else:
-        return f'https://avatars.mds.yandex.net/get-yapic/{default_avatar_id}/islands-200'
-
+    url = 'https://avatars.mds.yandex.net/get-yapic/0/0-0/islands-300'
+    if default_avatar_id:
+        url = f'https://avatars.mds.yandex.net/get-yapic/{default_avatar_id}/islands-200'
+    return url
 
 def decode_ya_str(val):
     try:
         return val.encode('iso-8859-1').decode('utf-8')
     except:
         return val
+
+
+def enrich_link(html_url):
+    fixed_url = html_url.lstrip('/')
+    if fixed_url and not fixed_url.startswith('http'):
+        fixed_url = 'https://' + fixed_url
+    return fixed_url
 
 
 def timestamp_to_datetime(t):
