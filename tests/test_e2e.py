@@ -632,6 +632,7 @@ def test_tiktok():
     assert info.get('digg_count') == '0'
 
 
+@pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_flickr():
     info = extract(parse('https://www.flickr.com/photos/alexaimephotography2020/')[0])
 
