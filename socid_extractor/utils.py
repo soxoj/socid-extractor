@@ -17,6 +17,7 @@ def extract_facebook_uid(link):
 def get_yandex_profile_pic(default_avatar_id):
     url = 'https://avatars.mds.yandex.net/get-yapic/0/0-0/islands-300'
     if default_avatar_id:
+        default_avatar_id = default_avatar_id.replace('user_avatar/yapic/', '')
         url = f'https://avatars.mds.yandex.net/get-yapic/{default_avatar_id}/islands-200'
     return url
 

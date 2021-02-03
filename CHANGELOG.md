@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.0.8] - 2021-02-03
+* added Yandex.Messenger
+
 ## [0.0.7] - 2021-01-31
 * added Tumblr (default theme) and Yandex.Market
 
