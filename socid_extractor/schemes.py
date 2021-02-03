@@ -26,9 +26,9 @@ schemes = {
             'image': lambda x: get_yandex_profile_pic(x['owner']['avatarHash']),
             'links': lambda x: [link for links in x['profiles'] for link in links['addresses']],
             'is_verified': lambda x: x['verified'],
-            'liked_albums': lambda x: x['counts']['likedAlbums'],
-            'liked_artists': lambda x: x['counts']['likedArtists'],
-            'has_tracks': lambda x: x['hasTracks'],
+            'liked_albums': lambda x: x['counts'].get('likedAlbums'),
+            'liked_artists': lambda x: x['counts'].get('likedArtists'),
+            'has_tracks': lambda x: x.get('hasTracks'),
         }
     },
     'Yandex Q (Znatoki) user profile': {

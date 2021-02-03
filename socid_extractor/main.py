@@ -64,7 +64,11 @@ def extract(page):
                 if transforms:
                     for t in transforms:
                         logging.debug(t)
-                        extracted = t(extracted)
+                        try:
+                            extracted = t(extracted)
+                        except KeyError as e:
+                            logging.debug(f'Transform error: {e}')
+                            extracted = {}
                         logging.debug(extracted)
 
                 json_data = json.loads(extracted)
