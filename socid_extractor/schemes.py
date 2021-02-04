@@ -92,6 +92,32 @@ schemes = {
             'links': lambda x: list(itertools.chain(*[l.get('addresses') for l in x.get('social', [])])),
         },
     },
+    'Yandex Music API': {
+        'flags': ['invocationInfo', 'req-id"'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('result', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('login'),
+            'yandex_uid': lambda x: x.get('uid'),
+            'yandex_public_id': lambda x: x.get('publicId'),
+            'fullname': lambda x: x.get('fullName'),
+            'links': lambda x: x.get('socialProfiles'),
+            'is_verified': lambda x: x.get('verified'),
+            'has_tracks': lambda x: x.get('statistics', {}).get('hasTracks'),
+            'liked_users': lambda x: x.get('statistics', {}).get('likedUsers'),
+            'liked_by_users': lambda x: x.get('statistics', {}).get('likedByUsers'),
+            'liked_artists': lambda x: x.get('statistics', {}).get('likedArtists'),
+            'liked_albums': lambda x: x.get('statistics', {}).get('likedAlbums'),
+            'ugc_tracks_count': lambda x: x.get('statistics', {}).get('ugcTracks'),
+            'is_private_statistics': lambda x: x.get('statistics') == 'private',
+            'is_private_social_profiles': lambda x: x.get('socialProfiles') == 'private',
+        },
+    },
     'Yandex Realty offer': {
         'flags': ['realty.yandex.ru/offer'],
         'regex': r'({"routing":{"locationBeforeTransitions.+?});',
@@ -889,6 +915,14 @@ schemes = {
             'fullname': lambda x: x.find('h1', {'class': 'blog-title'}).find('a').text,
             'title': lambda x: x.find('div', {'class': 'title-group'}).find('span', {'class': 'description'}).text.strip(),
             'links': lambda x: [enrich_link(a.find('a').get('href')) for a in x.find('div', {'class': 'nav-wrapper'}).find_all('li', {'class': 'nav-item nav-item--page'})],
+        }
+    },
+    '1x.com': {
+        'flags': ['content="https://www.1x.com/'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'coveroverlay'}).find('td', {'valign': 'bottom'}).find('div').contents[0],
+            'image': lambda x:  'https://1x.com/' + x.find('img', {'class': 'member_profilepic'}).get('src', ''),
         }
     }
 }
