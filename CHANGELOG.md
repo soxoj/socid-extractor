@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.0.8] - 2021-02-05
+* added Yandex.Music API, 1x.com
+* improved errors catching
+
 ## [0.0.8] - 2021-02-03
 * added Yandex.Messenger
 

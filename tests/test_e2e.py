@@ -317,6 +317,7 @@ def test_behance():
     assert info.get('first_name') == 'Vasiliy'
 
 
+@pytest.mark.github_failed
 def test_500px():
     info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22105058632482dd2786fd5775745908dc928f537b28e28356b076522757d65c19%22%7D%7D')[0])
 

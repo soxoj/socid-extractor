@@ -66,7 +66,7 @@ def extract(page):
                         logging.debug(t)
                         try:
                             extracted = t(extracted)
-                        except KeyError as e:
+                        except (AttributeError, KeyError) as e:
                             logging.debug(f'Transform error: {e}')
                             extracted = {}
                         logging.debug(extracted)
@@ -85,8 +85,11 @@ def extract(page):
                         f.write(loaded_json_str)
 
                 for name, get_field in scheme_data['fields'].items():
-                    value = get_field(json_data)
-                    values[name] = str(value) if value != None else ''
+                    try:
+                        value = get_field(json_data)
+                        values[name] = str(value) if value != None else ''
+                    except (AttributeError, KeyError) as e:
+                        logging.debug(f'Unable to extact field {name}: {e}')
             else:
                 values = regexp_group.groupdict()
 
@@ -96,7 +99,7 @@ def extract(page):
                 try:
                     value = get_field(soup)
                     values[name] = str(value) if value != None else ''
-                except AttributeError as e:
+                except (AttributeError, KeyError) as e:
                     logging.debug(f'BS extract error: {e}')
 
         return {a: b for a, b in values.items() if b or type(b) == bool}
