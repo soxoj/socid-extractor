@@ -2,7 +2,7 @@
 import pytest
 
 from socid_extractor.activation import get_twitter_headers
-from socid_extractor.main import parse, extract
+from socid_extractor.main import parse, extract, HEADERS
 
 
 def test_vk_user_profile_full():
@@ -55,7 +55,7 @@ def test_yandex_reviews():
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_instagram():
-    info = extract(parse('https://www.instagram.com/alexaimephotography/')[0])
+    info = extract(parse('https://www.instagram.com/alexaimephotography/', headers=HEADERS)[0])
 
     assert info.get('uid') == '6828488620'
     assert info.get('username') == 'alexaimephotography'
@@ -228,6 +228,7 @@ def test_my_mail_communities():
     assert info.get('isVideoChannel') == 'False'
 
 
+@pytest.mark.skip(reason="captcha")
 def test_yandex_music_user_profile():
     headers = {'referer': 'https://music.yandex.ru/users/pritisk/playlists'}
     info = extract(parse('https://music.yandex.ru/handlers/library.jsx?owner=pritisk', headers=headers)[0])
