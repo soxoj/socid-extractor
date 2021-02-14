@@ -127,8 +127,10 @@ def test_twitter_shadowban():
     assert info.get('has_banned_in_search_suggestions') == 'False'
 
 
-def test_twitter():
+def test_twitter_api():
     _, headers = get_twitter_headers({})
+    import logging
+    logging.error(headers)
     info = extract(parse('https://twitter.com/i/api/graphql/ZRnOhhXPwue_JGILb9TNug/UserByScreenName?variables=%7B%22screen_name%22%3A%22cardiakflatline%22%2C%22withHighlightedLabel%22%3Atrue%7D', headers=headers)[0])
 
     assert info.get('uid') == 'VXNlcjo0NTkyNjgxNg=='
@@ -138,6 +140,7 @@ def test_twitter():
     assert info.get('image') == 'https://pbs.twimg.com/profile_images/745944619213557760/vgapfpjV.jpg'
     assert info.get('image_bg') == 'https://pbs.twimg.com/profile_banners/45926816/1487198278'
     assert info.get('is_protected') == 'False'
+    assert info.get('links') == "['http://www.flatlinekits.com']"
     assert info.get('location') == 'Los Angeles, CA'
     assert 'follower_count' in info
     assert 'following_count' in info
@@ -284,8 +287,6 @@ def test_yandex_znatoki_user_profile():
     assert info.get('instagram_username') == 'nikefans.ru'
     assert info.get('telegram_username') == 'nikefansru'
     assert info.get('vk_username') == 'nikejoy'
-    assert 'answers_count' in info
-    assert 'following_count' in info
 
 
 def test_yandex_bugbounty():
