@@ -287,8 +287,6 @@ def test_yandex_znatoki_user_profile():
     assert info.get('instagram_username') == 'nikefans.ru'
     assert info.get('telegram_username') == 'nikefansru'
     assert info.get('vk_username') == 'nikejoy'
-    assert 'answers_count' in info
-    assert 'following_count' in info
 
 
 def test_yandex_bugbounty():
