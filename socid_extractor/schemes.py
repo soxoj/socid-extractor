@@ -405,6 +405,7 @@ schemes = {
             'following_count': lambda x: x.get('legacy', {}).get('friends_count'),
             'location': lambda x: x.get('legacy', {}).get('location'),
             'favourites_count': lambda x: x.get('legacy', {}).get('favourites_count'),
+            'links': lambda x: [y.get('expanded_url') for y in x.get('legacy', {}).get('entities', {}).get('url', {}).get('urls', [])],
         }
     },
     'Facebook user profile': {
