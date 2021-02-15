@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.0.10] - 2021-02-15
+* updated setup requirements
+* improved Twitter extractor
+
 ## [0.0.9] - 2021-02-05
 * added Yandex.Music API, 1x.com
 * improved errors catching
