@@ -925,5 +925,27 @@ schemes = {
             'fullname': lambda x: x.find('div', {'class': 'coveroverlay'}).find('td', {'valign': 'bottom'}).find('div').contents[0],
             'image': lambda x:  'https://1x.com/' + x.find('img', {'class': 'member_profilepic'}).get('src', ''),
         }
+    },
+    'Last.fm': {
+        'flags': ['Music Profile | Last.fm</title>'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('span', {'class': 'header-title-display-name'}).contents[0].strip(),
+            # TODO: date convert
+            'bio': lambda x: x.find('span', {'class': 'header-scrobble-since'}).contents[0].strip(),
+            'image': lambda x: x.find('span', {'class': 'avatar'}).find('img').get('src', ''),
+        }
+    },
+    'Ask.fm': {
+        'flags': [' | ASKfm</title>'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: x.find('span', {'class': 'userName_wrap'}).find('span', {'class': 'userName'}).contents[0].lstrip('@'),
+            'fullname': lambda x: x.find('h1', {'class': 'userName_status'}).find('span', {'class': 'userName'}).contents[0].lstrip('@'),
+            'posts_count': lambda x: x.find('div', {'class': 'profileStats_number profileTabAnswerCount'}).contents[0],
+            'likes_count': lambda x: x.find('div', {'class': 'profileStats_number profileTabLikeCount'}).contents[0],
+            'photo': lambda x: x.find('a', {'class': 'userAvatar-big'}).get('style').replace('background-image:url(','').rstrip(')'),
+            'location': lambda x: x.find('div', {'class': 'icon-location'}).contents[0],
+        }
     }
 }

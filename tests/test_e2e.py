@@ -104,6 +104,7 @@ def test_habr_no_image():
     assert not 'image' in info
 
 
+@pytest.mark.skip(reason="down")
 def test_twitter_shadowban_no_account():
     info = extract(parse('https://shadowban.eu/.api/sgfrgrrr')[0])
 
@@ -115,6 +116,8 @@ def test_twitter_shadowban_no_account():
     assert not 'has_search_ban' in info
     assert not 'has_banned_in_search_suggestions' in info
 
+
+@pytest.mark.skip(reason="down")
 def test_twitter_shadowban():
     info = extract(parse('https://shadowban.eu/.api/trump')[0])
 
@@ -673,3 +676,20 @@ def test_patreon():
     assert info.get('patreon_username') == 'annetlovart'
     assert info.get('fullname') == 'Annet Lovart'
     assert info.get('links') == "['https://www.facebook.com/322598031832479', 'https://www.instagram.com/annet_lovart', 'https://twitter.com/annet_lovart', 'https://youtube.com/channel/UClDg4ntlOW_1j73zqSJxHHQ']"
+
+def test_last_fm():
+    info = extract(parse('https://www.last.fm/user/alex')[0])
+
+    assert info.get('fullname') == 'Alex'
+    assert info.get('bio') == '• scrobbling since 21 Feb 2003'
+    assert info.get('image') == 'https://lastfm.freetls.fastly.net/i/u/avatar170s/15e455555655c8503ed9ba6fce71d2d6.png'
+
+def test_ask_fm():
+    info = extract(parse('https://ask.fm/sasha')[0])
+
+    assert info.get('username') == 'sasha'
+    assert info.get('fullname') == 'Александр Чубаров'
+    assert info.get('posts_count') == '18'
+    assert info.get('likes_count') == '1.06 K'
+    assert info.get('photo') == 'https://d2halst20r4hcy.cloudfront.net/assets/008/668/847/normal/100_4046.jpg'
+    assert info.get('location') == 'Красноярск'
