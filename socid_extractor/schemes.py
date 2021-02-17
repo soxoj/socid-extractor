@@ -900,6 +900,28 @@ schemes = {
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
         }
     },
+    'Twitch': {
+        'flags': ['<meta property="al:android:url" content="twitch://'],
+        'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['props']['relayQueryRecords'],
+            lambda x: [v for k, v in x.items() if k.startswith('User') or k.endswith('followers')],
+            lambda x: dict(list(x[0].items()) + list(x[1].items())),
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x.get('id').split('{')[-1],
+            'views_count': lambda x: x.get('profileViewCount'),
+            'username': lambda x: x.get('login'),
+            'bio': lambda x: x.get('description'),
+            'fullname': lambda x: x.get('displayName'),
+            'image': lambda x: x.get('profileImageURL(width:300)'),
+            'likes_count': lambda x: x.get('totalCount'),
+            'image_bg': lambda x: x.get('bannerImageURL'),
+        },
+    },
     'vBulletinEngine': {
         'flags': ['vBulletin.register_control'],
         'bs': True,
@@ -947,5 +969,18 @@ schemes = {
             'photo': lambda x: x.find('a', {'class': 'userAvatar-big'}).get('style').replace('background-image:url(','').rstrip(')'),
             'location': lambda x: x.find('div', {'class': 'icon-location'}).contents[0],
         }
-    }
+    },
+    'Launchpad': {
+        'flags': ['in Launchpad</title>'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('h2', {'id': 'watermark-heading'}).find('a').contents[0],
+            'username': lambda x: x.find('dl', {'id': 'launchpad-id'}).find('dd').contents[0],
+            'languages': lambda x: x.find('dl', {'id': 'languages'}).find('dd').contents[0].strip(),
+            'karma': lambda x: x.find('a', {'id': 'karma-total'}).contents[0],
+            'created_at': lambda x: x.find('dd', {'id': 'member-since'}).contents[0],
+            'timezone': lambda x: re.sub(r'\s+', ' ', x.find('dl', {'id': 'timezone'}).find('dd').contents[0] or '').strip(),
+            'openpgp_key': lambda x: x.find('dl', {'id': 'pgp-keys'}).find('dd').contents[0].strip(),
+        },
+    },
 }
