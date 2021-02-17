@@ -104,6 +104,7 @@ def test_habr_no_image():
     assert not 'image' in info
 
 
+@pytest.mark.skip(reason="down")
 def test_twitter_shadowban_no_account():
     info = extract(parse('https://shadowban.eu/.api/sgfrgrrr')[0])
 
@@ -115,6 +116,8 @@ def test_twitter_shadowban_no_account():
     assert not 'has_search_ban' in info
     assert not 'has_banned_in_search_suggestions' in info
 
+
+@pytest.mark.skip(reason="down")
 def test_twitter_shadowban():
     info = extract(parse('https://shadowban.eu/.api/trump')[0])
 
