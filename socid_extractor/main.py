@@ -37,7 +37,7 @@ def extract(page):
         if found:
             logging.info('%s has been detected' % scheme_name)
             if 'message' in scheme_data:
-                print(scheme_data['message'])
+                logging.info(scheme_data['message'])
         else:
             continue
 
