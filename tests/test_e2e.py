@@ -654,11 +654,13 @@ def test_flickr():
     assert info.get('is_pro') == 'False'
     assert info.get('is_deleted') == 'False'
 
+
 def test_telegram():
     info = extract(parse('https://t.me/buzovacoin')[0])
 
     assert info.get('fullname') == 'Buzovacoin'
     assert info.get('about').startswith('ICO Ольги Бузовой - Платформа BUZAR')
+
 
 def test_mssg():
     info = extract(parse('https://mssg.me/mr.adam')[0])
@@ -677,12 +679,14 @@ def test_patreon():
     assert info.get('fullname') == 'Annet Lovart'
     assert info.get('links') == "['https://www.facebook.com/322598031832479', 'https://www.instagram.com/annet_lovart', 'https://twitter.com/annet_lovart', 'https://youtube.com/channel/UClDg4ntlOW_1j73zqSJxHHQ']"
 
+
 def test_last_fm():
     info = extract(parse('https://www.last.fm/user/alex')[0])
 
     assert info.get('fullname') == 'Alex'
     assert info.get('bio') == '• scrobbling since 21 Feb 2003'
     assert info.get('image') == 'https://lastfm.freetls.fastly.net/i/u/avatar170s/15e455555655c8503ed9ba6fce71d2d6.png'
+
 
 def test_ask_fm():
     info = extract(parse('https://ask.fm/sasha')[0])
@@ -693,3 +697,28 @@ def test_ask_fm():
     assert info.get('likes_count') == '1.06 K'
     assert info.get('photo') == 'https://d2halst20r4hcy.cloudfront.net/assets/008/668/847/normal/100_4046.jpg'
     assert info.get('location') == 'Красноярск'
+
+
+def test_launchpad():
+    info = extract(parse('https://launchpad.net/~antony')[0])
+
+    assert info.get('fullname') == 'Genelyk'
+    assert info.get('username') == 'antony'
+    assert info.get('languages') == 'Spanish'
+    assert info.get('karma') == '0'
+    assert info.get('created_at') == '2007-05-17'
+    assert info.get('timezone') == 'America/Lima (UTC-0500)'
+    assert info.get('openpgp_key') == '62FCE94A1E7871FBFE81F10AB9579C368DD41DF8'
+
+
+def test_twitch():
+    info = extract(parse('https://m.twitch.tv/johnwolfe/profile')[0])
+
+    assert info.get('id') == '36536868'
+    assert info.get('username') == 'johnwolfe'
+    assert info.get('bio') == 'Playing horror games all the time for charity.'
+    assert info.get('fullname') == 'JohnWolfe'
+    assert info.get('image') == 'https://static-cdn.jtvnw.net/jtv_user_pictures/johnwolfe-profile_image-61f8e374d34a8bbd-300x300.png'
+    assert info.get('image_bg') == 'https://static-cdn.jtvnw.net/jtv_user_pictures/9d88705b5a305a7e-profile_banner-480.jpeg'
+    assert 'views_count' in info
+    assert 'likes_count' in info
