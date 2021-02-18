@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.0.11] - 2021-02-18
+* added Linktree, Spotify
+* added Twitch, Launchpad
+* added Last.fm, Ask.fm
+* improved Steam, Habrahabr
+* fixed tests
+
 ## [0.0.10] - 2021-02-15
 * updated setup requirements
 * improved Twitter extractor
