@@ -724,3 +724,15 @@ def test_twitch():
     assert info.get('image_bg') == 'https://static-cdn.jtvnw.net/jtv_user_pictures/9d88705b5a305a7e-profile_banner-480.jpeg'
     assert 'views_count' in info
     assert 'likes_count' in info
+
+def test_linktree():
+    info = extract(parse('https://linktr.ee/annetlovart')[0])
+
+    assert info.get('id') == '5420275'
+    assert info.get('username') == 'annetlovart'
+    assert info.get('image') == 'https://d1fdloi71mui9q.cloudfront.net/MidfykWeQemDO5YVdRDv_35849b5fb49c69271d284ade7ffef659'
+    assert info.get('is_active') == 'True'
+    assert info.get('is_verified') == 'True'
+    assert info.get('is_email_verified') == 'True'
+    assert info.get('tier') == 'free'
+    assert info.get('links') == "['https://uk.wikipedia.org/wiki/Annet_Lovart', 'https://www.patreon.com/annetlovart', 'https://creativemarket.com/annet_lovart/4945530-Trendy-Floral-Pattern', 'https://www.behance.net/gallery/96717659/Maya-flowers', 'https://www.facebook.com/annetlovart', 'https://youtu.be/mWU_Lyb9kw4', 'https://instagram.com/annet_lovart', 'https://www.pinterest.com/annet_lovart/one-stroke-tutorial-annet_lovart/']"
