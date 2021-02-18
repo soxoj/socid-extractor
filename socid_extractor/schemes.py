@@ -374,7 +374,12 @@ schemes = {
     },
     'Habrahabr': {
         'flags': ['habracdn.net'],
-        'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/([\s\S]+?<img src="(?P<image>//habrastorage\.org/getpro/habr/avatars.+?)")?',
+        'bs': True,
+        'fields': {
+            'uid': lambda x: x.find('div', {'class': 'user-info__stats'}).parent.attrs['class'][-1].split('_')[-1],
+            'username': lambda x: x.find('a', {'class': 'media-obj__image'}).get('href').split('/')[-2],
+            'image': lambda x: 'http:' + x.find('div', {'class': 'user-info__stats'}).find('img').get('src'),
+        },
     },
     # unactual
     'Twitter HTML': {

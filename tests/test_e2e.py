@@ -93,7 +93,7 @@ def test_habr():
 
     assert info.get('uid') == '1371978'
     assert info.get('username') == 'm1rko'
-    assert info.get('image') == '//habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
+    assert info.get('image') == 'http://habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
 
 
 def test_habr_no_image():
