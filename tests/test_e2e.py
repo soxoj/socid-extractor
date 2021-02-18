@@ -356,6 +356,7 @@ def test_bitbucket():
     assert info.get('created_at') == '2009-11-23T10:41:04.355755+00:00'
 
 
+@pytest.mark.skip(reason="cloudflare")
 def test_steam():
     info = extract(parse('https://steamcommunity.com/id/GabrielSantosMariano/')[0])
 
@@ -364,6 +365,7 @@ def test_steam():
     assert info.get('nickname') == 'Gabriel! Santos, Mariano.'
 
 
+@pytest.mark.skip(reason="cloudflare")
 def test_steam_hidden():
     info = extract(parse('https://steamcommunity.com/id/Elvoc/')[0])
 
