@@ -314,6 +314,17 @@ schemes = {
             'external_url': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('external_url'),
         }
     },
+    'Spotify API': {
+        'flags': ['"uri": "spotify:user:'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('name'),
+            'follower_count': lambda x: x.get('followers_count'),
+            'following_count': lambda x: x.get('following_count'),
+            'image': lambda x: x.get('image_url', ''),
+        }
+    },
     'EyeEm': {
         'flags': ['window.__APOLLO_STATE__', 'cdn.eyeem.com/thumb'],
         'regex': r'__APOLLO_STATE__ = ({.+?});\n',
@@ -644,7 +655,7 @@ schemes = {
         'regex': r'({"url":".+?});',
         'extract_json': True,
         'fields': {
-            'uid': lambda x: x['steamid'],
+            'steam_id': lambda x: x['steamid'],
             'nickname': lambda x: x['personaname'],  # это не совсем имя, а ник
             'username': lambda x: [y for y in x['url'].split('/') if y][-1],
         }
