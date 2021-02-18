@@ -916,6 +916,29 @@ schemes = {
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
         }
     },
+    'Linktree': {
+        'flags': ['content="Linktree. Make your link do more."'],
+        'regex': r'id="__NEXT_DATA__" type="application\/json" crossorigin="anonymous">(.+?)<\/script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['props']['pageProps'],
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x.get('account', {}).get('id'),
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('profilePictureUrl'),
+            'is_active': lambda x: x.get('account', {}).get('isActive'),
+            'is_verified': lambda x: x.get('isProfileVerified'),
+            'facebook_pixel_id': lambda x: x.get('account', {}).get('facebookPixelId'),
+            'google_analytics_id': lambda x: x.get('account', {}).get('googleAnalyticsId'),
+            'is_email_verified': lambda x: x.get('account', {}).get('owner', {}).get('isEmailVerified'),
+            'bio': lambda x: x.get('description'),
+            'tier': lambda x: x.get('account', {}).get('tier'),
+            'links': lambda x: [y.get('url') for y in x.get('account', {}).get('links', [])] + x.get('socialLinks', []),
+        }
+    },
     'Twitch': {
         'flags': ['<meta property="al:android:url" content="twitch://'],
         'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
