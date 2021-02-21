@@ -287,11 +287,12 @@ def test_yandex_znatoki_user_profile():
     assert info.get('is_excluded_from_rating') == 'False'
     assert info.get('teaser') == 'Люблю Nike, спорт и активный образ жизни. С 2013 года я изучаю все, что связано с брендом NIke, веду блог.'
     assert info.get('facebook_username') == 'nikefansru/'
-    assert info.get('instagram_username') == 'nikefans.ru'
+    assert info.get('instagram_username') == 'nike.fans.russia'
     assert info.get('telegram_username') == 'nikefansru'
     assert info.get('vk_username') == 'nikejoy'
 
 
+@pytest.mark.skip(reason="non-actual, yandex updated bugbounty pages")
 def test_yandex_bugbounty():
     info = extract(parse('https://yandex.ru/bugbounty/researchers/canyoutestit/')[0])
 
@@ -475,7 +476,7 @@ def test_deviantart():
     assert info.get('website') == 'www.patreon.com/musemercier'
     assert info.get('username') == 'Muse1908'
     assert info.get(
-        'links') == "['https://www.facebook.com/musemercier', 'https://www.instagram.com/muse.mercier/', 'https://www.patreon.com/musemercier']"
+        'links') == "['https://www.facebook.com/musemercier', 'https://www.instagram.com/muse_mercier/', 'https://www.patreon.com/musemercier', 'https://twitter.com/MuseNews']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
 
 

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.0.12] - 2021-02-22
+* updated requirements
+
 ## [0.0.11] - 2021-02-18
 * added Linktree, Spotify
 * added Twitch, Launchpad

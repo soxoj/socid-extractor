@@ -936,7 +936,8 @@ schemes = {
             'is_email_verified': lambda x: x.get('account', {}).get('owner', {}).get('isEmailVerified'),
             'bio': lambda x: x.get('description'),
             'tier': lambda x: x.get('account', {}).get('tier'),
-            'links': lambda x: [y.get('url') for y in x.get('account', {}).get('links', [])] + x.get('socialLinks', []),
+            'social_links': lambda x: {(s['type'].lower() if not s['type'].startswith('EMAIL') else 'email'): s['url'] for s in x.get('socialLinks', [])},
+            'links': lambda x: [y.get('url') for y in x.get('account', {}).get('links', [])],
         }
     },
     'Twitch': {
