@@ -53,18 +53,34 @@ def test_yandex_reviews():
     assert info.get('follower_count') == '0'
 
 
-@pytest.mark.skip(reason="failed from github CI infra IPs")
+@pytest.mark.github_failed
 def test_instagram():
-    info = extract(parse('https://www.instagram.com/alexaimephotography/', headers=HEADERS)[0])
+    URLs = [
+        'https://www.instagram.com/alexaimephotography/',
+        'https://www.instagram.com/alexaimephotography/?__a=1',
+    ]
+    for url in URLs:
+        info = extract(parse(url, headers=HEADERS)[0])
 
-    assert info.get('uid') == '6828488620'
+        assert info.get('id') == '6828488620'
+        assert info.get('username') == 'alexaimephotography'
+        assert info.get('fullname') == 'Alexaimephotography'
+        assert info.get('facebook_uid') == '17841406738613561'
+        assert info.get('is_private') == 'False'
+        assert info.get('is_verified') == 'False'
+
+
+@pytest.mark.github_failed
+def test_instagram_api():
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 9; SM-A102U Build/PPR1.180610.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36 Instagram 155.0.0.37.107 Android (28/9; 320dpi; 720x1468; samsung; SM-A102U; a10e; exynos7885; en_US; 239490550)',
+    }
+
+    info = extract(parse('https://i.instagram.com/api/v1/users/6828488620/info', headers=headers)[0])
+
+    assert info.get('id') == '6828488620'
     assert info.get('username') == 'alexaimephotography'
-    assert info.get('fullname') == 'Alexaimephotography'
-    assert info.get('biography') == """🇮🇹 🇲🇫 🇩🇪
-Amateur photographer
-Follow me @street.reality.photography
-Sony A7ii"""
-    assert info.get('external_url') == 'https://www.flickr.com/photos/alexaimephotography2020/'
+    assert 'image' in info
 
 
 def test_medium():
@@ -476,7 +492,7 @@ def test_deviantart():
     assert info.get('website') == 'www.patreon.com/musemercier'
     assert info.get('username') == 'Muse1908'
     assert info.get(
-        'links') == "['https://www.facebook.com/musemercier', 'https://www.instagram.com/muse_mercier/', 'https://www.patreon.com/musemercier', 'https://twitter.com/MuseNews']"
+        'links') == "['https://www.instagram.com/muse_mercier/', 'https://twitter.com/MuseNews']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
 
 
