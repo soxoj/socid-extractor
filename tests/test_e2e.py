@@ -638,6 +638,7 @@ def test_yandex_market():
     assert info.get('links') == "['https://vk.com/id137002953']"
 
 
+@pytest.mark.github_failed
 def test_tiktok():
     headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36'}
     info = extract(parse('https://www.tiktok.com/@red', headers=headers)[0])
