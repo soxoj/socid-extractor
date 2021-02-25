@@ -5,11 +5,12 @@ Extract information about a user from profile webpages / API responses and save 
 ## When it may be useful
 
 - Getting all available info by the username or/and account UID. Examples: [Week in OSINT](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43), [OSINTCurious](https://osintcurio.us/2019/10/01/searching-instagram-part-2/)
+- Users tracking, checking that the account was previously known (by ID) even if all public info has changed. Examples: [Aware Online](https://www.aware-online.com/en/importance-of-user-ids-in-social-media-investigations/)
 - Searching by commonly used cross-service UIDs (GAIA ID, Facebook UID, Yandex Public ID, etc.)
   - DB leaks of forums and platforms in SQL format
   - Indexed links that contain target profile ID
 - Searching for tracking data by comparison with other IDs - [how it works](https://www.eff.org/wp/behind-the-one-way-mirror), [how can it be used](https://www.nytimes.com/interactive/2019/12/19/opinion/location-tracking-cell-phone.html).
-- Checking that the account was previously known (by ID) even if all public info has changed
+- Law enforcement online requests
 
 ## Tools using socid_extractor
 
