@@ -784,8 +784,6 @@ def test_tproger():
 
     assert info.get('fullname') == 'Никита Прияцелюк, последний центурион'
     assert info.get('image') == 'https://secure.gravatar.com/avatar/b6c7803b43433349ff84b11093562594?s=90&d=mm&r=g'
-    assert info.get('gravatar_url') == 'https://gravatar.com/b6c7803b43433349ff84b11093562594'
-    assert info.get('gravatar_email_hash') == 'b6c7803b43433349ff84b11093562594'
 
 
 def test_jsfiddle():
