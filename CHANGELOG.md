@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.0.13] - 2021-03-14
+* added Gravatar hash extractors
+* improved Facebook parsing
+* fixed tests
+
 ## [0.0.12] - 2021-02-22
 * updated requirements
 
