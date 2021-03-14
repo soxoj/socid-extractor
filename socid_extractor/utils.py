@@ -1,5 +1,6 @@
 import math
 import re
+import requests
 from datetime import datetime
 
 
@@ -42,3 +43,34 @@ def timestamp_to_datetime(t):
         t = math.floor(datetime.today().timestamp()) - t
 
     return datetime.fromtimestamp(int(t))
+
+
+def get_gravatar_email_hash(image_url):
+    gravatar_re = re.search(r'gravatar\.com/avatar/(\w{32})', image_url)
+    if gravatar_re:
+        return gravatar_re.group(1)
+    return ''
+
+
+def get_gravatar_url(image_url):
+    email_hash = get_gravatar_email_hash(image_url)
+    if email_hash:
+        return f'https://gravatar.com/{email_hash}'
+    return ''
+
+def get_gravatar_username(image_url):
+    username = ''
+    email_hash = get_gravatar_email_hash(image_url)
+    if email_hash:
+        gravatar_account_location = requests.head(f'https://en.gravatar.com/{email_hash}')
+        username = gravatar_account_location.headers.get('location', '').strip('/')
+        if username == 'profiles/no-such-user':
+            username = ''
+    return username
+
+
+def extract_digits(text):
+    digits_re = re.search(r'\d+', text)
+    if digits_re:
+        return digits_re[0]
+    return ''
