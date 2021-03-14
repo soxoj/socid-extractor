@@ -293,11 +293,12 @@ schemes = {
         'extract_json': True,
         'fields': {
             'gravatar_id': lambda x: x['entry'][0]['id'],
-            'gravatar_username': lambda x: x['entry'][0]['preferredUsername'],
-            'fullname': lambda x: x['entry'][0]['displayName'],
+            'username': lambda x: x['entry'][0]['preferredUsername'],
+            'fullname': lambda x: x['entry'][0].get('name', {}).get('formatted'),
+            'name': lambda x: x['entry'][0]['displayName'],
             'location': lambda x: x['entry'][0].get('currentLocation'),
             'emails': lambda x: [y['value'] for y in x['entry'][0].get('emails', [])],
-            'links': lambda x: [y['url'] for y in x['entry'][0].get('accounts', [])],
+            'links': lambda x: [y['url'] for y in x['entry'][0].get('accounts', [])] + [y['value'] for y in x['entry'][0].get('urls', [])],
         }
     },
     'Instagram': {
@@ -473,8 +474,18 @@ schemes = {
         }
     },
     'Facebook user profile': {
-        'flags': ['com.facebook.katana', 'scribe_endpoint'],
-        'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
+        'flags': ['<html id="facebook"', 'content="Facebook"'],
+        'regex': r'"__bbox":{"complete":false,"result":{"data":{"user":({"__isProfile":"User".+?}}})',
+        'extract_json': True,
+        'fields': {
+            'all': lambda x: x,
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('url').split('/')[-1],
+            'fullname': lambda x: x.get('name'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'image': lambda x: x.get('profile_picture_for_sticky_bar', {}).get('uri', ''),
+            'image_bg': lambda x: x.get('cover_photo', {}).get('photo', {}).get('image', {}).get('uri', ''),
+        }
     },
     'Facebook group': {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
@@ -612,7 +623,7 @@ schemes = {
         }
     },
     'Pinterest API': {
-        'flags': ['{"resource_response":{"status"'],
+        'flags': ['{"resource_response":{', 'video_pin_count'],
         'regex': r'^(.+)$',
         'extract_json': True,
         'transforms': [
@@ -1054,7 +1065,7 @@ schemes = {
             'fullname': lambda x: x.find('h1', {'class': 'userName_status'}).find('span', {'class': 'userName'}).contents[0].lstrip('@'),
             'posts_count': lambda x: x.find('div', {'class': 'profileStats_number profileTabAnswerCount'}).contents[0],
             'likes_count': lambda x: x.find('div', {'class': 'profileStats_number profileTabLikeCount'}).contents[0],
-            'photo': lambda x: x.find('a', {'class': 'userAvatar-big'}).get('style').replace('background-image:url(','').rstrip(')'),
+            'image': lambda x: x.find('a', {'class': 'userAvatar-big'}).get('style').replace('background-image:url(','').rstrip(')'),
             'location': lambda x: x.find('div', {'class': 'icon-location'}).contents[0],
         }
     },
@@ -1069,6 +1080,44 @@ schemes = {
             'created_at': lambda x: x.find('dd', {'id': 'member-since'}).contents[0],
             'timezone': lambda x: re.sub(r'\s+', ' ', x.find('dl', {'id': 'timezone'}).find('dd').contents[0] or '').strip(),
             'openpgp_key': lambda x: x.find('dl', {'id': 'pgp-keys'}).find('dd').contents[0].strip(),
-        },
+        }
+    },
+    'Xakep.ru': {
+        'flags': ['https://xakep.ru/author/'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'authorBlock-header'}).find('h4').contents[0],
+            'image': lambda x: x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', ''),
+            'bio': lambda x: '\n'.join(x.find('p', {'class': 'authorBlock-header-bio'}).contents),
+            'links': lambda x: [a.get('href') for a in x.find('div', {'class': 'authorBlock-meta'}).findAll('a')],
+            'joined_year': lambda x: extract_digits(x.find('div', {'class': 'authorBlock-header'}).find('h6').contents[0]),
+            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', '')),
+            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', '')),
+            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', '')),
+        }
+    },
+    'Tproger.ru': {
+        'flags': ['<meta property="og:url" content="https://tproger.ru/author/'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'author-meta'}).find('h2').contents[0],
+            'image': lambda x: x.find('div', {'class': 'author-meta'}).find('img').get('data-src', ''),
+            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'author-meta'}).find('img').get('data-src', '')),
+            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'author-meta'}).find('img').get('data-src', '')),
+            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'author-meta'}).find('img').get('data-src', '')),
+        }
+    },
+    'Jsfiddle.net': {
+        'flags': ['<meta name="author" edit="JSFiddle">'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'profileDetails'}).find('a').contents[0].strip(),
+            'company': lambda x: x.find('div', {'class': 'profileDetails'}).find('div', {'class': 'company'}).contents[0].strip(),
+            'links': lambda x: [a.get('href') for a in x.find('div', {'class': 'userDetails'}).findAll('a')],
+            'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src', ''),
+            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
+            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
+            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
+        }
     },
 }

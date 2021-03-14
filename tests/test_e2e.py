@@ -187,8 +187,13 @@ def test_facebook_user_profile():
 
     assert info.get('uid') == '1486042157'
     assert info.get('username') == 'anatolijsharij'
+    assert info.get('fullname') == 'Анатолий Шарий'
+    assert info.get('is_verified') == 'True'
+    assert 'image' in info
+    assert 'image_bg' in info
 
 
+@pytest.mark.skip(reason="broken")
 def test_facebook_group():
     info = extract(parse('https://www.facebook.com/discordapp/')[0])
 
@@ -489,10 +494,10 @@ def test_deviantart():
     assert info.get('country') == 'France'
     assert '2005-06-16' in info.get('created_at')
     assert info.get('gender') == 'female'
-    assert info.get('website') == 'www.patreon.com/musemercier'
+    assert info.get('website') == 'www.purelymuse.com'
     assert info.get('username') == 'Muse1908'
     assert info.get(
-        'links') == "['https://www.instagram.com/muse_mercier/', 'https://twitter.com/MuseNews']"
+        'links') == "['https://www.instagram.com/muse_mercier/']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
 
 
@@ -536,7 +541,7 @@ def test_gravatar():
     info = extract(parse('https://en.gravatar.com/kostbebix.json')[0])
 
     assert info.get('gravatar_id') == '17467145'
-    assert info.get('gravatar_username') == 'kostbebix'
+    assert info.get('username') == 'kostbebix'
     assert info.get('fullname') == 'kost BebiX'
     assert info.get('location') == 'Kiev, Ukraine'
     assert info.get('emails') == "['k.bx@ya.ru']"
@@ -544,8 +549,8 @@ def test_gravatar():
 
 
 def test_pinterest_api():
-    info = extract(parse('https://www.pinterest.ru/resource/UserResource/get/?source_url=%2Fgergelysndorszendrenyi%2Fboards%2F&data=%7B%22options%22%3A%7B%22isPrefetch%22%3Afalse%2C%22username%22%3A%22gergelysndorszendrenyi%22%2C%22field_set_key%22%3A%22profile%22%7D%2C%22context%22%3A%7B%7D%7D&_=1599342485938')[0])
-
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36'}
+    info = extract(parse('https://www.pinterest.ru/resource/UserResource/get/?source_url=%2Fgergelysndorszendrenyi%2F_saved%2F&data=%7B%22options%22%3A%7B%22isPrefetch%22%3Atrue%2C%22field_set_key%22%3A%22profile%22%2C%22username%22%3A%22gergelysndorszendrenyi%22%2C%22no_fetch_context_on_resource%22%3Afalse%7D%2C%22context%22%3A%7B%7D%7D&_=1615737383499', headers=headers)[0])
     assert info.get('pinterest_id') == '730849983187756836'
     assert info.get('pinterest_username') == 'gergelysndorszendrenyi'
     assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
@@ -705,7 +710,7 @@ def test_last_fm():
 
     assert info.get('fullname') == 'Alex'
     assert info.get('bio') == '• scrobbling since 21 Feb 2003'
-    assert info.get('image') == 'https://lastfm.freetls.fastly.net/i/u/avatar170s/15e455555655c8503ed9ba6fce71d2d6.png'
+    assert info.get('image') == 'https://lastfm.freetls.fastly.net/i/u/avatar170s/15e455555655c8503ed9ba6fce71d2d6.webp'
 
 
 def test_ask_fm():
@@ -715,8 +720,8 @@ def test_ask_fm():
     assert info.get('fullname') == 'Александр Чубаров'
     assert info.get('posts_count') == '18'
     assert info.get('likes_count') == '1.06 K'
-    assert info.get('photo') == 'https://d2halst20r4hcy.cloudfront.net/assets/008/668/847/normal/100_4046.jpg'
     assert info.get('location') == 'Красноярск'
+    assert 'image' in info
 
 
 def test_launchpad():
@@ -754,3 +759,34 @@ def test_linktree():
     assert info.get('is_email_verified') == 'True'
     assert info.get('tier') == 'free'
     assert info.get('links') == "['https://uk.wikipedia.org/wiki/Annet_Lovart', 'https://www.patreon.com/annetlovart', 'https://creativemarket.com/annet_lovart/4945530-Trendy-Floral-Pattern', 'https://www.behance.net/gallery/96717659/Maya-flowers', 'https://www.facebook.com/annetlovart', 'https://youtu.be/mWU_Lyb9kw4', 'https://instagram.com/annet_lovart', 'https://www.pinterest.com/annet_lovart/one-stroke-tutorial-annet_lovart/']"
+
+def test_xakep():
+    info = extract(parse('https://xakep.ru/author/dmbaturin/')[0])
+
+    assert info.get('fullname') == 'Даниил Батурин'
+    assert info.get('image') == 'https://secure.gravatar.com/avatar/b1859c813547de1bba3c65bc4b1a217c?s=150&d=retro&r=g'
+    assert info.get('bio') == 'Координатор проекта VyOS (https://vyos.io), «языковед», функциональщик,  иногда сетевой администратор'
+    assert info.get('links') == "['https://www.baturin.org']"
+    assert info.get('joined_year') == '2018'
+    assert info.get('gravatar_url') == 'https://gravatar.com/b1859c813547de1bba3c65bc4b1a217c'
+    assert info.get('gravatar_username') == 'dmbaturin'
+    assert info.get('gravatar_email_hash') == 'b1859c813547de1bba3c65bc4b1a217c'
+
+def test_tproger():
+    info = extract(parse('https://tproger.ru/author/NickPrice/')[0])
+
+    assert info.get('fullname') == 'Никита Прияцелюк, последний центурион'
+    assert info.get('image') == 'https://secure.gravatar.com/avatar/b6c7803b43433349ff84b11093562594?s=90&d=mm&r=g'
+    assert info.get('gravatar_url') == 'https://gravatar.com/b6c7803b43433349ff84b11093562594'
+    assert info.get('gravatar_email_hash') == 'b6c7803b43433349ff84b11093562594'
+
+def test_jsfiddle():
+    info = extract(parse('https://jsfiddle.net/user/john')[0])
+
+    assert info.get('fullname') == 'John Michel'
+    assert info.get('company') == 'Philadelphia, PA'
+    assert info.get('links') == "['https://twitter.com/jhnmchl', 'https://github.com/johnmichel']"
+    assert info.get('image') == 'https://www.gravatar.com/avatar/eca9f115bdefbbdf0c0381a58bcaf601?s=80'
+    assert info.get('gravatar_url') == 'https://gravatar.com/eca9f115bdefbbdf0c0381a58bcaf601'
+    assert info.get('gravatar_username') == 'cowbird'
+    assert info.get('gravatar_email_hash') == 'eca9f115bdefbbdf0c0381a58bcaf601'

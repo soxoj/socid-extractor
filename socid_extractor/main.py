@@ -8,6 +8,7 @@ from .schemes import *
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
 }
 
 
@@ -87,7 +88,7 @@ def extract(page):
                 for name, get_field in scheme_data['fields'].items():
                     try:
                         value = get_field(json_data)
-                        values[name] = str(value) if value != None else ''
+                        values[name] = str(value) if value not in (None, [], {}) else ''
                     except (AttributeError, KeyError) as e:
                         logging.debug(f'Unable to extact field {name}: {e}')
             else:
