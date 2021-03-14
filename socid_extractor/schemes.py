@@ -736,9 +736,6 @@ schemes = {
             'uid': lambda x: x.find('div', {'class': 'avatar'}).find('a').get('href').split('/')[-2],
             'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src'),
             'stack_exchange_uid': lambda x: x.find('div', {'id': 'mainbar-full'}).find('a', {'class': 'grid--cell'}).get('href').split('/')[-2],
-            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
-            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
-            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
         }
     },
     'SoundCloud': {
@@ -1099,9 +1096,6 @@ schemes = {
             'bio': lambda x: '\n'.join(x.find('p', {'class': 'authorBlock-header-bio'}).contents),
             'links': lambda x: [a.get('href') for a in x.find('div', {'class': 'authorBlock-meta'}).findAll('a')],
             'joined_year': lambda x: extract_digits(x.find('div', {'class': 'authorBlock-header'}).find('h6').contents[0]),
-            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', '')),
-            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', '')),
-            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', '')),
         }
     },
     'Tproger.ru': {
@@ -1110,9 +1104,6 @@ schemes = {
         'fields': {
             'fullname': lambda x: x.find('div', {'class': 'author-meta'}).find('h2').contents[0],
             'image': lambda x: x.find('div', {'class': 'author-meta'}).find('img').get('data-src', ''),
-            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'author-meta'}).find('img').get('data-src', '')),
-            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'author-meta'}).find('img').get('data-src', '')),
-            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'author-meta'}).find('img').get('data-src', '')),
         }
     },
     'Jsfiddle.net': {
@@ -1123,9 +1114,6 @@ schemes = {
             'company': lambda x: x.find('div', {'class': 'profileDetails'}).find('div', {'class': 'company'}).contents[0].strip(),
             'links': lambda x: [a.get('href') for a in x.find('div', {'class': 'userDetails'}).findAll('a')],
             'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src', ''),
-            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
-            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
-            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
         }
     },
 }

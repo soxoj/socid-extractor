@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 
 from .schemes import *
+from .postprocessor import POSTPROCESSORS
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
@@ -102,6 +103,13 @@ def extract(page):
                     values[name] = str(value) if value != None else ''
                 except (AttributeError, KeyError) as e:
                     logging.debug(f'BS extract error: {e}')
+
+        for p in POSTPROCESSORS:
+            try:
+                additonal_data = p(values).process()
+                values.update(additonal_data)
+            except Exception as e:
+                logging.debug('Postprocess error: ', e)
 
         return {a: b for a, b in values.items() if b or type(b) == bool}
 
