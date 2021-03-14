@@ -112,6 +112,7 @@ def test_habr():
     assert info.get('image') == 'http://habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
 
 
+@pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_habr_no_image():
     info = extract(parse('https://habr.com/ru/users/ne555/')[0])
 
@@ -426,10 +427,13 @@ def test_d3():
 
 
 def test_stack_exchange():
-    info = extract(parse('https://stackoverflow.com/users/758202/zzart')[0])
+    info = extract(parse('https://stackoverflow.com/users/198633/inspectorg4dget')[0])
 
-    assert info.get('uid') == '758202'
-    assert info.get('stack_exchange_uid') == '395311'
+    assert info.get('uid') == '198633'
+    assert info.get('stack_exchange_uid') == '67986'
+    assert info.get('gravatar_url') == 'https://gravatar.com/5b9c04999233026354268c2ee4237e04'
+    assert info.get('gravatar_username') == 'inspectorg4dget'
+    assert info.get('gravatar_email_hash') == '5b9c04999233026354268c2ee4237e04'
 
 
 def test_soundcloud():
@@ -748,6 +752,7 @@ def test_twitch():
     assert 'views_count' in info
     assert 'likes_count' in info
 
+
 def test_linktree():
     info = extract(parse('https://linktr.ee/annetlovart')[0])
 
@@ -759,6 +764,7 @@ def test_linktree():
     assert info.get('is_email_verified') == 'True'
     assert info.get('tier') == 'free'
     assert info.get('links') == "['https://uk.wikipedia.org/wiki/Annet_Lovart', 'https://www.patreon.com/annetlovart', 'https://creativemarket.com/annet_lovart/4945530-Trendy-Floral-Pattern', 'https://www.behance.net/gallery/96717659/Maya-flowers', 'https://www.facebook.com/annetlovart', 'https://youtu.be/mWU_Lyb9kw4', 'https://instagram.com/annet_lovart', 'https://www.pinterest.com/annet_lovart/one-stroke-tutorial-annet_lovart/']"
+
 
 def test_xakep():
     info = extract(parse('https://xakep.ru/author/dmbaturin/')[0])
@@ -772,6 +778,7 @@ def test_xakep():
     assert info.get('gravatar_username') == 'dmbaturin'
     assert info.get('gravatar_email_hash') == 'b1859c813547de1bba3c65bc4b1a217c'
 
+
 def test_tproger():
     info = extract(parse('https://tproger.ru/author/NickPrice/')[0])
 
@@ -779,6 +786,7 @@ def test_tproger():
     assert info.get('image') == 'https://secure.gravatar.com/avatar/b6c7803b43433349ff84b11093562594?s=90&d=mm&r=g'
     assert info.get('gravatar_url') == 'https://gravatar.com/b6c7803b43433349ff84b11093562594'
     assert info.get('gravatar_email_hash') == 'b6c7803b43433349ff84b11093562594'
+
 
 def test_jsfiddle():
     info = extract(parse('https://jsfiddle.net/user/john')[0])

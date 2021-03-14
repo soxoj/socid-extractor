@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+* improved StackOverflow
 
 ## [0.0.13] - 2021-03-14
 * added Gravatar hash extractors

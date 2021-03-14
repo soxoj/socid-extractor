@@ -731,7 +731,15 @@ schemes = {
     },
     'Stack Overflow & similar': {
         'flags': ['StackExchange.user.init'],
-        'regex': r'StackExchange.user.init\({ userId: (?P<uid>\d+), accountId: (?P<stack_exchange_uid>\d+) }\);',
+        'bs': True,
+        'fields': {
+            'uid': lambda x: x.find('div', {'class': 'avatar'}).find('a').get('href').split('/')[-2],
+            'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src'),
+            'stack_exchange_uid': lambda x: x.find('div', {'id': 'mainbar-full'}).find('a', {'class': 'grid--cell'}).get('href').split('/')[-2],
+            'gravatar_url': lambda x: get_gravatar_url(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
+            'gravatar_username': lambda x: get_gravatar_username(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
+            'gravatar_email_hash': lambda x: get_gravatar_email_hash(x.find('div', {'class': 'avatar'}).find('img').get('src', '')),
+        }
     },
     'SoundCloud': {
         'flags': ['eventlogger.soundcloud.com'],
