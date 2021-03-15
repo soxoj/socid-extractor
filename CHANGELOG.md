@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 * improved StackOverflow
+* added Disqus API and Yandex.O
 
 ## [0.0.13] - 2021-03-14
 * added Gravatar hash extractors
