@@ -287,6 +287,15 @@ def test_yandex_zen_user_profile():
     assert 'follower_count' in info
 
 
+def test_yandex_o_user_profile():
+    info = extract(parse('https://o.yandex.ru/profile/9q4zmvn5437umdqqyge3tp3vpr/')[0])
+
+    assert info.get('yandex_public_id') == '9q4zmvn5437umdqqyge3tp3vpr'
+    assert info.get('fullname') == 'ТВОЙ-СЕЙФ'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/64336/enc-0f3ec480eef5850e5ff4e08522ebb6639b998592a4246af4df656b59d2d95fd8/islands-retina-50'
+    assert info.get('score') == 'Ten'
+
+
 def test_yandex_znatoki_user_profile():
     info = extract(parse('https://yandex.ru/q/profile/zftrw5fzczde6841qgmfn7d2ag/')[0])
 
@@ -796,3 +805,20 @@ def test_jsfiddle():
     assert info.get('gravatar_url') == 'https://gravatar.com/eca9f115bdefbbdf0c0381a58bcaf601'
     assert info.get('gravatar_username') == 'cowbird'
     assert info.get('gravatar_email_hash') == 'eca9f115bdefbbdf0c0381a58bcaf601'
+
+
+def test_disqus_api():
+    info = extract(parse('https://disqus.com/api/3.0/users/details?user=username%3Amargaret&attach=userFlaggedUser&api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F')[0])
+
+    assert info.get('id') == '1593'
+    assert info.get('fullname') == 'margaret'
+    assert info.get('reputation') == '1.231755'
+    assert info.get('reputation_label') == 'Average'
+    assert info.get('following_count') == '0'
+    assert info.get('follower_count') == '0'
+    assert info.get('is_power_contributor') == 'False'
+    assert info.get('is_anonymous') == 'False'
+    assert info.get('created_at') == '2007-11-06T01:14:28'
+    assert info.get('likes_count') == '0'
+    assert info.get('forums_count') == '0'
+    assert info.get('image') == 'https://disqus.com/api/users/avatars/margaret.jpg'

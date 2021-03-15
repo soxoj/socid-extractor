@@ -299,6 +299,7 @@ schemes = {
             'location': lambda x: x['entry'][0].get('currentLocation'),
             'emails': lambda x: [y['value'] for y in x['entry'][0].get('emails', [])],
             'links': lambda x: [y['url'] for y in x['entry'][0].get('accounts', [])] + [y['value'] for y in x['entry'][0].get('urls', [])],
+            'bio': lambda x: x['entry'][0].get('aboutMe'),
         }
     },
     'Instagram': {
@@ -1116,4 +1117,37 @@ schemes = {
             'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src', ''),
         }
     },
+    'o.yandex.ru': {
+        'flags': ['"cookiesDomain":".o.yandex.ru"'],
+        'regex': r'<script type="application/json" id="initial-state" nonce=".+?">(.+?)<\/script>',
+        'extract_json': True,
+        'fields': {
+            'yandex_public_id': lambda x: x['publicProfile']['params']['publicUserId'],
+            'fullname': lambda x: decode_ya_str(x['publicProfile']['data']['publicProfile']['seller']['name']),
+            'image': lambda x: x['publicProfile']['data']['publicProfile']['seller']['avatar']['size_100x100'],
+            'score': lambda x: x['publicProfile']['data']['publicProfile']['seller']['userBadge']['score'],
+        }
+    },
+    'Disqus API': {
+        'flags': ['https://disqus.com/api/users/'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'fields': {
+            'id': lambda x: x['response']['id'],
+            'fullname': lambda x: x['response']['name'],
+            'bio': lambda x: x['response']['about'],
+            'reputation': lambda x: x['response']['reputation'],
+            'reputation_label': lambda x: x['response']['reputationLabel'],
+            'following_count': lambda x: x['response']['numFollowers'],
+            'follower_count': lambda x: x['response']['numFollowing'],
+            'location': lambda x: x['response']['location'],
+            'is_power_contributor': lambda x: x['response']['isPowerContributor'],
+            'is_anonymous': lambda x: x['response']['isAnonymous'],
+            'created_at': lambda x: x['response']['joinedAt'],
+            'likes_count': lambda x: x['response']['numLikesReceived'],
+            'url': lambda x: x['response']['url'],
+            'forums_count': lambda x: x['response']['numForumsFollowing'],
+            'image': lambda x: x['response']['avatar']['large']['permalink'],
+        }
+    }
 }
