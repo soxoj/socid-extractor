@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.0.14] - 2021-03-18
 * improved StackOverflow
 * added Disqus API and Yandex.O
 
