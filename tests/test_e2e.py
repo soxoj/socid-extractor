@@ -822,3 +822,61 @@ def test_disqus_api():
     assert info.get('likes_count') == '0'
     assert info.get('forums_count') == '0'
     assert info.get('image') == 'https://disqus.com/api/users/avatars/margaret.jpg'
+
+
+def test_ucoz_1():
+    info = extract(parse('https://av.3dn.ru/index/8-0-Maikl_401')[0])
+
+    assert info.get('fullname') == 'Михаил ко'
+    assert info.get('gender') == 'Мужчина'
+    assert info.get('created_at') == 'Пятница, 23.01.2015, 15:02'
+    assert info.get('last_seen_at') == 'Пятница, 23.01.2015, 15:07'
+    assert info.get('link') == 'http://uid.me/uguid/176168901'
+    assert info.get('uidme_uguid') == '176168901'
+    assert info.get('location') == 'Российская Федерация'
+    assert info.get('city') == 'Москва'
+    assert info.get('state') == 'Москва'
+    assert info.get('birthday_at') == '16 Декабря 1971'
+
+
+def test_ucoz_2():
+    info = extract(parse('http://www.thaicat.ru/index/8-0-koshka')[0])
+
+    assert info.get('fullname') == 'natalya Myunster'
+    assert info.get('url') == 'http://www.thaicat.ru/index/8-10419'
+    assert info.get('image') == 'http://www.thaicat.ru/avatar/00/20/419858.jpg'
+    assert info.get('gender') == 'Женщина'
+    assert info.get('created_at') == 'Суббота, 14.01.2012, 17:41'
+    assert info.get('last_seen_at') == 'Суббота, 14.01.2012, 17:41'
+    assert info.get('country') == 'Италия'
+    assert info.get('city') == 'l\'aquila'
+    assert info.get('birthday_at') == '10 Июля 1975'
+
+
+def test_ucoz_3():
+    info = extract(parse('http://prenatal-club.ucoz.com/index/8-0-koshka')[0])
+
+    assert info.get('url') == 'https://prenatal-club.ucoz.com/index/8-128'
+    assert info.get('image') == 'https://425523249.uid.me/avatar.jpg'
+    assert info.get('created_at') == 'Среда, 10.03.2010, 09:42'
+    assert info.get('last_seen_at') == 'Среда, 10.03.2010, 09:42'
+    assert info.get('link') == 'http://uid.me/uguid/425523249'
+    assert info.get('uidme_uguid') == '425523249'
+    assert info.get('location') == 'Российская Федерация'
+    assert info.get('city') == 'Санкт-Петербург'
+    assert info.get('state') == 'Санкт-Петербург'
+
+
+def test_uidme():
+    info = extract(parse('http://uid.me/koshka', timeout=10)[0])
+
+    assert info.get('username') == 'koshka'
+    assert info.get('image') == 'https://uid.me/img/avatar/w/z/n/medium_m38dkp68.jpg'
+    assert info.get('headline') == '..Но в глубине души моей тоска по крови, ночи, дикости горит (Гессе).'
+    assert info.get('bio') == 'Студентка ВНУ, факультет философии (4й курс). Ищу, жду, иду, пишу... Не слишком отличаюсь от большинства людей моего возраста.'
+    assert info.get('contacts') == "['dariya-koshka@mail.ru']"
+    assert info.get('email') == 'dariya-koshka@mail.ru'
+    assert info.get('phone') == '380669243144'
+    assert info.get('skype') == 'Dariya Koshka'
+    assert info.get('location') == 'Луганск'
+    assert info.get('links') == "['http://www.proza.ru/avtor/dahakot']"
