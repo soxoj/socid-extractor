@@ -90,7 +90,7 @@ def extract(page):
                     try:
                         value = get_field(json_data)
                         values[name] = str(value) if value not in (None, [], {}) else ''
-                    except (AttributeError, KeyError) as e:
+                    except (AttributeError, KeyError, IndexError) as e:
                         logging.debug(f'Unable to extact field {name}: {e}')
             else:
                 values = regexp_group.groupdict()
@@ -101,7 +101,7 @@ def extract(page):
                 try:
                     value = get_field(soup)
                     values[name] = str(value) if value != None else ''
-                except (AttributeError, KeyError) as e:
+                except (AttributeError, KeyError, IndexError) as e:
                     logging.debug(f'BS extract error: {e}')
 
         for p in POSTPROCESSORS:

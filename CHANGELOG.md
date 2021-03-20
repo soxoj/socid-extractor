@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+* added uID.me and uCoz sites
 
 ## [0.0.14] - 2021-03-18
 * improved StackOverflow

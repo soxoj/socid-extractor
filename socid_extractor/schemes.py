@@ -1149,5 +1149,41 @@ schemes = {
             'forums_count': lambda x: x['response']['numForumsFollowing'],
             'image': lambda x: x['response']['avatar']['large']['permalink'],
         }
-    }
+    },
+    'uCoz-like profile page': {
+        'flags': ['UCOZ-JS-DATA'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', string='Имя:').next_sibling.split('[')[0].strip(),
+            'url': lambda x: get_ucoz_userlink(x.find('div', string='Пользователь:')),
+            'image': lambda x: get_ucoz_image(x),
+            'gender': lambda x: x.find('div', string='Имя:').next_sibling.split(' ')[-2],
+            'created_at': lambda x: x.find('div', string='Дата регистрации:').next_sibling.strip(),
+            'last_seen_at': lambda x: x.find('div', string='Дата входа:').next_sibling.strip(),
+            'link': lambda x: get_ucoz_uid_node(x).parent.get('href'),
+            'uidme_uguid': lambda x: get_ucoz_uid_node(x).parent.get('href', '').split('/')[-1],
+            'location': lambda x: x.find('div', string='Место проживания:').next_sibling.strip(),
+            'country': lambda x: x.find('div', string='Страна:').next_sibling.strip(),
+            'city': lambda x: x.find('div', string='Город:').next_sibling.strip(),
+            'state': lambda x: x.find('div', string='Штат:').next_sibling.strip(),
+            'email': lambda x: get_ucoz_email(x.find('div', string='E-mail:').next_sibling.strip()),
+            'birthday_at': lambda x: x.find('div', string='Дата рождения:').next_sibling.split('[')[0].strip(),
+        },
+    },
+    'uID.me': {
+        'flags': [' - uID.me</title>'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: x.find('title').contents[0].split(' ')[0],
+            'image': lambda x: 'https://uid.me' + x.find('img', {'id': 'profile_picture'}).get('src'),
+            'headline': lambda x: x.find('h2', {'id': 'profile_headline'}).contents[0].strip(),
+            'bio': lambda x: x.find('div', {'id': 'profile_bio'}).contents[0].strip(),
+            'contacts': lambda x: [a.contents[0] for a in x.find('div', {'id': 'profile_contacts'}).find_all('a')],
+            'email': lambda x: x.find('a', {'id': 'user-email'}).contents[0],
+            'phone': lambda x: x.find('span', {'id': 'profile-phone'}).contents[0],
+            'skype': lambda x: x.find('span', {'id': 'profile-skype'}).contents[0],
+            'location': lambda x: ','.join([a.contents[0] for a in x.find('ul', {'id': 'profile_places'}).find_all('a')]),
+            'links': lambda x: [a.get('href') for a in x.find('div', {'id': 'list_my-sites'}).find_all('a')] or None,
+        },
+    },
 }

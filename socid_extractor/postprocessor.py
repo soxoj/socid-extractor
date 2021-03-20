@@ -4,7 +4,11 @@ import requests
 
 class Gravatar:
     def __init__(self, data):
-        self.url = data.get('image')
+        if not 'image' in data:
+            self.username = None
+            return
+
+        self.url = data['image']
         self.email_hash = self.extract_email_hash()
         if self.email_hash:
             self.username = self.get_username()
