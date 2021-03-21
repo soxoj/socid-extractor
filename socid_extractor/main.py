@@ -31,6 +31,25 @@ def parse(url, cookies_str='', timeout=3, headers={}):
     return page.text, page.status_code
 
 
+def mutate_url(url):
+    mutate_results = []
+    for scheme_name, scheme_data in schemes.items():
+        mutations_list = scheme_data.get('url_mutations')
+        if not mutations_list:
+            continue
+        for mutation in mutations_list:
+            from_regexp = mutation['from']
+            url_match = re.search(from_regexp, url)
+            if not url_match:
+                continue
+            components = url_match.groupdict()
+            mutate_results.append((
+                mutation['to'].format(**components),
+                mutation.get('headers', set())
+            ))
+    return mutate_results
+
+
 def extract(page):
     for scheme_name, scheme_data in schemes.items():
         flags = scheme_data['flags']

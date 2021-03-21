@@ -4,7 +4,7 @@ import sys
 from functools import reduce
 
 from .activation import *
-from .main import parse, extract
+from .main import parse, extract, mutate_url
 from .matching import get_similarity, get_similarity_description
 
 
@@ -77,17 +77,31 @@ def run():
 
         average_similarity = round(sum(average_similarity_acc) / len(average_similarity_acc), 2)
         print(f'Average accounts similarity: {average_similarity * 100}%')
-    else:
-        if not args.file:
-            page = get_site_response(args.url, args.cookies, headers)
-        else:
-            page = open(args.url).read()
-
+    # load from file
+    elif args.file:
+        page = open(args.file).read()
         info = extract(page)
-        if not info:
-            sys.exit()
+        if info:
+            print_info(info)
+    # load from url(s)
+    elif args.url:
+        # (url, headers)
+        reqs = [(args.url, set())]
+        mutations = mutate_url(args.url)
+        if mutations:
+            reqs += list(mutations)
 
-        print_info(info)
+        for req in reqs:
+            url, add_headers = req
+
+            print(f'Analyzing URL {url}...')
+            url_headers = dict(headers)
+            url_headers.update(add_headers)
+
+            page = get_site_response(url, args.cookies, url_headers)
+            info = extract(page)
+            if info:
+                print_info(info)
 
 
 if __name__ == '__main__':

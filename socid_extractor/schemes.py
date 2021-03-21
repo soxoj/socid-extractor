@@ -561,6 +561,12 @@ schemes = {
     },
     '500px GraphQL API': {
         'flags': ['{"data":{"profile":{"id"'],
+        'url_mutations': [
+            {
+                'from': r'https://500px.com/p/(?P<username>.+)/?',
+                'to': 'https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22{username}%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22105058632482dd2786fd5775745908dc928f537b28e28356b076522757d65c19%22%7D%7D',
+            }
+        ],
         'regex': r'^{"data":({.+})}$',
         'extract_json': True,
         'fields': {
@@ -599,9 +605,30 @@ schemes = {
             'your_ls_uid': lambda x: x.get('docs-offline-lsuid'),
             'your_cpf': lambda x: x.get('docs-cpf'),
             'your_username': lambda x: x.get('docs-offline-ue') or x.get('docs-hue'),
-            'your_uid': lambda x: x['docs-pid'],
+            'viewer_uid': lambda x: x['docs-pid'],
             'org_name': lambda x: x['docs-doddn'],
             'org_domain': lambda x: x['docs-dodn'],
+        }
+    },
+    'Google Document API': {
+        'flags': ['alternateLink', 'copyRequiresWriterPermission'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https://docs.google.com/(spreadsheets|document|presentation|drawings)/d/(?P<gdoc_id>[\w-]+)',
+                'to': 'https://clients6.google.com/drive/v2beta/files/{gdoc_id}?fields=alternateLink%2CcopyRequiresWriterPermission%2CcreatedDate%2Cdescription%2CdriveId%2CfileSize%2CiconLink%2Cid%2Clabels(starred%2C%20trashed)%2ClastViewedByMeDate%2CmodifiedDate%2Cshared%2CteamDriveId%2CuserPermission(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cpermissions(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cparents(id)%2Ccapabilities(canMoveItemWithinDrive%2CcanMoveItemOutOfDrive%2CcanMoveItemOutOfTeamDrive%2CcanAddChildren%2CcanEdit%2CcanDownload%2CcanComment%2CcanMoveChildrenWithinDrive%2CcanRename%2CcanRemoveChildren%2CcanMoveItemIntoTeamDrive)%2Ckind&supportsTeamDrives=true&enforceSingleParent=true&key=AIzaSyC1eQ1xj69IdTMeii5r7brs3R90eck-m7k',
+                'headers': {"X-Origin": "https://drive.google.com"},
+            }
+        ],
+        'fields': {
+            'created_at': lambda x: x.get('createdDate'),
+            'updated_at': lambda x: x.get('modifiedDate'),
+            'owner_gaia_id': lambda x: x.get('permissions')[1]['id'],
+            'fullname': lambda x: x.get('permissions')[1]['name'],
+            'email': lambda x: x.get('permissions')[1]['emailAddress'],
+            'supposed_username': lambda x: x.get('permissions')[1]['emailAddress'].split('@')[0],
+            'image': lambda x: x.get('permissions')[1]['photoLink'],
         }
     },
     'Google Maps contributions': {
