@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.0.15] - 2021-03-21
+* added URLs mutation logic
+* added Google Docs API
 * added uID.me and uCoz sites
 
 ## [0.0.14] - 2021-03-18

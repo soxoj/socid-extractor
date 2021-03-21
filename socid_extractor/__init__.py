@@ -1,4 +1,4 @@
-from .main import extract, parse, parse_cookies
+from .main import extract, parse, parse_cookies, mutate_url
 
-__version__ = '0.0.14'
+__version__ = '0.0.15'
 __author__ = 'soxoj'
