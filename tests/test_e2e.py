@@ -558,6 +558,7 @@ def test_gravatar():
     assert info.get('fullname') == 'kost BebiX'
     assert info.get('location') == 'Kiev, Ukraine'
     assert info.get('emails') == "['k.bx@ya.ru']"
+    assert info.get('image') == 'https://secure.gravatar.com/avatar/d6ac4c55425d6f9d28db9068dbb49e09'
     assert info.get('links') == "['http://twitter.com/kost_bebix']"
 
 

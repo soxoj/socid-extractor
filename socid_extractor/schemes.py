@@ -289,10 +289,17 @@ schemes = {
     },
     'Gravatar': {
         'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
+        'url_mutations': [
+            {
+                'from': r'https?://.*?gravatar.com/(?P<username>[^/]+)',
+                'to': 'https://en.gravatar.com/{username}.json',
+            }
+        ],
         'regex': r'^(.+?)$',
         'extract_json': True,
         'fields': {
             'gravatar_id': lambda x: x['entry'][0]['id'],
+            'image': lambda x: x['entry'][0]['thumbnailUrl'],
             'username': lambda x: x['entry'][0]['preferredUsername'],
             'fullname': lambda x: x['entry'][0].get('name', {}).get('formatted'),
             'name': lambda x: x['entry'][0]['displayName'],
