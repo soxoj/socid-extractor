@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+* improved Gravatar
 
 ## [0.0.15] - 2021-03-21
 * added URLs mutation logic
