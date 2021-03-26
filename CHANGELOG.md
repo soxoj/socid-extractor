@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased]
-* remove account matching functionality and heavy dependencies
+* removed account matching functionality and heavy dependencies
 * improved Gravatar
 
 ## [0.0.15] - 2021-03-21
