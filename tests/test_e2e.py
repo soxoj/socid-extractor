@@ -510,7 +510,7 @@ def test_deviantart():
     assert info.get('website') == 'www.purelymuse.com'
     assert info.get('username') == 'Muse1908'
     assert info.get(
-        'links') == "['https://www.instagram.com/muse_mercier/']"
+        'links') == "['https://www.instagram.com/muse.mercier/']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
 
 
