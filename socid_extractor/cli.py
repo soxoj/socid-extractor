@@ -5,7 +5,6 @@ from functools import reduce
 
 from .activation import *
 from .main import parse, extract, mutate_url
-from .matching import get_similarity, get_similarity_description
 
 
 def print_info(info):
