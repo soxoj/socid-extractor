@@ -792,8 +792,8 @@ def test_xakep():
 def test_tproger():
     info = extract(parse('https://tproger.ru/author/NickPrice/')[0])
 
-    assert info.get('fullname') == 'Никита Прияцелюк, последний центурион'
-    assert info.get('image') == 'https://secure.gravatar.com/avatar/b6c7803b43433349ff84b11093562594?s=90&d=mm&r=g'
+    assert info.get('fullname') == 'Никита Прияцелюк'
+    assert info.get('image').startswith('https://secure.gravatar.com/avatar/b6c7803b43433349ff84b11093562594') == True
 
 
 def test_jsfiddle():

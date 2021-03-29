@@ -1138,8 +1138,8 @@ schemes = {
         'flags': ['<meta property="og:url" content="https://tproger.ru/author/'],
         'bs': True,
         'fields': {
-            'fullname': lambda x: x.find('div', {'class': 'author-meta'}).find('h2').contents[0],
-            'image': lambda x: x.find('div', {'class': 'author-meta'}).find('img').get('data-src', ''),
+            'fullname': lambda x: x.find('h1', {'class': 'author-main__header'}).contents[0],
+            'image': lambda x: x.find('div', {'class': 'author-main'}).find('img').get('data-src', ''),
         }
     },
     'Jsfiddle.net': {
