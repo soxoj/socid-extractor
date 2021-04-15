@@ -1,18 +1,25 @@
-name: Python application
+name: socid_extractor tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -28,4 +35,4 @@ jobs:
       run: |
         pip install pytest==6.0.1 pytest-rerunfailures
         # do not run tests required auth with secrets
-        pytest -k 'not cookies' --reruns 3 --reruns-delay 1
+        pytest -k 'not cookies' -m 'not github_failed' --reruns 3 --reruns-delay 5

@@ -5,9 +5,11 @@ from bs4 import BeautifulSoup as bs
 import requests
 
 from .schemes import *
+from .postprocessor import POSTPROCESSORS
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
 }
 
 
@@ -29,6 +31,25 @@ def parse(url, cookies_str='', timeout=3, headers={}):
     return page.text, page.status_code
 
 
+def mutate_url(url):
+    mutate_results = []
+    for scheme_name, scheme_data in schemes.items():
+        mutations_list = scheme_data.get('url_mutations')
+        if not mutations_list:
+            continue
+        for mutation in mutations_list:
+            from_regexp = mutation['from']
+            url_match = re.search(from_regexp, url)
+            if not url_match:
+                continue
+            components = url_match.groupdict()
+            mutate_results.append((
+                mutation['to'].format(**components),
+                mutation.get('headers', set())
+            ))
+    return mutate_results
+
+
 def extract(page):
     for scheme_name, scheme_data in schemes.items():
         flags = scheme_data['flags']
@@ -37,7 +58,7 @@ def extract(page):
         if found:
             logging.info('%s has been detected' % scheme_name)
             if 'message' in scheme_data:
-                print(scheme_data['message'])
+                logging.info(scheme_data['message'])
         else:
             continue
 
@@ -64,7 +85,11 @@ def extract(page):
                 if transforms:
                     for t in transforms:
                         logging.debug(t)
-                        extracted = t(extracted)
+                        try:
+                            extracted = t(extracted)
+                        except (AttributeError, KeyError) as e:
+                            logging.debug(f'Transform error: {e}')
+                            extracted = {}
                         logging.debug(extracted)
 
                 json_data = json.loads(extracted)
@@ -81,16 +106,29 @@ def extract(page):
                         f.write(loaded_json_str)
 
                 for name, get_field in scheme_data['fields'].items():
-                    value = get_field(json_data)
-                    values[name] = str(value) if value != None else ''
+                    try:
+                        value = get_field(json_data)
+                        values[name] = str(value) if value not in (None, [], {}) else ''
+                    except (AttributeError, KeyError, IndexError) as e:
+                        logging.debug(f'Unable to extact field {name}: {e}')
             else:
                 values = regexp_group.groupdict()
 
         if use_html_parser:
             soup = bs(page, 'html.parser')
             for name, get_field in scheme_data['fields'].items():
-                value = get_field(soup)
-                values[name] = str(value) if value != None else ''
+                try:
+                    value = get_field(soup)
+                    values[name] = str(value) if value != None else ''
+                except (AttributeError, KeyError, IndexError) as e:
+                    logging.debug(f'BS extract error: {e}')
+
+        for p in POSTPROCESSORS:
+            try:
+                additonal_data = p(values).process()
+                values.update(additonal_data)
+            except Exception as e:
+                logging.debug('Postprocess error: ', e)
 
         return {a: b for a, b in values.items() if b or type(b) == bool}
 

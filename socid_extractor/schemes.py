@@ -1,6 +1,7 @@
 from dateutil.parser import parse as parse_datetime_str
 import html
 import json
+import itertools
 
 from .utils import *
 
@@ -22,23 +23,100 @@ schemes = {
             'yandex_uid': lambda x: x['owner']['uid'],
             'username': lambda x: x['owner']['login'],
             'name': lambda x: x['owner']['name'],
+            'image': lambda x: get_yandex_profile_pic(x['owner']['avatarHash']),
             'links': lambda x: [link for links in x['profiles'] for link in links['addresses']],
+            'is_verified': lambda x: x['verified'],
+            'liked_albums': lambda x: x['counts'].get('likedAlbums'),
+            'liked_artists': lambda x: x['counts'].get('likedArtists'),
+            'has_tracks': lambda x: x.get('hasTracks'),
         }
     },
-    'Yandex Znatoki user profile': {
+    'Yandex Q (Znatoki) user profile': {
         'flags': ['Ya.Znatoki'],
         'regex': r'id="restoreData" type="application/json">({.+?})</script>',
         'extract_json': True,
         'transforms': [
             html.unescape,
-            # TODO: refactoring
-            lambda x: json.dumps(list(json.loads(x)['store']['entities']['user'].values())[0]),
+            json.loads,
+            lambda x: x['store']['entities'].get('user', {'':{}})[x['store']['page'].get('userStats', {}).get('id', '')],
+            json.dumps,
         ],
         'fields': {
-            'name': lambda x: x['displayName'],
-            'uid': lambda x: x['id'],
+            'yandex_znatoki_id': lambda x: x['id'],
             'yandex_uid': lambda x: x['uuid'],
+            'bio': lambda x: x['about'],
+            'name': lambda x: x['displayName'],
+            'image': lambda x: get_yandex_profile_pic(x.get('avatarId')),
+            'is_org': lambda x: x.get('authOrg'),
+            'is_banned': lambda x: x['banned'],
+            'is_deleted': lambda x: x['deleted'],
+            'created_at': lambda x: x['created'],
+            'last_answer_at': lambda x: x.get('lastAnswerTime'),
+            'rating': lambda x: x['rating'],
+            'gender': lambda x: x['sex'],
+            'links': lambda x: list(set(filter(lambda x: x, [x['url'], x.get('promoUrl'), x.get('socialContactUrl')]))),
+            'verified_categories': lambda x: x.get('verifiedIn'),
+            'is_from_q': lambda x: x.get('theqMerged'),
+            'is_bad_or_shock': lambda x: x.get('badOrShock'),
+            'is_excluded_from_rating': lambda x: x.get('excludeFromRating'),
+            'teaser': lambda x: x.get('teaser'),
+            'facebook_username': lambda x: x['socialFacebook'],
+            'instagram_username': lambda x: x['socialInstagram'],
+            'telegram_username': lambda x: x['socialTelegram'],
+            'twitter_username': lambda x: x['socialTwitter'],
+            'vk_username': lambda x: x['socialVkontakte'],
+            'answers_count': lambda x: x.get('stats', {}).get('answersCount'),
+            'following_count': lambda x: x.get('stats', {}).get('subscribersCount'),
         }
+    },
+    'Yandex Market user profile': {
+        'flags': ['MarketNode', '{"entity":"user"'],
+        'regex': r'{"user":({"entity":"user".+?}),"isEmptyList',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('login'),
+            'yandex_uid': lambda x: x.get('uid'),
+            'yandex_public_id': lambda x: x.get('publicId'),
+            'fullname': lambda x: x.get('publicDisplayName'),
+            'image': lambda x: x.get('avatar').replace('//', 'https://').replace('retina-50', '200'),
+            'reviews_count': lambda x: x.get('grades'),
+            'is_deleted': lambda x: x.get('isDeleted'),
+            'is_hidden_name': lambda x: x.get('isDisplayNameEmpty'),
+            'is_verified': lambda x: x.get('verified'),
+            'linked_social': lambda x: [{
+                'type': a['provider']['name'],
+                'uid': a['userid'],
+                'username': a['username'],
+                'profile_id': a['profile_id']
+            } for a in x.get('social')],
+            'links': lambda x: list(itertools.chain(*[l.get('addresses') for l in x.get('social', [])])),
+        },
+    },
+    'Yandex Music API': {
+        'flags': ['invocationInfo', 'req-id"'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('result', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('login'),
+            'yandex_uid': lambda x: x.get('uid'),
+            'yandex_public_id': lambda x: x.get('publicId'),
+            'fullname': lambda x: x.get('fullName'),
+            'links': lambda x: x.get('socialProfiles'),
+            'is_verified': lambda x: x.get('verified'),
+            'has_tracks': lambda x: x.get('statistics', {}).get('hasTracks'),
+            'liked_users': lambda x: x.get('statistics', {}).get('likedUsers'),
+            'liked_by_users': lambda x: x.get('statistics', {}).get('likedByUsers'),
+            'liked_artists': lambda x: x.get('statistics', {}).get('likedArtists'),
+            'liked_albums': lambda x: x.get('statistics', {}).get('likedAlbums'),
+            'ugc_tracks_count': lambda x: x.get('statistics', {}).get('ugcTracks'),
+            'is_private_statistics': lambda x: x.get('statistics') == 'private',
+            'is_private_social_profiles': lambda x: x.get('socialProfiles') == 'private',
+        },
     },
     'Yandex Realty offer': {
         'flags': ['realty.yandex.ru/offer'],
@@ -70,7 +148,7 @@ schemes = {
             'yandex_public_id': lambda x: x.get('public_id'),
             'fullname': lambda x: x.get('display_name'),
             'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
-            'sex': lambda x: x.get('sex'),
+            'gender': lambda x: x.get('sex'),
             'description': lambda x: x.get('description'),
             'phone_id': lambda x: x.get('phone_id'),
             'company_info': lambda x: x.get('company_info'),
@@ -92,10 +170,11 @@ schemes = {
         'regex': r'^(.+)$',
         'extract_json': True,
         'fields': {
+            'id': lambda x: x.get('id'),
             'yandex_public_id': lambda x: x.get('public_id'),
             'fullname': lambda x: x.get('display_name'),
             'image': lambda x: get_yandex_profile_pic(x.get('default_avatar_id')),
-            'sex': lambda x: x.get('sex'),
+            'gender': lambda x: x.get('sex'),
             'description': lambda x: x.get('description'),
             'phone_id': lambda x: x.get('phone_id'),
             'company_info': lambda x: x.get('company_info'),
@@ -111,6 +190,91 @@ schemes = {
             'is_business': lambda x: x.get('is_business'),
         }
     },
+    'Yandex Reviews user profile': {
+        'flags': ['isInternalYandexNet', 'ReviewFormContent'],
+        'regex': r'window.__PRELOADED_DATA = ({[\s\S]+?})\n\s+}catch',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['pageData']['initialState'],
+            json.dumps,
+        ],
+        'fields': {
+            'yandex_public_id': lambda x: x.get('pkUser', {}).get('publicId'),
+            'fullname': lambda x: decode_ya_str(x.get('pkUser', {}).get('name')),
+            'image': lambda x: get_yandex_profile_pic(x.get('pkUser', {}).get('pic')),
+            'is_verified': lambda x: x.get('pkUser', {}).get('verified'),
+            'reviews_count': lambda x: len(x.get('reviews', {}).get('all', {}).keys()),
+            'following_count': lambda x: x.get('subscription', {}).get('subscribersCount'),
+            'follower_count': lambda x: x.get('subscription', {}).get('subscriptionsCount'),
+        },
+    },
+    'Yandex Zen user profile': {
+        'flags': ['https://zen.yandex.ru/user/', 'zen-lib'],
+        'regex': r'\n\s+var data = ({"__[\s\S]+?});\n',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: list(filter(lambda y: '__serverState' in y[0], x.items())),
+            lambda x: x[0][1]['channel']['source'],
+            json.dumps,
+        ],
+        'fields': {
+            'yandex_public_id': lambda x: x.get('publicId'),
+            'fullname': lambda x: x.get('title'),
+            'image': lambda x: x.get('logo'),
+            'bio': lambda x: x.get('description'),
+            'yandex_messenger_guid': lambda x: x.get('messengerGuid'),
+            'links': lambda x: x.get('socialLinks'),
+            'type': lambda x: x.get('type'),
+            'comments_count': lambda x: x.get('userCommentsCount'),
+            'status': lambda x: x.get('socialProfileStatus'),
+            'following_count': lambda x: x.get('subscribers'),
+            'follower_count': lambda x: x.get('subscriptions'),
+        },
+    },
+    'Yandex messenger search API': {
+        'flags': ['messages', 'matches', 'users_and_chats'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['data']['users_and_chats']['items'],
+            lambda x: x if len(x) == 1 else list(filter(lambda y: y['matches'].get('nickname'), x)),
+            lambda x: x[0] if x else {},
+            json.dumps,
+        ],
+        'fields': {
+            'fullname': lambda x: x['data']['display_name'],
+            'username': lambda x: x['matches'].get('nickname', [None])[0],
+            'yandex_messenger_guid': lambda x: x['data']['guid'],
+            'registration_status': lambda x: x['data']['registration_status'],
+            'image': lambda x: get_yandex_profile_pic(x['data'].get('avatar_id')),
+            'yandex_phone_id': lambda x: x['data'].get('phone_id'),
+            'yandex_uid': lambda x: x['data'].get('uid'),
+        },
+    },
+    'Yandex messenger profile API': {
+        'flags': ['guid', 'registration_status', 'contacts'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['data']['users'][0],
+            json.dumps,
+        ],
+        'fields': {
+            'fullname': lambda x: x['display_name'],
+            'yandex_messenger_guid': lambda x: x['guid'],
+            'registration_status': lambda x: x['registration_status'],
+            'image': lambda x: get_yandex_profile_pic(x.get('avatar_id')),
+            'yandex_phone_id': lambda x: x.get('phone_id'),
+        },
+    },
+    'Yandex Bugbounty user profile': {
+        'flags': ['yandex_bug_bounty_terms_conditions', 'user__pic'],
+        'regex': r'upics\.yandex\.net\/(?P<yandex_uid>\d+)[\s\S]+<span>(?P<firstname>.+?)<\/span>\s+<em>(?P<username>.+?)<\/em>([\s\S]+?class="link">(?P<email>.+?)<\/a>)?([\s\S]+?<a href="(?P<url>.+?)" target="_blank" class="link link_social">)?',
+    },
     'VK user profile': {
         'flags': ['Profile.init({', 'change_current_info'],
         'regex': r'Profile\.init\({"user_id":(?P<vk_id>\d+).*?(,"loc":"(?P<vk_username>.*?)")?,"back":"(?P<fullname>.*?)"'
@@ -125,29 +289,97 @@ schemes = {
     },
     'Gravatar': {
         'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
+        'url_mutations': [
+            {
+                'from': r'https?://.*?gravatar.com/(?P<username>[^/]+)',
+                'to': 'https://en.gravatar.com/{username}.json',
+            }
+        ],
         'regex': r'^(.+?)$',
         'extract_json': True,
         'fields': {
             'gravatar_id': lambda x: x['entry'][0]['id'],
-            'gravatar_username': lambda x: x['entry'][0]['preferredUsername'],
-            'fullname': lambda x: x['entry'][0]['displayName'],
+            'image': lambda x: x['entry'][0]['thumbnailUrl'],
+            'username': lambda x: x['entry'][0]['preferredUsername'],
+            'fullname': lambda x: x['entry'][0].get('name', {}).get('formatted'),
+            'name': lambda x: x['entry'][0]['displayName'],
             'location': lambda x: x['entry'][0].get('currentLocation'),
             'emails': lambda x: [y['value'] for y in x['entry'][0].get('emails', [])],
-            'links': lambda x: [y['url'] for y in x['entry'][0].get('accounts', [])],
+            'links': lambda x: [y['url'] for y in x['entry'][0].get('accounts', [])] + [y['value'] for y in x['entry'][0].get('urls', [])],
+            'bio': lambda x: x['entry'][0].get('aboutMe'),
         }
     },
     'Instagram': {
         'flags': ['instagram://user?username'],
         'regex': r'window._sharedData =(.+?);</script>',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'],
+            json.dumps,
+        ],
         'fields': {
-            'instagram_username': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('username'),
-            'fullname': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('full_name'),
-            'id': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('id'),
-            'image': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('profile_pic_url_hd'),
-            'bio': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('biography'),
-            'business_email': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('business_email'),
-            'external_url': lambda x: x['entry_data']['ProfilePage'][0]['graphql']['user'].get('external_url'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('full_name'),
+            'id': lambda x: x.get('id'),
+            'image': lambda x: x.get('profile_pic_url_hd'),
+            'bio': lambda x: x.get('biography'),
+            'business_email': lambda x: x.get('business_email'),
+            'external_url': lambda x: x.get('external_url'),
+            'facebook_uid':  lambda x: x.get('fbid'),
+            'is_business': lambda x: x.get('is_business_account'),
+            'is_joined_recently': lambda x: x.get('is_joined_recently'),
+            'is_private': lambda x: x.get('is_private'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'follower_count': lambda x: x.get('edge_followed_by', {}).get('count'),
+            'following_count': lambda x: x.get('edge_follow', {}).get('count'),
+        }
+    },
+    'Instagram API': {
+        'flags': ['{"user":{"username"', 'profile_pic_url'],
+        'regex': r'^(.+?)$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x['user'].get('username'),
+            'id': lambda x: x['user'].get('pk'),
+            'image': lambda x: x['user'].get('profile_pic_url'),
+        }
+    },
+    'Instagram page JSON': {
+        'flags': ['{"logging_page_id":"profilePage'],
+        'regex': r'^(.+?)$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['graphql']['user'],
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('full_name'),
+            'id': lambda x: x.get('id'),
+            'image': lambda x: x.get('profile_pic_url_hd'),
+            'bio': lambda x: x.get('biography'),
+            'business_email': lambda x: x.get('business_email'),
+            'external_url': lambda x: x.get('external_url'),
+            'facebook_uid':  lambda x: x.get('fbid'),
+            'is_business': lambda x: x.get('is_business_account'),
+            'is_joined_recently': lambda x: x.get('is_joined_recently'),
+            'is_private': lambda x: x.get('is_private'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'follower_count': lambda x: x.get('edge_followed_by', {}).get('count'),
+            'following_count': lambda x: x.get('edge_follow', {}).get('count'),
+        }
+    },
+    'Spotify API': {
+        'flags': ['"uri": "spotify:user:'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('name'),
+            'follower_count': lambda x: x.get('followers_count'),
+            'following_count': lambda x: x.get('following_count'),
+            'image': lambda x: x.get('image_url', ''),
         }
     },
     'EyeEm': {
@@ -199,7 +431,12 @@ schemes = {
     },
     'Habrahabr': {
         'flags': ['habracdn.net'],
-        'regex': r'<div class="page-header page-header_full js-user_(?P<uid>\d+)">[\s\S]*?/users/(?P<username>.*?)/([\s\S]+?<img src="(?P<image>//habrastorage\.org/getpro/habr/avatars.+?)")?',
+        'bs': True,
+        'fields': {
+            'uid': lambda x: x.find('div', {'class': 'user-info__stats'}).parent.attrs['class'][-1].split('_')[-1],
+            'username': lambda x: x.find('a', {'class': 'media-obj__image'}).get('href').split('/')[-2],
+            'image': lambda x: 'http:' + x.find('div', {'class': 'user-info__stats'}).find('img').get('src'),
+        },
     },
     # unactual
     'Twitter HTML': {
@@ -209,7 +446,7 @@ schemes = {
     # https://shadowban.eu/.api/user
     # https://gist.github.com/superboum/ab31bc4c85c731b9e89ebda5eaed9a3a
     'Twitter Shadowban': {
-        'flags': ['{"timestamp"', '"profile": {'],
+        'flags': ['"timestamp"', '"profile": {', 'has_tweets'],
         'regex': r'^({.+?})$',
         'extract_json': True,
         'fields': {
@@ -241,11 +478,22 @@ schemes = {
             'following_count': lambda x: x.get('legacy', {}).get('friends_count'),
             'location': lambda x: x.get('legacy', {}).get('location'),
             'favourites_count': lambda x: x.get('legacy', {}).get('favourites_count'),
+            'links': lambda x: [y.get('expanded_url') for y in x.get('legacy', {}).get('entities', {}).get('url', {}).get('urls', [])],
         }
     },
     'Facebook user profile': {
-        'flags': ['com.facebook.katana', 'scribe_endpoint'],
-        'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
+        'flags': ['<html id="facebook"', 'content="Facebook"'],
+        'regex': r'"__bbox":{"complete":false,"result":{"data":{"user":({"__isProfile":"User".+?}}})',
+        'extract_json': True,
+        'fields': {
+            'all': lambda x: x,
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('url').split('/')[-1],
+            'fullname': lambda x: x.get('name'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'image': lambda x: x.get('profile_picture_for_sticky_bar', {}).get('uri', ''),
+            'image_bg': lambda x: x.get('cover_photo', {}).get('photo', {}).get('image', {}).get('uri', ''),
+        }
     },
     'Facebook group': {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
@@ -320,6 +568,12 @@ schemes = {
     },
     '500px GraphQL API': {
         'flags': ['{"data":{"profile":{"id"'],
+        'url_mutations': [
+            {
+                'from': r'https://500px.com/p/(?P<username>.+)/?',
+                'to': 'https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22{username}%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22105058632482dd2786fd5775745908dc928f537b28e28356b076522757d65c19%22%7D%7D',
+            }
+        ],
         'regex': r'^{"data":({.+})}$',
         'extract_json': True,
         'fields': {
@@ -358,9 +612,31 @@ schemes = {
             'your_ls_uid': lambda x: x.get('docs-offline-lsuid'),
             'your_cpf': lambda x: x.get('docs-cpf'),
             'your_username': lambda x: x.get('docs-offline-ue') or x.get('docs-hue'),
-            'your_uid': lambda x: x['docs-pid'],
+            'viewer_uid': lambda x: x['docs-pid'],
             'org_name': lambda x: x['docs-doddn'],
             'org_domain': lambda x: x['docs-dodn'],
+        }
+    },
+    'Google Document API': {
+        'flags': ['alternateLink', 'copyRequiresWriterPermission'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                # credits: https://github.com/Malfrats/xeuledoc
+                'from': r'https://docs.google.com/(spreadsheets|document|presentation|drawings)/d/(?P<gdoc_id>[\w-]+)',
+                'to': 'https://clients6.google.com/drive/v2beta/files/{gdoc_id}?fields=alternateLink%2CcopyRequiresWriterPermission%2CcreatedDate%2Cdescription%2CdriveId%2CfileSize%2CiconLink%2Cid%2Clabels(starred%2C%20trashed)%2ClastViewedByMeDate%2CmodifiedDate%2Cshared%2CteamDriveId%2CuserPermission(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cpermissions(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cparents(id)%2Ccapabilities(canMoveItemWithinDrive%2CcanMoveItemOutOfDrive%2CcanMoveItemOutOfTeamDrive%2CcanAddChildren%2CcanEdit%2CcanDownload%2CcanComment%2CcanMoveChildrenWithinDrive%2CcanRename%2CcanRemoveChildren%2CcanMoveItemIntoTeamDrive)%2Ckind&supportsTeamDrives=true&enforceSingleParent=true&key=AIzaSyC1eQ1xj69IdTMeii5r7brs3R90eck-m7k',
+                'headers': {"X-Origin": "https://drive.google.com"},
+            }
+        ],
+        'fields': {
+            'created_at': lambda x: x.get('createdDate'),
+            'updated_at': lambda x: x.get('modifiedDate'),
+            'owner_gaia_id': lambda x: x.get('permissions')[1]['id'],
+            'fullname': lambda x: x.get('permissions')[1]['name'],
+            'email': lambda x: x.get('permissions')[1]['emailAddress'],
+            'supposed_username': lambda x: x.get('permissions')[1]['emailAddress'].split('@')[0],
+            'image': lambda x: x.get('permissions')[1]['photoLink'],
         }
     },
     'Google Maps contributions': {
@@ -383,7 +659,7 @@ schemes = {
         }
     },
     'Pinterest API': {
-        'flags': ['{"resource_response":{"status"'],
+        'flags': ['{"resource_response":{', 'video_pin_count'],
         'regex': r'^(.+)$',
         'extract_json': True,
         'transforms': [
@@ -479,7 +755,7 @@ schemes = {
         'regex': r'({"url":".+?});',
         'extract_json': True,
         'fields': {
-            'uid': lambda x: x['steamid'],
+            'steam_id': lambda x: x['steamid'],
             'nickname': lambda x: x['personaname'],  # это не совсем имя, а ник
             'username': lambda x: [y for y in x['url'].split('/') if y][-1],
         }
@@ -491,7 +767,12 @@ schemes = {
     },
     'Stack Overflow & similar': {
         'flags': ['StackExchange.user.init'],
-        'regex': r'StackExchange.user.init\({ userId: (?P<uid>\d+), accountId: (?P<stack_exchange_uid>\d+) }\);',
+        'bs': True,
+        'fields': {
+            'uid': lambda x: x.find('div', {'class': 'avatar'}).find('a').get('href').split('/')[-2],
+            'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src'),
+            'stack_exchange_uid': lambda x: x.find('div', {'id': 'mainbar-full'}).find('a', {'class': 'grid--cell'}).get('href').split('/')[-2],
+        }
     },
     'SoundCloud': {
         'flags': ['eventlogger.soundcloud.com'],
@@ -735,6 +1016,52 @@ schemes = {
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
         }
     },
+    'Linktree': {
+        'flags': ['content="Linktree. Make your link do more."'],
+        'regex': r'id="__NEXT_DATA__" type="application\/json" crossorigin="anonymous">(.+?)<\/script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['props']['pageProps'],
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x.get('account', {}).get('id'),
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('profilePictureUrl'),
+            'is_active': lambda x: x.get('account', {}).get('isActive'),
+            'is_verified': lambda x: x.get('isProfileVerified'),
+            'facebook_pixel_id': lambda x: x.get('account', {}).get('facebookPixelId'),
+            'google_analytics_id': lambda x: x.get('account', {}).get('googleAnalyticsId'),
+            'is_email_verified': lambda x: x.get('account', {}).get('owner', {}).get('isEmailVerified'),
+            'bio': lambda x: x.get('description'),
+            'tier': lambda x: x.get('account', {}).get('tier'),
+            'social_links': lambda x: {(s['type'].lower() if not s['type'].startswith('EMAIL') else 'email'): s['url'] for s in x.get('socialLinks', [])},
+            'links': lambda x: [y.get('url') for y in x.get('account', {}).get('links', [])],
+        }
+    },
+    'Twitch': {
+        'flags': ['<meta property="al:android:url" content="twitch://'],
+        'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['props']['relayQueryRecords'],
+            lambda x: [v for k, v in x.items() if k.startswith('User') or k.endswith('followers')],
+            lambda x: dict(list(x[0].items()) + list(x[1].items())),
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x.get('id').split('{')[-1],
+            'views_count': lambda x: x.get('profileViewCount'),
+            'username': lambda x: x.get('login'),
+            'bio': lambda x: x.get('description'),
+            'fullname': lambda x: x.get('displayName'),
+            'image': lambda x: x.get('profileImageURL(width:300)'),
+            'likes_count': lambda x: x.get('totalCount'),
+            'image_bg': lambda x: x.get('bannerImageURL'),
+        },
+    },
     'vBulletinEngine': {
         'flags': ['vBulletin.register_control'],
         'bs': True,
@@ -743,5 +1070,155 @@ schemes = {
             'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
             'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
         }
-    }
+    },
+    'Tumblr (default theme)': {
+        'flags': ['https://assets.tumblr.com'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('h1', {'class': 'blog-title'}).find('a').text,
+            'title': lambda x: x.find('div', {'class': 'title-group'}).find('span', {'class': 'description'}).text.strip(),
+            'links': lambda x: [enrich_link(a.find('a').get('href')) for a in x.find('div', {'class': 'nav-wrapper'}).find_all('li', {'class': 'nav-item nav-item--page'})],
+        }
+    },
+    '1x.com': {
+        'flags': ['content="https://www.1x.com/'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'coveroverlay'}).find('td', {'valign': 'bottom'}).find('div').contents[0],
+            'image': lambda x:  'https://1x.com/' + x.find('img', {'class': 'member_profilepic'}).get('src', ''),
+        }
+    },
+    'Last.fm': {
+        'flags': ['Music Profile | Last.fm</title>'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('span', {'class': 'header-title-display-name'}).contents[0].strip(),
+            # TODO: date convert
+            'bio': lambda x: x.find('span', {'class': 'header-scrobble-since'}).contents[0].strip(),
+            'image': lambda x: x.find('span', {'class': 'avatar'}).find('img').get('src', ''),
+        }
+    },
+    'Ask.fm': {
+        'flags': [' | ASKfm</title>'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: x.find('span', {'class': 'userName_wrap'}).find('span', {'class': 'userName'}).contents[0].lstrip('@'),
+            'fullname': lambda x: x.find('h1', {'class': 'userName_status'}).find('span', {'class': 'userName'}).contents[0].lstrip('@'),
+            'posts_count': lambda x: x.find('div', {'class': 'profileStats_number profileTabAnswerCount'}).contents[0],
+            'likes_count': lambda x: x.find('div', {'class': 'profileStats_number profileTabLikeCount'}).contents[0],
+            'image': lambda x: x.find('a', {'class': 'userAvatar-big'}).get('style').replace('background-image:url(','').rstrip(')'),
+            'location': lambda x: x.find('div', {'class': 'icon-location'}).contents[0],
+        }
+    },
+    'Launchpad': {
+        'flags': ['in Launchpad</title>'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('h2', {'id': 'watermark-heading'}).find('a').contents[0],
+            'username': lambda x: x.find('dl', {'id': 'launchpad-id'}).find('dd').contents[0],
+            'languages': lambda x: x.find('dl', {'id': 'languages'}).find('dd').contents[0].strip(),
+            'karma': lambda x: x.find('a', {'id': 'karma-total'}).contents[0],
+            'created_at': lambda x: x.find('dd', {'id': 'member-since'}).contents[0],
+            'timezone': lambda x: re.sub(r'\s+', ' ', x.find('dl', {'id': 'timezone'}).find('dd').contents[0] or '').strip(),
+            'openpgp_key': lambda x: x.find('dl', {'id': 'pgp-keys'}).find('dd').contents[0].strip(),
+        }
+    },
+    'Xakep.ru': {
+        'flags': ['https://xakep.ru/author/'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'authorBlock-header'}).find('h4').contents[0],
+            'image': lambda x: x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', ''),
+            'bio': lambda x: '\n'.join(x.find('p', {'class': 'authorBlock-header-bio'}).contents),
+            'links': lambda x: [a.get('href') for a in x.find('div', {'class': 'authorBlock-meta'}).findAll('a')],
+            'joined_year': lambda x: extract_digits(x.find('div', {'class': 'authorBlock-header'}).find('h6').contents[0]),
+        }
+    },
+    'Tproger.ru': {
+        'flags': ['<meta property="og:url" content="https://tproger.ru/author/'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('h1', {'class': 'author-main__header'}).contents[0],
+            'image': lambda x: x.find('div', {'class': 'author-main'}).find('img').get('data-src', ''),
+        }
+    },
+    'Jsfiddle.net': {
+        'flags': ['<meta name="author" edit="JSFiddle">'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'profileDetails'}).find('a').contents[0].strip(),
+            'company': lambda x: x.find('div', {'class': 'profileDetails'}).find('div', {'class': 'company'}).contents[0].strip(),
+            'links': lambda x: [a.get('href') for a in x.find('div', {'class': 'userDetails'}).findAll('a')],
+            'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src', ''),
+        }
+    },
+    'o.yandex.ru': {
+        'flags': ['"cookiesDomain":".o.yandex.ru"'],
+        'regex': r'<script type="application/json" id="initial-state" nonce=".+?">(.+?)<\/script>',
+        'extract_json': True,
+        'fields': {
+            'yandex_public_id': lambda x: x['publicProfile']['params']['publicUserId'],
+            'fullname': lambda x: decode_ya_str(x['publicProfile']['data']['publicProfile']['seller']['name']),
+            'image': lambda x: x['publicProfile']['data']['publicProfile']['seller']['avatar']['size_100x100'],
+            'score': lambda x: x['publicProfile']['data']['publicProfile']['seller']['userBadge']['score'],
+        }
+    },
+    'Disqus API': {
+        'flags': ['https://disqus.com/api/users/'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'fields': {
+            'id': lambda x: x['response']['id'],
+            'fullname': lambda x: x['response']['name'],
+            'bio': lambda x: x['response']['about'],
+            'reputation': lambda x: x['response']['reputation'],
+            'reputation_label': lambda x: x['response']['reputationLabel'],
+            'following_count': lambda x: x['response']['numFollowers'],
+            'follower_count': lambda x: x['response']['numFollowing'],
+            'location': lambda x: x['response']['location'],
+            'is_power_contributor': lambda x: x['response']['isPowerContributor'],
+            'is_anonymous': lambda x: x['response']['isAnonymous'],
+            'created_at': lambda x: x['response']['joinedAt'],
+            'likes_count': lambda x: x['response']['numLikesReceived'],
+            'url': lambda x: x['response']['url'],
+            'forums_count': lambda x: x['response']['numForumsFollowing'],
+            'image': lambda x: x['response']['avatar']['large']['permalink'],
+        }
+    },
+    'uCoz-like profile page': {
+        'flags': ['UCOZ-JS-DATA'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', string='Имя:').next_sibling.split('[')[0].strip(),
+            'url': lambda x: get_ucoz_userlink(x.find('div', string='Пользователь:')),
+            'image': lambda x: get_ucoz_image(x),
+            'gender': lambda x: x.find('div', string='Имя:').next_sibling.split(' ')[-2],
+            'created_at': lambda x: x.find('div', string='Дата регистрации:').next_sibling.strip(),
+            'last_seen_at': lambda x: x.find('div', string='Дата входа:').next_sibling.strip(),
+            'link': lambda x: get_ucoz_uid_node(x).parent.get('href'),
+            'uidme_uguid': lambda x: get_ucoz_uid_node(x).parent.get('href', '').split('/')[-1],
+            'location': lambda x: x.find('div', string='Место проживания:').next_sibling.strip(),
+            'country': lambda x: x.find('div', string='Страна:').next_sibling.strip(),
+            'city': lambda x: x.find('div', string='Город:').next_sibling.strip(),
+            'state': lambda x: x.find('div', string='Штат:').next_sibling.strip(),
+            'email': lambda x: get_ucoz_email(x.find('div', string='E-mail:').next_sibling.strip()),
+            'birthday_at': lambda x: x.find('div', string='Дата рождения:').next_sibling.split('[')[0].strip(),
+        },
+    },
+    'uID.me': {
+        'flags': [' - uID.me</title>'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: x.find('title').contents[0].split(' ')[0],
+            'image': lambda x: 'https://uid.me' + x.find('img', {'id': 'profile_picture'}).get('src'),
+            'headline': lambda x: x.find('h2', {'id': 'profile_headline'}).contents[0].strip(),
+            'bio': lambda x: x.find('div', {'id': 'profile_bio'}).contents[0].strip(),
+            'contacts': lambda x: [a.contents[0] for a in x.find('div', {'id': 'profile_contacts'}).find_all('a')],
+            'email': lambda x: x.find('a', {'id': 'user-email'}).contents[0],
+            'phone': lambda x: x.find('span', {'id': 'profile-phone'}).contents[0],
+            'skype': lambda x: x.find('span', {'id': 'profile-skype'}).contents[0],
+            'location': lambda x: ','.join([a.contents[0] for a in x.find('ul', {'id': 'profile_places'}).find_all('a')]),
+            'links': lambda x: [a.get('href') for a in x.find('div', {'id': 'list_my-sites'}).find_all('a')] or None,
+        },
+    },
 }

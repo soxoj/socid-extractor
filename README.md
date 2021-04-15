@@ -1,18 +1,22 @@
 # socid_extractor
-Extract accounts' identifiers and other info from personal pages on popular sites.
+
+Extract information about a user from profile webpages / API responses and save it in machine-readable format.
 
 ## When it may be useful
 
-- Getting additional info by the username or/and account UID. Examples: [Week in OSINT - Getting a Grasp on GoogleID’s](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43), [OSINTCurious - searching Instagram](https://osintcurio.us/2019/10/01/searching-instagram-part-2/)
+- Getting all available info by the username or/and account UID. Examples: [Week in OSINT](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43), [OSINTCurious](https://osintcurio.us/2019/10/01/searching-instagram-part-2/)
+- Users tracking, checking that the account was previously known (by ID) even if all public info has changed. Examples: [Aware Online](https://www.aware-online.com/en/importance-of-user-ids-in-social-media-investigations/)
 - Searching by commonly used cross-service UIDs (GAIA ID, Facebook UID, Yandex Public ID, etc.)
   - DB leaks of forums and platforms in SQL format
   - Indexed links that contain target profile ID
 - Searching for tracking data by comparison with other IDs - [how it works](https://www.eff.org/wp/behind-the-one-way-mirror), [how can it be used](https://www.nytimes.com/interactive/2019/12/19/opinion/location-tracking-cell-phone.html).
-- Checking that the account was previously known (by ID) even if all public info has changed
+- Law enforcement online requests
 
 ## Tools using socid_extractor
 
 [Maigret](https://github.com/soxoj/maigret) - powerful namechecker, generate a report with all available info from accounts found. 
+
+[YaSeeker](https://github.com/HowToFind-bot/YaSeeker) - tool to gather all available information about Yandex account by login/email.
 
 ## Installation
 
@@ -36,7 +40,10 @@ links: ['https://www.facebook.com/musemercier', 'https://www.instagram.com/muse.
 tagline: Nothing worth having is easy...
 ```
 
-Or simply `./run.py --url https://vimeo.com/alexaimephotography`
+Without installing: 
+```
+$ ./run.py --url https://www.deviantart.com/muse1908
+```
 
 As a Python library:
 ```
@@ -55,6 +62,7 @@ As a Python library:
 - Reddit
 - Medium
 - Flickr
+- Tumblr
 - TikTok
 - GitHub
 - VK (user page)
@@ -63,4 +71,4 @@ As a Python library:
 
 ...and many others.
 
-Check [tests file](./tests/test_e2e.py) for extracted data examples.
+Check [tests file](./tests/test_e2e.py) for extracted data examples, [schemes file](./socid_extractor/schemes.py) to check all supported sites.
