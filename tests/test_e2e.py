@@ -701,7 +701,8 @@ def test_telegram():
     info = extract(parse('https://t.me/buzovacoin')[0])
 
     assert info.get('fullname') == 'Buzovacoin'
-    assert info.get('about').startswith('ICO Ольги Бузовой - Платформа BUZAR')
+    assert info.get('bio').startswith('ICO Ольги Бузовой - Платформа BUZAR')
+    assert 'image' in info
 
 
 def test_mssg():
