@@ -1230,4 +1230,23 @@ schemes = {
             'links': lambda x: [a.get('href') for a in x.find('div', {'id': 'list_my-sites'}).find_all('a')] or None,
         },
     },
+    'tapd': {
+        'flags': ['{"_id"', 'userDetails":{"', '"sid":"'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://tapd.co/(?P<username>[^/]+).*',
+                'to': 'https://tapd.co/api/user/getPublicProfile/{username}',
+            }
+        ],
+        'fields': {
+            'fullname': lambda x: x['name'],
+            'username': lambda x: x['userDetails']['username'],
+            'bio': lambda x: x['bio'],
+            'views_count': lambda x: x['count'],
+            'image': lambda x: 'https://distro.tapd.co/' + x['header']['picture'],
+            'links': lambda x: [l['url'].strip() for l in x['links']],
+        }
+    }
 }
