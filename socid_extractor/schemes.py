@@ -486,7 +486,6 @@ schemes = {
         'regex': r'"__bbox":{"complete":false,"result":{"data":{"user":({"__isProfile":"User".+?}}})',
         'extract_json': True,
         'fields': {
-            'all': lambda x: x,
             'uid': lambda x: x.get('id'),
             'username': lambda x: x.get('url').split('/')[-1],
             'fullname': lambda x: x.get('name'),
