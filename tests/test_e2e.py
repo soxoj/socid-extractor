@@ -885,3 +885,13 @@ def test_uidme():
     assert info.get('skype') == 'Dariya Koshka'
     assert info.get('location') == 'Луганск'
     assert info.get('links') == "['http://www.proza.ru/avtor/dahakot']"
+
+
+def test_tapd():
+    info = extract(parse('https://tapd.co/api/user/getPublicProfile/betsyalvarezz')[0])
+
+    assert info.get('fullname') == 'Betsy Alvarez'
+    assert info.get('username') == 'betsyalvarezz'
+    assert int(info.get('views_count')) > 43124
+    assert info.get('image') == 'https://distro.tapd.co/x3fwD79IdB0LqOqf.jpeg'
+    assert info.get('links') == "['https://www.twitter.com/Betsyalvarezz', 'https://www.instagram.com/Betsyalvarezz', 'https://cash.app/$Betsyalvarezz', 'https://www.tiktok.com/@Betsyalvarezz', 'https://www.instagram.com/Brb.thelabel', 'https://www.youtube.com/c/BetsyAlvarezz', 'https://www.amazon.com/hz/wishlist/ls/2GNHXWNBBCIP0?ref_=wl_share', 'https://onlyfans.com/Betsyalvarezz']"
