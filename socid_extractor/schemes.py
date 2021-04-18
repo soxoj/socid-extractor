@@ -14,11 +14,17 @@ schemes = {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
         'regex': r'"display_name":"(?P<name>.*?)","uid":"(?P<uid>\d+)","locale":"\w+","login":"(?P<username>.*?)"',
     },
-    # https://music.yandex.ru/handlers/library.jsx?owner=
     'Yandex Music AJAX request': {
         'flags': ['{"success":true,"verified'],
         'regex': r'^(.+)$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://music.yandex.ru/users/(?P<username>[^/]+).*',
+                'to': 'https://music.yandex.ru/handlers/library.jsx?owner={username}',
+                'headers': {"Referer": "https://music.yandex.ru/users/test/playlists"},
+            }
+        ],
         'fields': {
             'yandex_uid': lambda x: x['owner']['uid'],
             'username': lambda x: x['owner']['login'],
@@ -140,7 +146,7 @@ schemes = {
         'extract_json': True,
         'transforms': [
             json.loads,
-            lambda x: list(x['entities']['users'].values())[1],
+            lambda x: x['entities']['users'].get(x['profileUser'].get('id'), {}),
             json.dumps,
         ],
         'fields': {
