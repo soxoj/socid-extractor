@@ -183,6 +183,7 @@ def test_reddit():
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
 
+
 def test_facebook_user_profile():
     info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
 
@@ -192,6 +193,7 @@ def test_facebook_user_profile():
     assert info.get('is_verified') == 'True'
     assert 'image' in info
     assert 'image_bg' in info
+    assert 'all' not in info
 
 
 @pytest.mark.skip(reason="broken")
@@ -200,6 +202,7 @@ def test_facebook_group():
 
     assert info.get('uid') == '858412104226521'
     assert info.get('username') == 'discord'
+    assert 'all' not in info
 
 
 def test_github_html():
