@@ -14,11 +14,17 @@ schemes = {
         'flags': ['yastatic.net/disk/album', 'isAvailableToAlbum'],
         'regex': r'"display_name":"(?P<name>.*?)","uid":"(?P<uid>\d+)","locale":"\w+","login":"(?P<username>.*?)"',
     },
-    # https://music.yandex.ru/handlers/library.jsx?owner=
     'Yandex Music AJAX request': {
         'flags': ['{"success":true,"verified'],
         'regex': r'^(.+)$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://music.yandex.ru/users/(?P<username>[^/]+).*',
+                'to': 'https://music.yandex.ru/handlers/library.jsx?owner={username}',
+                'headers': {"Referer": "https://music.yandex.ru/users/test/playlists"},
+            }
+        ],
         'fields': {
             'yandex_uid': lambda x: x['owner']['uid'],
             'username': lambda x: x['owner']['login'],
@@ -140,7 +146,7 @@ schemes = {
         'extract_json': True,
         'transforms': [
             json.loads,
-            lambda x: list(x['entities']['users'].values())[1],
+            lambda x: x['entities']['users'].get(x['profileUser'].get('id'), {}),
             json.dumps,
         ],
         'fields': {
@@ -486,7 +492,6 @@ schemes = {
         'regex': r'"__bbox":{"complete":false,"result":{"data":{"user":({"__isProfile":"User".+?}}})',
         'extract_json': True,
         'fields': {
-            'all': lambda x: x,
             'uid': lambda x: x.get('id'),
             'username': lambda x: x.get('url').split('/')[-1],
             'fullname': lambda x: x.get('name'),
@@ -988,10 +993,14 @@ schemes = {
                                 y['attributes'].get('app_name')],
         }
     },
-    # TODO: add image
     'Telegram': {
-        'flags': ['tg://resolve?domain='],
-        'regex': r'"og:title" content="(?P<fullname>.+)">[\s\S]*"og:description" content="(?P<about>.+)">[\s\S]+?<img class="tgme_page_photo_image" src="(?P<image>.+)"',
+        'flags': ['tgme_page_title'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('div', {'class': 'tgme_page_title'}).find('span').text,
+            'image': lambda x: x.find('img', {'class': 'tgme_page_photo_image'}).get('src'),
+            'bio': lambda x: x.find('div', {'class': 'tgme_page_description'}).get_text(separator='\n'),
+        }
     },
     'BuzzFeed': {
         'flags': ['window.BZFD = window.BZFD'],
@@ -1221,4 +1230,23 @@ schemes = {
             'links': lambda x: [a.get('href') for a in x.find('div', {'id': 'list_my-sites'}).find_all('a')] or None,
         },
     },
+    'tapd': {
+        'flags': ['{"_id"', 'userDetails":{"', '"sid":"'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://tapd.co/(?P<username>[^/]+).*',
+                'to': 'https://tapd.co/api/user/getPublicProfile/{username}',
+            }
+        ],
+        'fields': {
+            'fullname': lambda x: x['name'],
+            'username': lambda x: x['userDetails']['username'],
+            'bio': lambda x: x['bio'],
+            'views_count': lambda x: x['count'],
+            'image': lambda x: 'https://distro.tapd.co/' + x['header']['picture'],
+            'links': lambda x: [l['url'].strip() for l in x['links']],
+        }
+    }
 }

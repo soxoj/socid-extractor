@@ -183,6 +183,7 @@ def test_reddit():
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
 
+
 def test_facebook_user_profile():
     info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
 
@@ -192,6 +193,7 @@ def test_facebook_user_profile():
     assert info.get('is_verified') == 'True'
     assert 'image' in info
     assert 'image_bg' in info
+    assert 'all' not in info
 
 
 @pytest.mark.skip(reason="broken")
@@ -200,6 +202,7 @@ def test_facebook_group():
 
     assert info.get('uid') == '858412104226521'
     assert info.get('username') == 'discord'
+    assert 'all' not in info
 
 
 def test_github_html():
@@ -698,7 +701,8 @@ def test_telegram():
     info = extract(parse('https://t.me/buzovacoin')[0])
 
     assert info.get('fullname') == 'Buzovacoin'
-    assert info.get('about').startswith('ICO Ольги Бузовой - Платформа BUZAR')
+    assert info.get('bio').startswith('ICO Ольги Бузовой - Платформа BUZAR')
+    assert 'image' in info
 
 
 def test_mssg():
@@ -881,3 +885,13 @@ def test_uidme():
     assert info.get('skype') == 'Dariya Koshka'
     assert info.get('location') == 'Луганск'
     assert info.get('links') == "['http://www.proza.ru/avtor/dahakot']"
+
+
+def test_tapd():
+    info = extract(parse('https://tapd.co/api/user/getPublicProfile/betsyalvarezz')[0])
+
+    assert info.get('fullname') == 'Betsy Alvarez'
+    assert info.get('username') == 'betsyalvarezz'
+    assert int(info.get('views_count')) > 43124
+    assert info.get('image') == 'https://distro.tapd.co/x3fwD79IdB0LqOqf.jpeg'
+    assert info.get('links') == "['https://www.twitter.com/Betsyalvarezz', 'https://www.instagram.com/Betsyalvarezz', 'https://cash.app/$Betsyalvarezz', 'https://www.tiktok.com/@Betsyalvarezz', 'https://www.instagram.com/Brb.thelabel', 'https://www.youtube.com/c/BetsyAlvarezz', 'https://www.amazon.com/hz/wishlist/ls/2GNHXWNBBCIP0?ref_=wl_share', 'https://onlyfans.com/Betsyalvarezz']"

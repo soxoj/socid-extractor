@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.0.17] - 2021-04-18
+* fixed Yandex, Telegram & Facebook
+
 ## [0.0.16] - 2021-03-30
 * removed account matching functionality and heavy dependencies
 * improved Gravatar
