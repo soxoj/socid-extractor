@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.0.18] - 2021-05-04
+* fixed and improved Behance
+* improved image links extraction
+
 ## [0.0.17] - 2021-04-18
 * fixed Yandex, Telegram & Facebook
 
