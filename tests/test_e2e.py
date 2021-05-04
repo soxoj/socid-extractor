@@ -362,7 +362,7 @@ def test_behance():
     assert info.get('city') == 'Montreal'
     assert info.get('country') == 'Canada'
     assert info.get('location') == 'Montreal, Quebec, Canada'
-    assert info.get('created_at') == '1300885764'
+    assert info.get('created_at') == '2011-03-23 16:09:24'
     assert info.get('occupation') == 'Freelancer Art director • Illustrator'
     assert info.get('links') == "['http://twitter.com/PatrickSeymour', 'http://facebook.com/patrickseymourillustrateur', 'http://linkedin.com/in/patrick-seymour-70334b2b?trk=hp-identity-photo', 'http://vimeo.com/user9401948', 'http://pinterest.com/patrickseymour', 'http://instagram.com/patrickseymour']"
     assert info.get('twitter_username') == 'PatrickSeymour'
@@ -532,6 +532,8 @@ def test_deviantart():
     assert info.get(
         'links') == "['https://www.instagram.com/muse.mercier/']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
+    assert info.get('bio').startswith('Hi my name is Muse Mercier and welcome to my') is True
+    assert info.get('created_at') == '2005-06-16 18:17:41'
 
 
 def test_tumblr():
@@ -540,6 +542,8 @@ def test_tumblr():
     assert info.get('fullname') == 'Alex Aimé Photography'
     assert info.get('title') == 'My name is Alex Aimé, and i am a freelance photographer. Originally from Burgundy in France .I am a man of 29 years. Follow me on : www.facebook.com/AlexAimePhotography/'
     assert info.get('links') == "['https://www.facebook.com/AlexAimePhotography/', 'https://500px.com/alexaimephotography', 'https://www.instagram.com/alexaimephotography/', 'https://www.flickr.com/photos/photoambiance/']"
+    assert 'image' in info
+    assert 'image_bg' in info
 
 
 def test_eyeem():
@@ -738,6 +742,11 @@ def test_patreon():
     assert info.get('patreon_username') == 'annetlovart'
     assert info.get('fullname') == 'Annet Lovart'
     assert info.get('links') == "['https://www.facebook.com/322598031832479', 'https://www.instagram.com/annet_lovart', 'https://twitter.com/annet_lovart', 'https://youtube.com/channel/UClDg4ntlOW_1j73zqSJxHHQ']"
+    assert info.get('is_nsfw') is 'False'
+    assert 'image' in info
+    assert 'image_bg' in info
+    assert info.get('created_at') == '2020-04-19T16:29:11.000+00:00'
+    assert 'bio' in info
 
 
 def test_last_fm():
@@ -912,3 +921,18 @@ def test_tapd():
     assert int(info.get('views_count')) > 43124
     assert info.get('image') == 'https://distro.tapd.co/x3fwD79IdB0LqOqf.jpeg'
     assert info.get('links') == "['https://www.twitter.com/Betsyalvarezz', 'https://www.instagram.com/Betsyalvarezz', 'https://cash.app/$Betsyalvarezz', 'https://www.tiktok.com/@Betsyalvarezz', 'https://www.instagram.com/Brb.thelabel', 'https://www.youtube.com/c/BetsyAlvarezz', 'https://www.amazon.com/hz/wishlist/ls/2GNHXWNBBCIP0?ref_=wl_share', 'https://onlyfans.com/Betsyalvarezz']"
+
+
+def test_buzzfeed():
+    info = extract(parse('https://www.buzzfeed.com/lisa')[0])
+
+    assert info.get('uuid') == '408a7d54-6af9-452e-8614-7f44216ed983'
+    assert info.get('id') == '43876'
+    assert info.get('fullname') == 'lisa'
+    assert info.get('username') == 'lisa'
+    assert info.get('bio') == 'If I&#39;m not me than who am I? And if I&#39;m somebody else, than why do I look like me?'
+    assert info.get('posts_count') == '0'
+    assert info.get('created_at') == '2009-12-17 23:47:09'
+    assert info.get('is_community_user') == 'True'
+    assert info.get('is_deleted') == 'False'
+    assert info.get('image') == 'https://img.buzzfeed.com/buzzfeed-static/static/user_images/web02/2009/12/17/20/lisa-31169-1261100831-63.jpg'

@@ -586,7 +586,7 @@ schemes = {
             'city': lambda x: x.get('city'),
             'country': lambda x: x.get('country'),
             'location': lambda x: x.get('location'),
-            'created_at': lambda x: x.get('created_on'),
+            'created_at': lambda x: timestamp_to_datetime(x.get('created_on')),
             'occupation': lambda x: x.get('occupation'),
             'links': lambda x: [a['url'] for a in x.get('social_links')],
             'twitter_username': lambda x: x.get('twitter', '').lstrip('@'),
@@ -800,7 +800,7 @@ schemes = {
         'extract_json': True,
         'fields': {
             'steam_id': lambda x: x['steamid'],
-            'nickname': lambda x: x['personaname'],  # это не совсем имя, а ник
+            'nickname': lambda x: x['personaname'],
             'username': lambda x: [y for y in x['url'].split('/') if y][-1],
         }
     },
@@ -824,12 +824,9 @@ schemes = {
         'extract_json': True,
         'message': 'Run with auth cookies to get your ids.',
         'fields': {
-            # 'your_uid': lambda x: x[-2]['data'][0].get('id'),
-            # 'your_name': lambda x: x[-2]['data'][0].get('full_name'),
-            # 'your_username': lambda x: x[-2]['data'][0].get('username'),
             'uid': lambda x: x[-1]['data'][0]['id'],
             'name': lambda x: x[-1]['data'][0]['full_name'],
-            'username': lambda x: x[-1]['data'][0]['username'],
+            'username': lambda x: x[-1]['data'][0]['username'].lstrip('@'),
             'following_count': lambda x: x[-1]['data'][0]['followings_count'],
             'follower_count': lambda x: x[-1]['data'][0]['followers_count'],
             'is_verified': lambda x: x[-1]['data'][0]['verified'],
@@ -980,6 +977,8 @@ schemes = {
             'website': lambda x: x['website'],
             'links': lambda x: [y['value'] for y in x['socialLinks']],
             'tagline': lambda x: x['tagline'],
+            'image': lambda x: x['devidDeviation']['author']['usericon'],
+            'bio': lambda x: x['textContent']['excerpt'],
         }
     },
     'Flickr': {
@@ -1030,6 +1029,11 @@ schemes = {
             'fullname': lambda x: x['campaign']['included'][0]['attributes']['full_name'],
             'links': lambda x: [y['attributes'].get('external_profile_url') for y in x['campaign']['included'] if
                                 y['attributes'].get('app_name')],
+            'image': lambda x: x['campaign']['data']['attributes']['avatar_photo_url'],
+            'image_bg': lambda x: x['campaign']['data']['attributes']['cover_photo_url'],
+            'is_nsfw': lambda x: x['campaign']['data']['attributes']['is_nsfw'],
+            'created_at': lambda x: x['campaign']['data']['attributes']['published_at'],
+            'bio': lambda x: x['campaign']['data']['attributes']['summary'],
         }
     },
     'Telegram': {
@@ -1051,17 +1055,18 @@ schemes = {
             json.dumps,
         ],
         'fields': {
-            'buzzfeed_id': lambda x: x['user_uuid'],
+            'uuid': lambda x: x['user_uuid'],
             'id': lambda x: x['user']['id'],
             'fullname': lambda x: x['user']['displayName'],
-            'buzzfeed_username': lambda x: x['user']['username'],
+            'username': lambda x: x['user']['username'],
             'bio': lambda x: x['user']['bio'],
-            'posts': lambda x: x['buzz_count'],
-            'memberSince': lambda x: timestamp_to_datetime(x['user']['memberSince']),
-            'isCommunityUser': lambda x: x['user']['isCommunityUser'],
-            'deleted': lambda x: x['user']['deleted'],
-            # 'social_names': lambda x: [y.get('name') for y in x['user']['social']],
+            'posts_count': lambda x: x['buzz_count'],
+            'created_at': lambda x: timestamp_to_datetime(x['user']['memberSince']),
+            'is_community_user': lambda x: x['user']['isCommunityUser'],
+            'is_deleted': lambda x: x['user']['deleted'],
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
+            'image': lambda x: 'https://img.buzzfeed.com/buzzfeed-static' + x['user']['image'],
+            'image_bg': lambda x: 'https://img.buzzfeed.com/buzzfeed-static' + x['user']['headerImage'],
         }
     },
     'Linktree': {
@@ -1125,6 +1130,8 @@ schemes = {
         'fields': {
             'fullname': lambda x: x.find('h1', {'class': 'blog-title'}).find('a').text,
             'title': lambda x: x.find('div', {'class': 'title-group'}).find('span', {'class': 'description'}).text.strip(),
+            'image': lambda x: x.find('a', {'class': 'user-avatar'}).find('img').get('src'),
+            'image_bg': lambda x: x.find('a', {'class': 'header-image'}).get('data-bg-image'),
             'links': lambda x: [enrich_link(a.find('a').get('href')) for a in x.find('div', {'class': 'nav-wrapper'}).find_all('li', {'class': 'nav-item nav-item--page'})],
         }
     },
