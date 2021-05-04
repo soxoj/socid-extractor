@@ -363,7 +363,7 @@ def test_behance():
     assert info.get('city') == 'Montreal'
     assert info.get('country') == 'Canada'
     assert info.get('location') == 'Montreal, Quebec, Canada'
-    assert info.get('created_at') == '2011-03-23 16:09:24'
+    assert info.get('created_at') in ('2011-03-23 16:09:24', '2011-03-23 13:09:24')
     assert info.get('occupation') == 'Freelancer Art director • Illustrator'
     assert info.get('links') == "['http://twitter.com/PatrickSeymour', 'http://facebook.com/patrickseymourillustrateur', 'http://linkedin.com/in/patrick-seymour-70334b2b?trk=hp-identity-photo', 'http://vimeo.com/user9401948', 'http://pinterest.com/patrickseymour', 'http://instagram.com/patrickseymour']"
     assert info.get('twitter_username') == 'PatrickSeymour'
@@ -534,7 +534,7 @@ def test_deviantart():
         'links') == "['https://www.instagram.com/muse.mercier/']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
     assert info.get('bio').startswith('Hi my name is Muse Mercier and welcome to my') is True
-    assert info.get('created_at') == '2005-06-16 18:17:41'
+    assert info.get('created_at') in ('2005-06-16 18:17:41', '2005-06-16 14:17:41')
 
 
 def test_tumblr():
@@ -933,7 +933,7 @@ def test_buzzfeed():
     assert info.get('username') == 'lisa'
     assert info.get('bio') == 'If I&#39;m not me than who am I? And if I&#39;m somebody else, than why do I look like me?'
     assert info.get('posts_count') == '0'
-    assert info.get('created_at') == '2009-12-17 23:47:09'
+    assert info.get('created_at') in ('2009-12-17 23:47:09', '2009-12-17 20:47:09')
     assert info.get('is_community_user') == 'True'
     assert info.get('is_deleted') == 'False'
     assert info.get('image') == 'https://img.buzzfeed.com/buzzfeed-static/static/user_images/web02/2009/12/17/20/lisa-31169-1261100831-63.jpg'
