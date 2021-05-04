@@ -695,11 +695,23 @@ schemes = {
         'flags': ['https://api.bitbucket.org'],
         'regex': r'({.+?"section": {"profile.+?"whats_new_feed":.+?}});',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['global']['targetUser'],
+            json.dumps,
+        ],
         'fields': {
-            'uid': lambda x: x['global']['targetUser']['uuid'].strip('{}'),
-            'username': lambda x: x['global']['targetUser']['nickname'],
-            'created_at': lambda x: x['global']['targetUser']['created_on'],
-            'is_service': lambda x: x['global']['targetUser']['is_staff'],
+            'uid': lambda x: x['uuid'].strip('{}'),
+            'id': lambda x: x['account_id'],
+            'fullname': lambda x: x['display_name'],
+            'nickname': lambda x: x['nickname'],
+            'location': lambda x: x['location'],
+            'image': lambda x: x['links']['avatar']['href'],
+            'occupation': lambda x: x['job_title'],
+            'created_at': lambda x: x['created_on'],
+            'is_service': lambda x: x['is_staff'],
+            'is_active': lambda x: x['is_active'],
+            'has_2fa_enabled': lambda x: x['has_2fa_enabled'],
         }
     },
     'Pinterest API': {
@@ -1293,6 +1305,33 @@ schemes = {
             'views_count': lambda x: x['count'],
             'image': lambda x: 'https://distro.tapd.co/' + x['header']['picture'],
             'links': lambda x: [l['url'].strip() for l in x['links']],
+        }
+    },
+    'freelancer.com': {
+        'flags': ['{"status":"success","result":{"users":{'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www.)?freelancer\.com/u/(?P<username>[^/]+).*',
+                'to': 'https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D={username}&compact=true',
+            }
+        ],
+        'transforms': [
+            json.loads,
+            lambda x: list(x['result']['users'].values())[0],
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x['id'],
+            'nickname': lambda x: x['display_name'],
+            'username': lambda x: x['username'],
+            'fullname': lambda x: x['public_name'],
+            'company': lambda x: x['company'],
+            'company_founder_id': lambda x: x['corporate']['founder_id'],
+            'role': lambda x: x['role'],
+            'location': lambda x: x['location']['city'] + ', ' + x['location']['country']['name'],
+            'created_at': lambda x: timestamp_to_datetime(x['registration_date']),
         }
     }
 }

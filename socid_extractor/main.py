@@ -12,6 +12,8 @@ HEADERS = {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
 }
 
+PROCESS_ERRORS = (AttributeError, KeyError, IndexError, TypeError)
+
 
 def parse_cookies(cookies_str):
     cookies = SimpleCookie()
@@ -87,7 +89,7 @@ def extract(page):
                         logging.debug(t)
                         try:
                             extracted = t(extracted)
-                        except (AttributeError, KeyError) as e:
+                        except PROCESS_ERRORS as e:
                             logging.debug(f'Transform error: {e}')
                             extracted = {}
                         logging.debug(extracted)
@@ -109,7 +111,7 @@ def extract(page):
                     try:
                         value = get_field(json_data)
                         values[name] = str(value) if value not in (None, [], {}) else ''
-                    except (AttributeError, KeyError, IndexError) as e:
+                    except PROCESS_ERRORS as e:
                         logging.debug(f'Unable to extact field {name}: {e}')
             else:
                 values = regexp_group.groupdict()
@@ -120,14 +122,14 @@ def extract(page):
                 try:
                     value = get_field(soup)
                     values[name] = str(value) if value != None else ''
-                except (AttributeError, KeyError, IndexError) as e:
+                except PROCESS_ERRORS as e:
                     logging.debug(f'BS extract error: {e}')
 
         for p in POSTPROCESSORS:
             try:
                 additonal_data = p(values).process()
                 values.update(additonal_data)
-            except Exception as e:
+            except PROCESS_ERRORS as e:
                 logging.debug('Postprocess error: ', e)
 
         return {a: b for a, b in values.items() if b or type(b) == bool}
