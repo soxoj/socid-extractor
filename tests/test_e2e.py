@@ -178,7 +178,7 @@ def test_reddit():
     assert info.get('is_mod') == 'True'
     assert info.get('is_following') == 'True'
     assert info.get('has_user_profile') == 'True'
-    assert info.get('created_at') in ('2018-01-06 04:22:05', '2018-01-06 01:22:05')
+    assert info.get('created_at').startswith('2018-01-06')
     assert info.get('hide_from_robots') == 'True'
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
@@ -363,7 +363,7 @@ def test_behance():
     assert info.get('city') == 'Montreal'
     assert info.get('country') == 'Canada'
     assert info.get('location') == 'Montreal, Quebec, Canada'
-    assert info.get('created_at') in ('2011-03-23 16:09:24', '2011-03-23 13:09:24')
+    assert info.get('created_at').startswith('2011-03-23')
     assert info.get('occupation') == 'Freelancer Art director • Illustrator'
     assert info.get('links') == "['http://twitter.com/PatrickSeymour', 'http://facebook.com/patrickseymourillustrateur', 'http://linkedin.com/in/patrick-seymour-70334b2b?trk=hp-identity-photo', 'http://vimeo.com/user9401948', 'http://pinterest.com/patrickseymour', 'http://instagram.com/patrickseymour']"
     assert info.get('twitter_username') == 'PatrickSeymour'
@@ -405,8 +405,12 @@ def test_bitbucket():
     info = extract(parse('https://bitbucket.org/arny/')[0])
 
     assert info.get('uid') == '57ad342a-ec8f-42cb-af05-98175b72b8db'
-    assert info.get('username') == 'arny'
+    assert info.get('fullname') == 'arny'
+    assert info.get('nickname') == 'arny'
     assert info.get('created_at') == '2009-11-23T10:41:04.355755+00:00'
+    assert info.get('image') == 'https://bitbucket.org/account/arny/avatar/'
+    assert info.get('is_service') == 'False'
+    assert info.get('is_active') == 'True'
 
 
 @pytest.mark.skip(reason="cloudflare")
@@ -526,7 +530,6 @@ def test_deviantart():
     info = extract(parse('https://www.deviantart.com/muse1908')[0])
 
     assert info.get('country') == 'France'
-    assert '2005-06-16' in info.get('created_at')
     assert info.get('gender') == 'female'
     assert info.get('website') == 'www.purelymuse.com'
     assert info.get('username') == 'Muse1908'
@@ -534,7 +537,7 @@ def test_deviantart():
         'links') == "['https://www.instagram.com/muse.mercier/']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
     assert info.get('bio').startswith('Hi my name is Muse Mercier and welcome to my') is True
-    assert info.get('created_at') in ('2005-06-16 18:17:41', '2005-06-16 14:17:41')
+    assert info.get('created_at').startswith('2005-06-16')
 
 
 def test_tumblr():
@@ -714,7 +717,7 @@ def test_flickr():
     assert int(info.get('photo_count')) > 140
     assert int(info.get('follower_count')) > 180
     assert int(info.get('following_count')) > 70
-    assert info.get('created_at') in ('2020-03-17 07:18:59', '2020-03-17 04:18:59')
+    assert info.get('created_at').startswith('2020-03-17')
     assert info.get('is_pro') == 'False'
     assert info.get('is_deleted') == 'False'
 
@@ -933,10 +936,11 @@ def test_buzzfeed():
     assert info.get('username') == 'lisa'
     assert info.get('bio') == 'If I&#39;m not me than who am I? And if I&#39;m somebody else, than why do I look like me?'
     assert info.get('posts_count') == '0'
-    assert info.get('created_at') in ('2009-12-17 23:47:09', '2009-12-17 20:47:09')
+    assert info.get('created_at').startswith('2009-12-17')
     assert info.get('is_community_user') == 'True'
     assert info.get('is_deleted') == 'False'
     assert info.get('image') == 'https://img.buzzfeed.com/buzzfeed-static/static/user_images/web02/2009/12/17/20/lisa-31169-1261100831-63.jpg'
+
 
 def test_freelancer():
     info = extract(parse('https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D=theDesignerz&compact=true')[0])
@@ -949,4 +953,4 @@ def test_freelancer():
     assert info.get('company_founder_id') == '26684749'
     assert info.get('role') == 'freelancer'
     assert info.get('location') == 'Islamabad, Pakistan'
-    assert info.get('created_at') == '2012-12-09 22:57:13'
+    assert info.get('created_at').startswith('2012-12-09')
