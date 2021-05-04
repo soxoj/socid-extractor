@@ -1294,5 +1294,32 @@ schemes = {
             'image': lambda x: 'https://distro.tapd.co/' + x['header']['picture'],
             'links': lambda x: [l['url'].strip() for l in x['links']],
         }
+    },
+    'freelancer.com': {
+        'flags': ['{"status":"success","result":{"users":{'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www.)?freelancer\.com/u/(?P<username>[^/]+).*',
+                'to': 'https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D={username}&compact=true',
+            }
+        ],
+        'transforms': [
+            json.loads,
+            lambda x: list(x['result']['users'].values())[0],
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x['id'],
+            'nickname': lambda x: x['display_name'],
+            'username': lambda x: x['username'],
+            'fullname': lambda x: x['public_name'],
+            'company': lambda x: x['company'],
+            'company_founder_id': lambda x: x['corporate']['founder_id'],
+            'role': lambda x: x['role'],
+            'location': lambda x: x['location']['city'] + ', ' + x['location']['country']['name'],
+            'created_at': lambda x: timestamp_to_datetime(x['registration_date']),
+        }
     }
 }

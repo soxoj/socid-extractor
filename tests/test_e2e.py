@@ -937,3 +937,16 @@ def test_buzzfeed():
     assert info.get('is_community_user') == 'True'
     assert info.get('is_deleted') == 'False'
     assert info.get('image') == 'https://img.buzzfeed.com/buzzfeed-static/static/user_images/web02/2009/12/17/20/lisa-31169-1261100831-63.jpg'
+
+def test_freelancer():
+    info = extract(parse('https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D=theDesignerz&compact=true')[0])
+
+    assert info.get('id') == '6751536'
+    assert info.get('nickname') == 'theDesignerz'
+    assert info.get('username') == 'theDesignerz'
+    assert info.get('fullname') == 'theDesignerz'
+    assert info.get('company') == 'theDesignerz'
+    assert info.get('company_founder_id') == '26684749'
+    assert info.get('role') == 'freelancer'
+    assert info.get('location') == 'Islamabad, Pakistan'
+    assert info.get('created_at') == '2012-12-09 22:57:13'
