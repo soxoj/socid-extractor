@@ -349,12 +349,29 @@ def test_yandex_bugbounty():
 
 
 def test_behance():
-    info = extract(parse('https://www.behance.net/Skyratov', 'ilo0=1')[0])
+    info = extract(parse('https://www.behance.net/patrickseymour', 'gpv=behance.net:profile:appreciated; ilo0=true')[0])
 
-    assert info.get('uid') == '39065909'
-    assert info.get('username') == 'Skyratov'
-    assert info.get('last_name') == 'Skuratov'
-    assert info.get('first_name') == 'Vasiliy'
+    assert info.get('uid') == '376641'
+    assert info.get('fullname') == 'Patrick Seymour'
+    assert info.get('last_name') == 'Seymour'
+    assert info.get('first_name') == 'Patrick'
+    assert info.get('username') == 'patrickseymour'
+    assert info.get('is_verified') == 'True'
+    assert info.get('bio') == 'False'
+    assert info.get('image') == 'https://mir-s3-cdn-cf.behance.net/user/276/012d0f376641.600ec6e15a5af.png'
+    assert info.get('city') == 'Montreal'
+    assert info.get('country') == 'Canada'
+    assert info.get('location') == 'Montreal, Quebec, Canada'
+    assert info.get('created_at') == '1300885764'
+    assert info.get('occupation') == 'Freelancer Art director • Illustrator'
+    assert info.get('links') == "['http://twitter.com/PatrickSeymour', 'http://facebook.com/patrickseymourillustrateur', 'http://linkedin.com/in/patrick-seymour-70334b2b?trk=hp-identity-photo', 'http://vimeo.com/user9401948', 'http://pinterest.com/patrickseymour', 'http://instagram.com/patrickseymour']"
+    assert info.get('twitter_username') == 'PatrickSeymour'
+    assert 'comments' in info
+    assert 'followers_count' in info
+    assert 'following_count' in info
+    assert 'profile_views' in info
+    assert 'project_views' in info
+    assert 'appreciations' in info
 
 
 @pytest.mark.github_failed
