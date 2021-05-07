@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+* added username-from-email extractor
 
 ## [0.0.18] - 2021-05-04
 * fixed and improved Behance

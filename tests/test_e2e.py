@@ -241,9 +241,9 @@ def test_my_mail_main():
     assert info.get('username') == 'zubovo'
     # there is no auId
     assert info.get('email') == 'zubovo@mail.ru'
-    assert info.get('isVip') == 'False'
-    assert info.get('isCommunity') == 'False'
-    assert info.get('isVideoChannel') == 'False'
+    assert info.get('is_vip') == 'False'
+    assert info.get('is_community') == 'False'
+    assert info.get('is_video_channel') == 'False'
 
 
 def test_my_mail_communities():
@@ -255,9 +255,9 @@ def test_my_mail_communities():
     assert info.get('username') == 'zubovo'
     assert info.get('auId') == '6667000454247668890'
     assert info.get('email') == 'zubovo@mail.ru'
-    assert info.get('isVip') == 'False'
-    assert info.get('isCommunity') == 'False'
-    assert info.get('isVideoChannel') == 'False'
+    assert info.get('is_vip') == 'False'
+    assert info.get('is_community') == 'False'
+    assert info.get('is_video_channel') == 'False'
 
 
 @pytest.mark.skip(reason="captcha")
@@ -467,7 +467,7 @@ def test_stack_exchange():
     assert info.get('stack_exchange_uid') == '67986'
     assert info.get('gravatar_url') == 'https://gravatar.com/5b9c04999233026354268c2ee4237e04'
     assert info.get('gravatar_username') == 'inspectorg4dget'
-    assert info.get('gravatar_email_hash') == '5b9c04999233026354268c2ee4237e04'
+    assert info.get('gravatar_email_md5_hash') == '5b9c04999233026354268c2ee4237e04'
 
 
 def test_soundcloud():
@@ -820,7 +820,7 @@ def test_xakep():
     assert info.get('joined_year') == '2018'
     assert info.get('gravatar_url') == 'https://gravatar.com/b1859c813547de1bba3c65bc4b1a217c'
     assert info.get('gravatar_username') == 'dmbaturin'
-    assert info.get('gravatar_email_hash') == 'b1859c813547de1bba3c65bc4b1a217c'
+    assert info.get('gravatar_email_md5_hash') == 'b1859c813547de1bba3c65bc4b1a217c'
 
 
 def test_tproger():
@@ -839,7 +839,7 @@ def test_jsfiddle():
     assert info.get('image') == 'https://www.gravatar.com/avatar/eca9f115bdefbbdf0c0381a58bcaf601?s=80'
     assert info.get('gravatar_url') == 'https://gravatar.com/eca9f115bdefbbdf0c0381a58bcaf601'
     assert info.get('gravatar_username') == 'cowbird'
-    assert info.get('gravatar_email_hash') == 'eca9f115bdefbbdf0c0381a58bcaf601'
+    assert info.get('gravatar_email_md5_hash') == 'eca9f115bdefbbdf0c0381a58bcaf601'
 
 
 def test_disqus_api():

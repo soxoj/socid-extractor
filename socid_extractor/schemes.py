@@ -549,9 +549,9 @@ schemes = {
             'auId': lambda x: x.get('auId'),
             'email': lambda x: x.get('email'),
             'name': lambda x: x.get('name'),
-            'isVip': lambda x: x.get('isVip'),
-            'isCommunity': lambda x: x.get('isCommunity'),
-            'isVideoChannel': lambda x: x.get('isVideoChannel'),
+            'is_vip': lambda x: x.get('isVip'),
+            'is_community': lambda x: x.get('isCommunity'),
+            'is_video_channel': lambda x: x.get('isVideoChannel'),
         }
     },
     'Behance': {
