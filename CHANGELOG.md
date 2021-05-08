@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 * added username-from-email extractor
+* added Yelp
 
 ## [0.0.18] - 2021-05-04
 * fixed and improved Behance
