@@ -954,3 +954,21 @@ def test_freelancer():
     assert info.get('role') == 'freelancer'
     assert info.get('location') == 'Islamabad, Pakistan'
     assert info.get('created_at').startswith('2012-12-09')
+
+
+def test_yelp_username():
+    info = extract(parse('http://dima.yelp.com')[0])
+
+    assert info.get('yelp_userid') == 'b_a5icXGK-AXVYZKehgKLw'
+    assert info.get('fullname') == 'Dima "ZOMG" M.'
+    assert info.get('location') == 'Brooklyn, NY'
+    assert info.get('image') == 'https://s3-media0.fl.yelpcdn.com/photo/bGiNMDL6FZAtPpMfljRGtg/ls.jpg'
+
+
+def test_yelp_userid():
+    info = extract(parse('https://www.yelp.com/user_details?userid=b_a5icXGK-AXVYZKehgKLw')[0])
+
+    assert info.get('yelp_userid') == 'b_a5icXGK-AXVYZKehgKLw'
+    assert info.get('fullname') == 'Dima "ZOMG" M.'
+    assert info.get('location') == 'Brooklyn, NY'
+    assert info.get('image') == 'https://s3-media0.fl.yelpcdn.com/photo/bGiNMDL6FZAtPpMfljRGtg/ls.jpg'

@@ -50,8 +50,6 @@ class Gravatar:
 
 class Email:
     def __init__(self, data):
-        import logging
-        logging.error(data)
         self.data = data
 
     def process(self):

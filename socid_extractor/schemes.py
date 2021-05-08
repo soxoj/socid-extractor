@@ -1333,5 +1333,15 @@ schemes = {
             'location': lambda x: x['location']['city'] + ', ' + x['location']['country']['name'],
             'created_at': lambda x: timestamp_to_datetime(x['registration_date']),
         }
+    },
+    'Yelp': {
+        'flags': ['yelp.www.init.user_details'],
+        'bs': True,
+        'fields': {
+            'yelp_userid': lambda x: x.find('meta', {'property': 'og:url'}).get('content').split('=')[-1],
+            'fullname': lambda x: x.find('div', {'class': 'user-profile_info'}).find('h1').contents[0],
+            'location': lambda x: x.find('div', {'class': 'user-profile_info'}).find('h3').contents[0].split(' ', 1)[1],
+            'image': lambda x: x.find('div', {'class': 'user-profile_avatar'}).find('img').get('src'),
+        }
     }
 }
