@@ -1343,5 +1343,38 @@ schemes = {
             'location': lambda x: x.find('div', {'class': 'user-profile_info'}).find('h3').contents[0].split(' ', 1)[1],
             'image': lambda x: x.find('div', {'class': 'user-profile_avatar'}).find('img').get('src'),
         }
+    },
+    'Trello API': {
+        'flags': ['"aaId"', '"trophies":'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'fields': {
+            'id': lambda x: x['id'],
+            'username': lambda x: x['username'],
+            'fullname': lambda x: x['fullName'],
+            'email': lambda x: x['email'],
+            'image': lambda x: x['avatarUrl'] + '/170.png',
+            'bio': lambda x: x['bio'],
+            'type': lambda x: x['memberType'],
+            'gravatar_email_md5_hash': lambda x: x['gravatarHash'],
+            'is_verified': lambda x: x['confirmed'],
+        }
+    },
+    'Weibo': {
+        'flags': ['$CONFIG[\'timeweibo\']'],
+        'regex': r'\$CONFIG = {};[\r\n]([\s\S]+?)</script>',
+        'transforms': [
+            lambda x: re.split('[\r\n]', x),
+            lambda x: [r.split("'") for r in x if r],
+            lambda x: {r[1]: r[-2] for r in x},
+        ],
+        'fields': {
+            'weibo_id': lambda x: x['oid'],
+            'fullname': lambda x: x['onick'],
+            'nickname': lambda x: x['nick'],
+            'image': lambda x: x['avatar_large'],
+            'gender': lambda x: x['sex'],
+            'language': lambda x: x['lang'],
+        }
     }
 }
