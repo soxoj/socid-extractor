@@ -22,12 +22,15 @@ def get_site_response(url, cookies=None, headers={}):
 
 
 def run():
-    parser = argparse.ArgumentParser(description=f'Extract accounts\' identifiers from pages. {len(schemes)} sites (methods) are supported.')
+    parser = argparse.ArgumentParser(
+        description=f'Extract accounts\' identifiers from pages. {len(schemes)} sites (methods) are supported.',
+        prog='socid_extractor',
+    )
     parser.add_argument('--url', help='url to parse')
     parser.add_argument('--cookies', default='', help='cookies to make http requests with auth')
     parser.add_argument('-v', '--verbose', action='store_true', help='display verbose information')
     parser.add_argument('-d', '--debug', action='store_true', help='display debug information')
-    parser.add_argument('--file', action='store_true', help='load from file instead of URL')
+    parser.add_argument('--file', help='file to parse')
     parser.add_argument('--activation', type=str, help='use certain type of request activation')
 
     args = parser.parse_args()

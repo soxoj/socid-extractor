@@ -972,3 +972,22 @@ def test_yelp_userid():
     assert info.get('fullname') == 'Dima "ZOMG" M.'
     assert info.get('location') == 'Brooklyn, NY'
     assert info.get('image') == 'https://s3-media0.fl.yelpcdn.com/photo/bGiNMDL6FZAtPpMfljRGtg/ls.jpg'
+
+
+def test_trello():
+    info = extract(parse('https://trello.com/1/Members/xFubuki')[0])
+
+    assert info.get("id") == "5e78cae55d711a6382e239c1"
+    assert info.get("username") == "xfubuki"
+    assert info.get("fullname") == "xFubuki"
+    assert info.get("image") == "https://trello-members.s3.amazonaws.com/5e78cae55d711a6382e239c1/d9c5264e657de6175f14a9067126873f/170.png"
+    assert info.get("type") == "normal"
+    assert info.get("is_verified") == "True"
+
+
+def test_weibo():
+    headers = {"cookie": "SUB=_2AkMXyuc_f8NxqwJRmP8SyWPrbo13zAvEieKhlhbkJRMxHRl-123", "cache-control": "no-cache"}
+    info = extract(parse('https://weibo.com/clairekuo?is_all=1', headers=headers, timeout=10)[0])
+
+    assert info.get("weibo_id") == "1733299783"
+    assert info.get("fullname") == "郭靜Claire"

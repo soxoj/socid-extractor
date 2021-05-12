@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+* non-json transforms
+* added Weibo and Trello
 * added username-from-email extractor
 * added Yelp
 
