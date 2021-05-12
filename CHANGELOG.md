@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.0.19] - 2021-05-12
 * non-json transforms
 * added Weibo and Trello
 * added username-from-email extractor
