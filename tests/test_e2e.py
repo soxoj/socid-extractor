@@ -986,6 +986,7 @@ def test_trello():
     assert info.get("is_verified") == "True"
 
 
+@pytest.mark.github_failed
 def test_weibo():
     headers = {"cookie": "SUB=_2AkMXyuc_f8NxqwJRmP8SyWPrbo13zAvEieKhlhbkJRMxHRl-123", "cache-control": "no-cache"}
     info = extract(parse('https://weibo.com/clairekuo?is_all=1', headers=headers, timeout=10)[0])
