@@ -536,7 +536,7 @@ def test_deviantart():
     assert info.get(
         'links') == "['https://www.instagram.com/muse.mercier/']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
-    assert info.get('bio').startswith('Hi my name is Muse Mercier and welcome to my') is True
+    assert info.get('bio').startswith('Hi! My name is Muse Mercier,') is True
     assert info.get('created_at').startswith('2005-06-16')
 
 
@@ -588,6 +588,7 @@ def test_gravatar():
     assert info.get('emails') == "['k.bx@ya.ru']"
     assert info.get('image') == 'https://secure.gravatar.com/avatar/d6ac4c55425d6f9d28db9068dbb49e09'
     assert info.get('links') == "['http://twitter.com/kost_bebix']"
+    assert 'emails_username' not in info
 
 
 def test_pinterest_api():
@@ -985,6 +986,7 @@ def test_trello():
     assert info.get("is_verified") == "True"
 
 
+@pytest.mark.github_failed
 def test_weibo():
     headers = {"cookie": "SUB=_2AkMXyuc_f8NxqwJRmP8SyWPrbo13zAvEieKhlhbkJRMxHRl-123", "cache-control": "no-cache"}
     info = extract(parse('https://weibo.com/clairekuo?is_all=1', headers=headers, timeout=10)[0])
