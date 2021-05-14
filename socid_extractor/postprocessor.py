@@ -56,6 +56,8 @@ class Email:
         output = {}
 
         for k, v in self.data.items():
+            if v.startswith('[') or v.startswith("'"):
+                continue
             if 'email' in k and '@' in v:
                 new_k = k + '_username'
                 supposed_username = v.split('@')[0]
