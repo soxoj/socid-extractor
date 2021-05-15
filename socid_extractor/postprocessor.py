@@ -48,7 +48,7 @@ class Gravatar:
         return output
 
 
-class Email:
+class EmailToUsername:
     def __init__(self, data):
         self.data = data
 
@@ -56,7 +56,7 @@ class Email:
         output = {}
 
         for k, v in self.data.items():
-            if v.startswith('[') or v.startswith("'"):
+            if v[0] in "'[{\"":
                 continue
             if 'email' in k and '@' in v:
                 new_k = k + '_username'
@@ -66,4 +66,20 @@ class Email:
         return output
 
 
-POSTPROCESSORS = [Gravatar, Email]
+class YandexUsernameToEmail:
+    def __init__(self, data):
+        self.data = data
+
+    def process(self):
+        output = {}
+        email = None
+
+        if 'yandex_uid' in self.data or 'yandex_public_id' in self.data:
+            if 'username' in self.data:
+                email = self.data['username'] + '@yandex.ru'
+                output['email'] = email
+
+        return output
+
+
+POSTPROCESSORS = [Gravatar, EmailToUsername, YandexUsernameToEmail]

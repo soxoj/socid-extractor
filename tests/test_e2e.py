@@ -269,10 +269,10 @@ def test_yandex_music_user_profile():
     assert info.get('username') == 'pritisk'
     assert info.get('name') == 'Юрий Притиск'
     assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/29310/gK74BTyv8LrLRT0mQFIR2xcWv8-1/islands-200'
-    assert info.get('links') == '[]'
     assert info.get('is_verified') == 'False'
     assert info.get('liked_albums') == '0'
     assert info.get('liked_artists') == '0'
+    assert info.get('email') == 'pritisk@yandex.ru'
 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
