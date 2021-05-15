@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.0.20] - 2021-05-15
+* fixed email-to-username postprocessor bug
+* added yandex-username-to-email postprocessor
+
 ## [0.0.19] - 2021-05-12
 * non-json transforms
 * added Weibo and Trello
