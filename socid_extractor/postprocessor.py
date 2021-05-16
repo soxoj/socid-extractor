@@ -56,7 +56,7 @@ class EmailToUsername:
         output = {}
 
         for k, v in self.data.items():
-            if v[0] in "'[{\"":
+            if v and v[0] in "'[{\"":
                 continue
             if 'email' in k and '@' in v:
                 new_k = k + '_username'
