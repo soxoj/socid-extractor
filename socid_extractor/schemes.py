@@ -647,6 +647,27 @@ schemes = {
             'googleplus_uid': lambda x: x['profile']['socialMedia'].get('googleplus'),
         }
     },
+    'Google Document API': {
+        'flags': ['alternateLink', 'copyRequiresWriterPermission'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                # credits: https://github.com/Malfrats/xeuledoc
+                'from': r'https://(docs|drive).google.com/(spreadsheets|document|presentation|drawings|file)/d/(?P<gdoc_id>[\w-]+)',
+                'to': 'https://clients6.google.com/drive/v2beta/files/{gdoc_id}?fields=alternateLink%2CcopyRequiresWriterPermission%2CcreatedDate%2Cdescription%2CdriveId%2CfileSize%2CiconLink%2Cid%2Clabels(starred%2C%20trashed)%2ClastViewedByMeDate%2CmodifiedDate%2Cshared%2CteamDriveId%2CuserPermission(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cpermissions(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cparents(id)%2Ccapabilities(canMoveItemWithinDrive%2CcanMoveItemOutOfDrive%2CcanMoveItemOutOfTeamDrive%2CcanAddChildren%2CcanEdit%2CcanDownload%2CcanComment%2CcanMoveChildrenWithinDrive%2CcanRename%2CcanRemoveChildren%2CcanMoveItemIntoTeamDrive)%2Ckind&supportsTeamDrives=true&enforceSingleParent=true&key=AIzaSyC1eQ1xj69IdTMeii5r7brs3R90eck-m7k',
+                'headers': {"X-Origin": "https://drive.google.com"},
+            }
+        ],
+        'fields': {
+            'created_at': lambda x: x.get('createdDate'),
+            'updated_at': lambda x: x.get('modifiedDate'),
+            'gaia_id': lambda x: x.get('permissions')[1]['id'],
+            'fullname': lambda x: x.get('permissions')[1]['name'],
+            'email': lambda x: x.get('permissions')[1]['emailAddress'],
+            'image': lambda x: x.get('permissions')[1]['photoLink'],
+        }
+    },
     'Google Document': {
         'flags': ['_docs_flag_initialData'],
         'regex': r'({"docs-ails":"docs_\w+".+?});',
@@ -659,28 +680,7 @@ schemes = {
             'viewer_uid': lambda x: x['docs-pid'],
             'org_name': lambda x: x['docs-doddn'],
             'org_domain': lambda x: x['docs-dodn'],
-        }
-    },
-    'Google Document API': {
-        'flags': ['alternateLink', 'copyRequiresWriterPermission'],
-        'regex': r'^([\s\S]+)$',
-        'extract_json': True,
-        'url_mutations': [
-            {
-                # credits: https://github.com/Malfrats/xeuledoc
-                'from': r'https://docs.google.com/(spreadsheets|document|presentation|drawings)/d/(?P<gdoc_id>[\w-]+)',
-                'to': 'https://clients6.google.com/drive/v2beta/files/{gdoc_id}?fields=alternateLink%2CcopyRequiresWriterPermission%2CcreatedDate%2Cdescription%2CdriveId%2CfileSize%2CiconLink%2Cid%2Clabels(starred%2C%20trashed)%2ClastViewedByMeDate%2CmodifiedDate%2Cshared%2CteamDriveId%2CuserPermission(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cpermissions(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cparents(id)%2Ccapabilities(canMoveItemWithinDrive%2CcanMoveItemOutOfDrive%2CcanMoveItemOutOfTeamDrive%2CcanAddChildren%2CcanEdit%2CcanDownload%2CcanComment%2CcanMoveChildrenWithinDrive%2CcanRename%2CcanRemoveChildren%2CcanMoveItemIntoTeamDrive)%2Ckind&supportsTeamDrives=true&enforceSingleParent=true&key=AIzaSyC1eQ1xj69IdTMeii5r7brs3R90eck-m7k',
-                'headers': {"X-Origin": "https://drive.google.com"},
-            }
-        ],
-        'fields': {
-            'created_at': lambda x: x.get('createdDate'),
-            'updated_at': lambda x: x.get('modifiedDate'),
-            'owner_gaia_id': lambda x: x.get('permissions')[1]['id'],
-            'fullname': lambda x: x.get('permissions')[1]['name'],
-            'email': lambda x: x.get('permissions')[1]['emailAddress'],
-            'supposed_username': lambda x: x.get('permissions')[1]['emailAddress'].split('@')[0],
-            'image': lambda x: x.get('permissions')[1]['photoLink'],
+            'mime_type': lambda x: x.get('docs-dm'),
         }
     },
     'Google Maps contributions': {

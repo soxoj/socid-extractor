@@ -2,7 +2,7 @@
 import pytest
 
 from socid_extractor.activation import get_twitter_headers
-from socid_extractor.main import parse, extract, HEADERS
+from socid_extractor.main import parse, extract, mutate_url, HEADERS
 
 
 def test_vk_user_profile_full():
@@ -391,14 +391,27 @@ def test_500px():
     assert info.get('facebook_link') == 'www.facebook.com/the.maksimov'
 
 
-def test_google_documents_cookies():
-    cookies = open('google.test.cookies').read()
-    info = extract(
-        parse('https://docs.google.com/spreadsheets/d/1HtZKMLRXNsZ0HjtBmo0Gi03nUPiJIA4CC4jTYbCAnXw/edit#gid=0',
-              cookies)[0])
+def test_google_documents():
+    URL = 'https://docs.google.com/spreadsheets/d/1HtZKMLRXNsZ0HjtBmo0Gi03nUPiJIA4CC4jTYbCAnXw/edit#gid=0'
+    info = extract(parse(URL)[0])
 
-    assert info.get('org_domain') == 'breakoutcommerce.com'
     assert info.get('org_name') == 'Gooten'
+    assert info.get('mime_type') == 'application/vnd.google-apps.ritz'
+
+    mutated_url = mutate_url(URL)
+
+    assert len(mutated_url) == 1
+    url, add_headers = mutated_url[0]
+
+    info = extract(parse(url, headers=add_headers)[0])
+
+    assert info.get("created_at") == "2016-02-16T18:51:52.021Z"
+    assert info.get("updated_at") == "2019-10-23T17:15:47.157Z"
+    assert info.get("gaia_id") == "15696155517366416778"
+    assert info.get("fullname") == "Nadia Burgess"
+    assert info.get("email") == "nadia@gooten.com"
+    assert info.get("image") == "https://lh3.googleusercontent.com/a-/AOh14GheZe1CyNa3NeJInWAl70qkip4oJ7qLsD8vDy6X=s64"
+    assert info.get("email_username") == "nadia"
 
 
 def test_bitbucket():
