@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.0.20] - 2021-05-15
+* fixed email-to-username postprocessor bug
+* added yandex-username-to-email postprocessor
+
+## [0.0.19] - 2021-05-12
+* non-json transforms
+* added Weibo and Trello
+* added username-from-email extractor
+* added Yelp
+
+## [0.0.18] - 2021-05-04
+* fixed and improved Behance
+* improved image links extraction
+
 ## [0.0.17] - 2021-04-18
 * fixed Yandex, Telegram & Facebook
 

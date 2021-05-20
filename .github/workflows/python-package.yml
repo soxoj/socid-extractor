@@ -35,4 +35,4 @@ jobs:
       run: |
         pip install pytest==6.0.1 pytest-rerunfailures
         # do not run tests required auth with secrets
-        pytest -k 'not cookies' -m 'not github_failed' --reruns 3 --reruns-delay 5
+        pytest -k 'not cookies' -m 'not github_failed' --reruns 3 --reruns-delay 30

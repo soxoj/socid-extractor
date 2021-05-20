@@ -36,16 +36,50 @@ class Gravatar:
         return username
 
     def process(self):
-        data = {}
+        output = {}
 
         if self.username:
-            data = {
+            output = {
                 'gravatar_url': self.make_main_url(),
                 'gravatar_username': self.username,
-                'gravatar_email_hash': self.email_hash,
+                'gravatar_email_md5_hash': self.email_hash,
             }
 
-        return data
+        return output
 
 
-POSTPROCESSORS = [Gravatar]
+class EmailToUsername:
+    def __init__(self, data):
+        self.data = data
+
+    def process(self):
+        output = {}
+
+        for k, v in self.data.items():
+            if v and v[0] in "'[{\"":
+                continue
+            if 'email' in k and '@' in v:
+                new_k = k + '_username'
+                supposed_username = v.split('@')[0]
+                output[new_k] = supposed_username
+
+        return output
+
+
+class YandexUsernameToEmail:
+    def __init__(self, data):
+        self.data = data
+
+    def process(self):
+        output = {}
+        email = None
+
+        if 'yandex_uid' in self.data or 'yandex_public_id' in self.data:
+            if 'username' in self.data:
+                email = self.data['username'] + '@yandex.ru'
+                output['email'] = email
+
+        return output
+
+
+POSTPROCESSORS = [Gravatar, EmailToUsername, YandexUsernameToEmail]

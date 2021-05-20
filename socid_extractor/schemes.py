@@ -549,15 +549,54 @@ schemes = {
             'auId': lambda x: x.get('auId'),
             'email': lambda x: x.get('email'),
             'name': lambda x: x.get('name'),
-            'isVip': lambda x: x.get('isVip'),
-            'isCommunity': lambda x: x.get('isCommunity'),
-            'isVideoChannel': lambda x: x.get('isVideoChannel'),
+            'is_vip': lambda x: x.get('isVip'),
+            'is_community': lambda x: x.get('isCommunity'),
+            'is_video_channel': lambda x: x.get('isVideoChannel'),
         }
     },
     'Behance': {
         'flags': ['behance.net', 'beconfig-store_state'],
-        'message': 'Cookies required, ensure you added --cookies "ilo0=1"',
-        'regex': r'{"id":(?P<uid>\d+),"first_name":"(?P<first_name>[^"]+)","last_name":"(?P<last_name>[^"]+)","username":"(?P<username>[^"]+)"',
+        'regex': r'<script type="application/json" id="beconfig-store_state">({.+?})</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['profile']['owner'],
+            json.dumps,
+        ],
+        'url_mutations': [
+            {
+                'from': r'https?://(www.)?behance.net/(?P<username>[^/]+).*',
+                'to': 'https://www.behance.net/{username}/appreciated',
+                'headers': {'Cookie': 'ilo0=true'},
+            }
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'fullname': lambda x: x.get('display_name'),
+            'last_name': lambda x: x.get('last_name'),
+            'first_name': lambda x: x.get('first_name'),
+            'website': lambda x: x.get('website'),
+            'username': lambda x: x.get('username'),
+            'is_verified': lambda x: x.get('verified') == 1,
+            'teams': lambda x: x.get('teams'),
+            'bio': lambda x: x.get('about')[0]['value'],
+            'image': lambda x: x.get('images', {}).get('276'),
+            'image_bg': lambda x: x.get('banner_image_url'),
+            'company': lambda x: x.get('company'),
+            'city': lambda x: x.get('city'),
+            'country': lambda x: x.get('country'),
+            'location': lambda x: x.get('location'),
+            'created_at': lambda x: timestamp_to_datetime(x.get('created_on')),
+            'occupation': lambda x: x.get('occupation'),
+            'links': lambda x: [a['url'] for a in x.get('social_links')],
+            'twitter_username': lambda x: x.get('twitter', '').lstrip('@'),
+            'comments': lambda x: x['stats']['comments'],
+            'followers_count': lambda x: x['stats']['followers'],
+            'following_count': lambda x: x['stats']['following'],
+            'profile_views': lambda x: x['stats']['received_profile_views'],
+            'project_views': lambda x: x['stats']['views'],
+            'appreciations': lambda x: x['stats']['appreciations'],
+        }
     },
     'Blogger': {
         'flags': ['www.blogger.com/static', 'blogspot.com/feeds/posts'],
@@ -608,6 +647,27 @@ schemes = {
             'googleplus_uid': lambda x: x['profile']['socialMedia'].get('googleplus'),
         }
     },
+    'Google Document API': {
+        'flags': ['alternateLink', 'copyRequiresWriterPermission'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                # credits: https://github.com/Malfrats/xeuledoc
+                'from': r'https://(docs|drive).google.com/(spreadsheets|document|presentation|drawings|file)/d/(?P<gdoc_id>[\w-]+)',
+                'to': 'https://clients6.google.com/drive/v2beta/files/{gdoc_id}?fields=alternateLink%2CcopyRequiresWriterPermission%2CcreatedDate%2Cdescription%2CdriveId%2CfileSize%2CiconLink%2Cid%2Clabels(starred%2C%20trashed)%2ClastViewedByMeDate%2CmodifiedDate%2Cshared%2CteamDriveId%2CuserPermission(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cpermissions(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cparents(id)%2Ccapabilities(canMoveItemWithinDrive%2CcanMoveItemOutOfDrive%2CcanMoveItemOutOfTeamDrive%2CcanAddChildren%2CcanEdit%2CcanDownload%2CcanComment%2CcanMoveChildrenWithinDrive%2CcanRename%2CcanRemoveChildren%2CcanMoveItemIntoTeamDrive)%2Ckind&supportsTeamDrives=true&enforceSingleParent=true&key=AIzaSyC1eQ1xj69IdTMeii5r7brs3R90eck-m7k',
+                'headers': {"X-Origin": "https://drive.google.com"},
+            }
+        ],
+        'fields': {
+            'created_at': lambda x: x.get('createdDate'),
+            'updated_at': lambda x: x.get('modifiedDate'),
+            'gaia_id': lambda x: x.get('permissions')[1]['id'],
+            'fullname': lambda x: x.get('permissions')[1]['name'],
+            'email': lambda x: x.get('permissions')[1]['emailAddress'],
+            'image': lambda x: x.get('permissions')[1]['photoLink'],
+        }
+    },
     'Google Document': {
         'flags': ['_docs_flag_initialData'],
         'regex': r'({"docs-ails":"docs_\w+".+?});',
@@ -620,28 +680,7 @@ schemes = {
             'viewer_uid': lambda x: x['docs-pid'],
             'org_name': lambda x: x['docs-doddn'],
             'org_domain': lambda x: x['docs-dodn'],
-        }
-    },
-    'Google Document API': {
-        'flags': ['alternateLink', 'copyRequiresWriterPermission'],
-        'regex': r'^([\s\S]+)$',
-        'extract_json': True,
-        'url_mutations': [
-            {
-                # credits: https://github.com/Malfrats/xeuledoc
-                'from': r'https://docs.google.com/(spreadsheets|document|presentation|drawings)/d/(?P<gdoc_id>[\w-]+)',
-                'to': 'https://clients6.google.com/drive/v2beta/files/{gdoc_id}?fields=alternateLink%2CcopyRequiresWriterPermission%2CcreatedDate%2Cdescription%2CdriveId%2CfileSize%2CiconLink%2Cid%2Clabels(starred%2C%20trashed)%2ClastViewedByMeDate%2CmodifiedDate%2Cshared%2CteamDriveId%2CuserPermission(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cpermissions(id%2Cname%2CemailAddress%2Cdomain%2Crole%2CadditionalRoles%2CphotoLink%2Ctype%2CwithLink)%2Cparents(id)%2Ccapabilities(canMoveItemWithinDrive%2CcanMoveItemOutOfDrive%2CcanMoveItemOutOfTeamDrive%2CcanAddChildren%2CcanEdit%2CcanDownload%2CcanComment%2CcanMoveChildrenWithinDrive%2CcanRename%2CcanRemoveChildren%2CcanMoveItemIntoTeamDrive)%2Ckind&supportsTeamDrives=true&enforceSingleParent=true&key=AIzaSyC1eQ1xj69IdTMeii5r7brs3R90eck-m7k',
-                'headers': {"X-Origin": "https://drive.google.com"},
-            }
-        ],
-        'fields': {
-            'created_at': lambda x: x.get('createdDate'),
-            'updated_at': lambda x: x.get('modifiedDate'),
-            'owner_gaia_id': lambda x: x.get('permissions')[1]['id'],
-            'fullname': lambda x: x.get('permissions')[1]['name'],
-            'email': lambda x: x.get('permissions')[1]['emailAddress'],
-            'supposed_username': lambda x: x.get('permissions')[1]['emailAddress'].split('@')[0],
-            'image': lambda x: x.get('permissions')[1]['photoLink'],
+            'mime_type': lambda x: x.get('docs-dm'),
         }
     },
     'Google Maps contributions': {
@@ -656,11 +695,23 @@ schemes = {
         'flags': ['https://api.bitbucket.org'],
         'regex': r'({.+?"section": {"profile.+?"whats_new_feed":.+?}});',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['global']['targetUser'],
+            json.dumps,
+        ],
         'fields': {
-            'uid': lambda x: x['global']['targetUser']['uuid'].strip('{}'),
-            'username': lambda x: x['global']['targetUser']['nickname'],
-            'created_at': lambda x: x['global']['targetUser']['created_on'],
-            'is_service': lambda x: x['global']['targetUser']['is_staff'],
+            'uid': lambda x: x['uuid'].strip('{}'),
+            'id': lambda x: x['account_id'],
+            'fullname': lambda x: x['display_name'],
+            'nickname': lambda x: x['nickname'],
+            'location': lambda x: x['location'],
+            'image': lambda x: x['links']['avatar']['href'],
+            'occupation': lambda x: x['job_title'],
+            'created_at': lambda x: x['created_on'],
+            'is_service': lambda x: x['is_staff'],
+            'is_active': lambda x: x['is_active'],
+            'has_2fa_enabled': lambda x: x['has_2fa_enabled'],
         }
     },
     'Pinterest API': {
@@ -761,7 +812,7 @@ schemes = {
         'extract_json': True,
         'fields': {
             'steam_id': lambda x: x['steamid'],
-            'nickname': lambda x: x['personaname'],  # это не совсем имя, а ник
+            'nickname': lambda x: x['personaname'],
             'username': lambda x: [y for y in x['url'].split('/') if y][-1],
         }
     },
@@ -785,12 +836,9 @@ schemes = {
         'extract_json': True,
         'message': 'Run with auth cookies to get your ids.',
         'fields': {
-            # 'your_uid': lambda x: x[-2]['data'][0].get('id'),
-            # 'your_name': lambda x: x[-2]['data'][0].get('full_name'),
-            # 'your_username': lambda x: x[-2]['data'][0].get('username'),
             'uid': lambda x: x[-1]['data'][0]['id'],
             'name': lambda x: x[-1]['data'][0]['full_name'],
-            'username': lambda x: x[-1]['data'][0]['username'],
+            'username': lambda x: x[-1]['data'][0]['username'].lstrip('@'),
             'following_count': lambda x: x[-1]['data'][0]['followings_count'],
             'follower_count': lambda x: x[-1]['data'][0]['followers_count'],
             'is_verified': lambda x: x[-1]['data'][0]['verified'],
@@ -941,6 +989,8 @@ schemes = {
             'website': lambda x: x['website'],
             'links': lambda x: [y['value'] for y in x['socialLinks']],
             'tagline': lambda x: x['tagline'],
+            'image': lambda x: x['devidDeviation']['author']['usericon'],
+            'bio': lambda x: x['textContent']['excerpt'],
         }
     },
     'Flickr': {
@@ -991,6 +1041,11 @@ schemes = {
             'fullname': lambda x: x['campaign']['included'][0]['attributes']['full_name'],
             'links': lambda x: [y['attributes'].get('external_profile_url') for y in x['campaign']['included'] if
                                 y['attributes'].get('app_name')],
+            'image': lambda x: x['campaign']['data']['attributes']['avatar_photo_url'],
+            'image_bg': lambda x: x['campaign']['data']['attributes']['cover_photo_url'],
+            'is_nsfw': lambda x: x['campaign']['data']['attributes']['is_nsfw'],
+            'created_at': lambda x: x['campaign']['data']['attributes']['published_at'],
+            'bio': lambda x: x['campaign']['data']['attributes']['summary'],
         }
     },
     'Telegram': {
@@ -1012,17 +1067,18 @@ schemes = {
             json.dumps,
         ],
         'fields': {
-            'buzzfeed_id': lambda x: x['user_uuid'],
+            'uuid': lambda x: x['user_uuid'],
             'id': lambda x: x['user']['id'],
             'fullname': lambda x: x['user']['displayName'],
-            'buzzfeed_username': lambda x: x['user']['username'],
+            'username': lambda x: x['user']['username'],
             'bio': lambda x: x['user']['bio'],
-            'posts': lambda x: x['buzz_count'],
-            'memberSince': lambda x: timestamp_to_datetime(x['user']['memberSince']),
-            'isCommunityUser': lambda x: x['user']['isCommunityUser'],
-            'deleted': lambda x: x['user']['deleted'],
-            # 'social_names': lambda x: [y.get('name') for y in x['user']['social']],
+            'posts_count': lambda x: x['buzz_count'],
+            'created_at': lambda x: timestamp_to_datetime(x['user']['memberSince']),
+            'is_community_user': lambda x: x['user']['isCommunityUser'],
+            'is_deleted': lambda x: x['user']['deleted'],
             'social_links': lambda x: [y.get('url') for y in x['user']['social']],
+            'image': lambda x: 'https://img.buzzfeed.com/buzzfeed-static' + x['user']['image'],
+            'image_bg': lambda x: 'https://img.buzzfeed.com/buzzfeed-static' + x['user']['headerImage'],
         }
     },
     'Linktree': {
@@ -1086,6 +1142,8 @@ schemes = {
         'fields': {
             'fullname': lambda x: x.find('h1', {'class': 'blog-title'}).find('a').text,
             'title': lambda x: x.find('div', {'class': 'title-group'}).find('span', {'class': 'description'}).text.strip(),
+            'image': lambda x: x.find('a', {'class': 'user-avatar'}).find('img').get('src'),
+            'image_bg': lambda x: x.find('a', {'class': 'header-image'}).get('data-bg-image'),
             'links': lambda x: [enrich_link(a.find('a').get('href')) for a in x.find('div', {'class': 'nav-wrapper'}).find_all('li', {'class': 'nav-item nav-item--page'})],
         }
     },
@@ -1247,6 +1305,76 @@ schemes = {
             'views_count': lambda x: x['count'],
             'image': lambda x: 'https://distro.tapd.co/' + x['header']['picture'],
             'links': lambda x: [l['url'].strip() for l in x['links']],
+        }
+    },
+    'freelancer.com': {
+        'flags': ['{"status":"success","result":{"users":{'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www.)?freelancer\.com/u/(?P<username>[^/]+).*',
+                'to': 'https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D={username}&compact=true',
+            }
+        ],
+        'transforms': [
+            json.loads,
+            lambda x: list(x['result']['users'].values())[0],
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x['id'],
+            'nickname': lambda x: x['display_name'],
+            'username': lambda x: x['username'],
+            'fullname': lambda x: x['public_name'],
+            'company': lambda x: x['company'],
+            'company_founder_id': lambda x: x['corporate']['founder_id'],
+            'role': lambda x: x['role'],
+            'location': lambda x: x['location']['city'] + ', ' + x['location']['country']['name'],
+            'created_at': lambda x: timestamp_to_datetime(x['registration_date']),
+        }
+    },
+    'Yelp': {
+        'flags': ['yelp.www.init.user_details'],
+        'bs': True,
+        'fields': {
+            'yelp_userid': lambda x: x.find('meta', {'property': 'og:url'}).get('content').split('=')[-1],
+            'fullname': lambda x: x.find('div', {'class': 'user-profile_info'}).find('h1').contents[0],
+            'location': lambda x: x.find('div', {'class': 'user-profile_info'}).find('h3').contents[0].split(' ', 1)[1],
+            'image': lambda x: x.find('div', {'class': 'user-profile_avatar'}).find('img').get('src'),
+        }
+    },
+    'Trello API': {
+        'flags': ['"aaId"', '"trophies":'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'fields': {
+            'id': lambda x: x['id'],
+            'username': lambda x: x['username'],
+            'fullname': lambda x: x['fullName'],
+            'email': lambda x: x['email'],
+            'image': lambda x: x['avatarUrl'] + '/170.png',
+            'bio': lambda x: x['bio'],
+            'type': lambda x: x['memberType'],
+            'gravatar_email_md5_hash': lambda x: x['gravatarHash'],
+            'is_verified': lambda x: x['confirmed'],
+        }
+    },
+    'Weibo': {
+        'flags': ['$CONFIG[\'timeweibo\']'],
+        'regex': r'\$CONFIG = {};[\r\n]([\s\S]+?)</script>',
+        'transforms': [
+            lambda x: re.split('[\r\n]', x),
+            lambda x: [r.split("'") for r in x if r],
+            lambda x: {r[1]: r[-2] for r in x},
+        ],
+        'fields': {
+            'weibo_id': lambda x: x['oid'],
+            'fullname': lambda x: x['onick'],
+            'nickname': lambda x: x['nick'],
+            'image': lambda x: x['avatar_large'],
+            'gender': lambda x: x['sex'],
+            'language': lambda x: x['lang'],
         }
     }
 }

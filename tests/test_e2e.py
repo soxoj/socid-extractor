@@ -2,7 +2,7 @@
 import pytest
 
 from socid_extractor.activation import get_twitter_headers
-from socid_extractor.main import parse, extract, HEADERS
+from socid_extractor.main import parse, extract, mutate_url, HEADERS
 
 
 def test_vk_user_profile_full():
@@ -17,7 +17,7 @@ def test_vk_user_profile_no_username():
     info = extract(parse('https://vk.com/id568161939')[0])
 
     assert info.get('vk_id') == '568161939'
-    assert info.get('vk_username') == None
+    assert info.get('vk_username') is None
     assert info.get('fullname') in ('Юля Заболотная', 'Yulya Zabolotnaya')
 
 
@@ -31,7 +31,7 @@ def test_vk_blocked_user_profile():
     headers = {'User-Agent': 'Curl'}
     info = extract(parse('https://vk.com/alexaimephotography', headers=headers)[0])
 
-    assert info.get('fullname') in ('Alex Aimé')
+    assert info.get('fullname') in 'Alex Aimé'
 
 
 def test_yandex_disk():
@@ -118,7 +118,7 @@ def test_habr_no_image():
 
     assert info.get('uid') == '1800409'
     assert info.get('username') == 'ne555'
-    assert not 'image' in info
+    assert 'image' not in info
 
 
 @pytest.mark.skip(reason="down")
@@ -128,10 +128,10 @@ def test_twitter_shadowban_no_account():
     assert info.get('has_tweets') == 'False'
     assert info.get('is_exists') == 'False'
     assert info.get('username') == 'sgfrgrrr'
-    assert not 'is_protected' in info
-    assert not 'has_ban' in info
-    assert not 'has_search_ban' in info
-    assert not 'has_banned_in_search_suggestions' in info
+    assert 'is_protected' not in info
+    assert 'has_ban' not in info
+    assert 'has_search_ban' not in info
+    assert 'has_banned_in_search_suggestions' not in info
 
 
 @pytest.mark.skip(reason="down")
@@ -178,7 +178,7 @@ def test_reddit():
     assert info.get('is_mod') == 'True'
     assert info.get('is_following') == 'True'
     assert info.get('has_user_profile') == 'True'
-    assert info.get('created_at') in ('2018-01-06 04:22:05', '2018-01-06 01:22:05')
+    assert info.get('created_at').startswith('2018-01-06')
     assert info.get('hide_from_robots') == 'True'
     assert int(info.get('total_karma')) > int(30000)
     assert int(info.get('post_karma')) > int(7000)
@@ -225,6 +225,7 @@ def test_github_api():
     assert info.get('bio') == 'dev, infosec, osint'
     assert info.get('blog_url') == 'https://t.me/s/osint_mindset'
 
+
 def test_yandex_disk_photos():
     info = extract(parse('https://yadi.sk/a/oiySK_wg3Vv5p4')[0])
 
@@ -240,9 +241,9 @@ def test_my_mail_main():
     assert info.get('username') == 'zubovo'
     # there is no auId
     assert info.get('email') == 'zubovo@mail.ru'
-    assert info.get('isVip') == 'False'
-    assert info.get('isCommunity') == 'False'
-    assert info.get('isVideoChannel') == 'False'
+    assert info.get('is_vip') == 'False'
+    assert info.get('is_community') == 'False'
+    assert info.get('is_video_channel') == 'False'
 
 
 def test_my_mail_communities():
@@ -254,9 +255,9 @@ def test_my_mail_communities():
     assert info.get('username') == 'zubovo'
     assert info.get('auId') == '6667000454247668890'
     assert info.get('email') == 'zubovo@mail.ru'
-    assert info.get('isVip') == 'False'
-    assert info.get('isCommunity') == 'False'
-    assert info.get('isVideoChannel') == 'False'
+    assert info.get('is_vip') == 'False'
+    assert info.get('is_community') == 'False'
+    assert info.get('is_video_channel') == 'False'
 
 
 @pytest.mark.skip(reason="captcha")
@@ -268,10 +269,10 @@ def test_yandex_music_user_profile():
     assert info.get('username') == 'pritisk'
     assert info.get('name') == 'Юрий Притиск'
     assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/29310/gK74BTyv8LrLRT0mQFIR2xcWv8-1/islands-200'
-    assert info.get('links') == '[]'
     assert info.get('is_verified') == 'False'
     assert info.get('liked_albums') == '0'
     assert info.get('liked_artists') == '0'
+    assert info.get('email') == 'pritisk@yandex.ru'
 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
@@ -349,12 +350,29 @@ def test_yandex_bugbounty():
 
 
 def test_behance():
-    info = extract(parse('https://www.behance.net/Skyratov', 'ilo0=1')[0])
+    info = extract(parse('https://www.behance.net/patrickseymour', 'gpv=behance.net:profile:appreciated; ilo0=true')[0])
 
-    assert info.get('uid') == '39065909'
-    assert info.get('username') == 'Skyratov'
-    assert info.get('last_name') == 'Skuratov'
-    assert info.get('first_name') == 'Vasiliy'
+    assert info.get('uid') == '376641'
+    assert info.get('fullname') == 'Patrick Seymour'
+    assert info.get('last_name') == 'Seymour'
+    assert info.get('first_name') == 'Patrick'
+    assert info.get('username') == 'patrickseymour'
+    assert info.get('is_verified') == 'True'
+    assert info.get('bio') == 'False'
+    assert info.get('image') == 'https://mir-s3-cdn-cf.behance.net/user/276/012d0f376641.600ec6e15a5af.png'
+    assert info.get('city') == 'Montreal'
+    assert info.get('country') == 'Canada'
+    assert info.get('location') == 'Montreal, Quebec, Canada'
+    assert info.get('created_at').startswith('2011-03-23')
+    assert info.get('occupation') == 'Freelancer Art director • Illustrator'
+    assert info.get('links') == "['http://twitter.com/PatrickSeymour', 'http://facebook.com/patrickseymourillustrateur', 'http://linkedin.com/in/patrick-seymour-70334b2b?trk=hp-identity-photo', 'http://vimeo.com/user9401948', 'http://pinterest.com/patrickseymour', 'http://instagram.com/patrickseymour']"
+    assert info.get('twitter_username') == 'PatrickSeymour'
+    assert 'comments' in info
+    assert 'followers_count' in info
+    assert 'following_count' in info
+    assert 'profile_views' in info
+    assert 'project_views' in info
+    assert 'appreciations' in info
 
 
 @pytest.mark.github_failed
@@ -365,30 +383,47 @@ def test_500px():
     assert info.get('legacy_id') == '23896'
     assert info.get('username') == 'The-Maksimov'
     assert info.get('name') == 'Maxim Maximov'
-    assert info.get('qq_uid') == None
-    assert info.get('fb_uid') == None
+    assert info.get('qq_uid') is None
+    assert info.get('fb_uid') is None
     assert info.get('instagram_username') == 'the.maksimov'
     assert info.get('twitter_username') == 'The_Maksimov'
     assert info.get('website') == 'www.instagram.com/the.maksimov'
     assert info.get('facebook_link') == 'www.facebook.com/the.maksimov'
 
 
-def test_google_documents_cookies():
-    cookies = open('google.test.cookies').read()
-    info = extract(
-        parse('https://docs.google.com/spreadsheets/d/1HtZKMLRXNsZ0HjtBmo0Gi03nUPiJIA4CC4jTYbCAnXw/edit#gid=0',
-              cookies)[0])
+def test_google_documents():
+    URL = 'https://docs.google.com/spreadsheets/d/1HtZKMLRXNsZ0HjtBmo0Gi03nUPiJIA4CC4jTYbCAnXw/edit#gid=0'
+    info = extract(parse(URL)[0])
 
-    assert info.get('org_domain') == 'breakoutcommerce.com'
     assert info.get('org_name') == 'Gooten'
+    assert info.get('mime_type') == 'application/vnd.google-apps.ritz'
+
+    mutated_url = mutate_url(URL)
+
+    assert len(mutated_url) == 1
+    url, add_headers = mutated_url[0]
+
+    info = extract(parse(url, headers=add_headers)[0])
+
+    assert info.get("created_at") == "2016-02-16T18:51:52.021Z"
+    assert info.get("updated_at") == "2019-10-23T17:15:47.157Z"
+    assert info.get("gaia_id") == "15696155517366416778"
+    assert info.get("fullname") == "Nadia Burgess"
+    assert info.get("email") == "nadia@gooten.com"
+    assert info.get("image") == "https://lh3.googleusercontent.com/a-/AOh14GheZe1CyNa3NeJInWAl70qkip4oJ7qLsD8vDy6X=s64"
+    assert info.get("email_username") == "nadia"
 
 
 def test_bitbucket():
     info = extract(parse('https://bitbucket.org/arny/')[0])
 
     assert info.get('uid') == '57ad342a-ec8f-42cb-af05-98175b72b8db'
-    assert info.get('username') == 'arny'
+    assert info.get('fullname') == 'arny'
+    assert info.get('nickname') == 'arny'
     assert info.get('created_at') == '2009-11-23T10:41:04.355755+00:00'
+    assert info.get('image') == 'https://bitbucket.org/account/arny/avatar/'
+    assert info.get('is_service') == 'False'
+    assert info.get('is_active') == 'True'
 
 
 @pytest.mark.skip(reason="cloudflare")
@@ -445,7 +480,7 @@ def test_stack_exchange():
     assert info.get('stack_exchange_uid') == '67986'
     assert info.get('gravatar_url') == 'https://gravatar.com/5b9c04999233026354268c2ee4237e04'
     assert info.get('gravatar_username') == 'inspectorg4dget'
-    assert info.get('gravatar_email_hash') == '5b9c04999233026354268c2ee4237e04'
+    assert info.get('gravatar_email_md5_hash') == '5b9c04999233026354268c2ee4237e04'
 
 
 def test_soundcloud():
@@ -508,13 +543,14 @@ def test_deviantart():
     info = extract(parse('https://www.deviantart.com/muse1908')[0])
 
     assert info.get('country') == 'France'
-    assert '2005-06-16' in info.get('created_at')
     assert info.get('gender') == 'female'
     assert info.get('website') == 'www.purelymuse.com'
     assert info.get('username') == 'Muse1908'
     assert info.get(
         'links') == "['https://www.instagram.com/muse.mercier/']"
     assert info.get('tagline') == 'Nothing worth having is easy...'
+    assert info.get('bio').startswith('Hi! My name is Muse Mercier,') is True
+    assert info.get('created_at').startswith('2005-06-16')
 
 
 def test_tumblr():
@@ -523,6 +559,8 @@ def test_tumblr():
     assert info.get('fullname') == 'Alex Aimé Photography'
     assert info.get('title') == 'My name is Alex Aimé, and i am a freelance photographer. Originally from Burgundy in France .I am a man of 29 years. Follow me on : www.facebook.com/AlexAimePhotography/'
     assert info.get('links') == "['https://www.facebook.com/AlexAimePhotography/', 'https://500px.com/alexaimephotography', 'https://www.instagram.com/alexaimephotography/', 'https://www.flickr.com/photos/photoambiance/']"
+    assert 'image' in info
+    assert 'image_bg' in info
 
 
 def test_eyeem():
@@ -563,6 +601,7 @@ def test_gravatar():
     assert info.get('emails') == "['k.bx@ya.ru']"
     assert info.get('image') == 'https://secure.gravatar.com/avatar/d6ac4c55425d6f9d28db9068dbb49e09'
     assert info.get('links') == "['http://twitter.com/kost_bebix']"
+    assert 'emails_username' not in info
 
 
 def test_pinterest_api():
@@ -573,7 +612,7 @@ def test_pinterest_api():
     assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
     assert info.get('type') == 'user'
     assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
-    assert info.get('country') == None
+    assert info.get('country') is None
     assert info.get('is_indexed') == 'True'
     assert info.get('is_partner') == 'False'
     assert info.get('is_tastemaker') == 'False'
@@ -594,15 +633,15 @@ def test_pinterest_api():
 def test_pinterest_profile():
     info = extract(parse('https://www.pinterest.ru/gergelysndorszendrenyi/boards/')[0])
 
-    assert info.get('pinterest_id') == None
+    assert info.get('pinterest_id') is None
     assert info.get('pinterest_username') == 'gergelysndorszendrenyi'
     assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
-    assert info.get('type') == None
+    assert info.get('type') is None
     assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
     assert info.get('country') == 'HU'
     assert info.get('is_indexed') == 'True'
-    assert info.get('is_partner') == None
-    assert info.get('is_tastemaker') == None
+    assert info.get('is_partner') is None
+    assert info.get('is_tastemaker') is None
     assert info.get('is_indexed') == 'True'
     assert info.get('is_website_verified') == 'False'
     assert info.get('follower_count') == '2'
@@ -692,7 +731,7 @@ def test_flickr():
     assert int(info.get('photo_count')) > 140
     assert int(info.get('follower_count')) > 180
     assert int(info.get('following_count')) > 70
-    assert info.get('created_at') in ('2020-03-17 07:18:59', '2020-03-17 04:18:59')
+    assert info.get('created_at').startswith('2020-03-17')
     assert info.get('is_pro') == 'False'
     assert info.get('is_deleted') == 'False'
 
@@ -721,6 +760,11 @@ def test_patreon():
     assert info.get('patreon_username') == 'annetlovart'
     assert info.get('fullname') == 'Annet Lovart'
     assert info.get('links') == "['https://www.facebook.com/322598031832479', 'https://www.instagram.com/annet_lovart', 'https://twitter.com/annet_lovart', 'https://youtube.com/channel/UClDg4ntlOW_1j73zqSJxHHQ']"
+    assert info.get('is_nsfw') == 'False'
+    assert 'image' in info
+    assert 'image_bg' in info
+    assert info.get('created_at') == '2020-04-19T16:29:11.000+00:00'
+    assert 'bio' in info
 
 
 def test_last_fm():
@@ -790,14 +834,14 @@ def test_xakep():
     assert info.get('joined_year') == '2018'
     assert info.get('gravatar_url') == 'https://gravatar.com/b1859c813547de1bba3c65bc4b1a217c'
     assert info.get('gravatar_username') == 'dmbaturin'
-    assert info.get('gravatar_email_hash') == 'b1859c813547de1bba3c65bc4b1a217c'
+    assert info.get('gravatar_email_md5_hash') == 'b1859c813547de1bba3c65bc4b1a217c'
 
 
 def test_tproger():
     info = extract(parse('https://tproger.ru/author/NickPrice/')[0])
 
     assert info.get('fullname') == 'Никита Прияцелюк'
-    assert info.get('image').startswith('https://secure.gravatar.com/avatar/b6c7803b43433349ff84b11093562594') == True
+    assert info.get('image').startswith('https://secure.gravatar.com/avatar/b6c7803b43433349ff84b11093562594') is True
 
 
 def test_jsfiddle():
@@ -809,7 +853,7 @@ def test_jsfiddle():
     assert info.get('image') == 'https://www.gravatar.com/avatar/eca9f115bdefbbdf0c0381a58bcaf601?s=80'
     assert info.get('gravatar_url') == 'https://gravatar.com/eca9f115bdefbbdf0c0381a58bcaf601'
     assert info.get('gravatar_username') == 'cowbird'
-    assert info.get('gravatar_email_hash') == 'eca9f115bdefbbdf0c0381a58bcaf601'
+    assert info.get('gravatar_email_md5_hash') == 'eca9f115bdefbbdf0c0381a58bcaf601'
 
 
 def test_disqus_api():
@@ -895,3 +939,70 @@ def test_tapd():
     assert int(info.get('views_count')) > 43124
     assert info.get('image') == 'https://distro.tapd.co/x3fwD79IdB0LqOqf.jpeg'
     assert info.get('links') == "['https://www.twitter.com/Betsyalvarezz', 'https://www.instagram.com/Betsyalvarezz', 'https://cash.app/$Betsyalvarezz', 'https://www.tiktok.com/@Betsyalvarezz', 'https://www.instagram.com/Brb.thelabel', 'https://www.youtube.com/c/BetsyAlvarezz', 'https://www.amazon.com/hz/wishlist/ls/2GNHXWNBBCIP0?ref_=wl_share', 'https://onlyfans.com/Betsyalvarezz']"
+
+
+def test_buzzfeed():
+    info = extract(parse('https://www.buzzfeed.com/lisa')[0])
+
+    assert info.get('uuid') == '408a7d54-6af9-452e-8614-7f44216ed983'
+    assert info.get('id') == '43876'
+    assert info.get('fullname') == 'lisa'
+    assert info.get('username') == 'lisa'
+    assert info.get('bio') == 'If I&#39;m not me than who am I? And if I&#39;m somebody else, than why do I look like me?'
+    assert info.get('posts_count') == '0'
+    assert info.get('created_at').startswith('2009-12-17')
+    assert info.get('is_community_user') == 'True'
+    assert info.get('is_deleted') == 'False'
+    assert info.get('image') == 'https://img.buzzfeed.com/buzzfeed-static/static/user_images/web02/2009/12/17/20/lisa-31169-1261100831-63.jpg'
+
+
+def test_freelancer():
+    info = extract(parse('https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D=theDesignerz&compact=true')[0])
+
+    assert info.get('id') == '6751536'
+    assert info.get('nickname') == 'theDesignerz'
+    assert info.get('username') == 'theDesignerz'
+    assert info.get('fullname') == 'theDesignerz'
+    assert info.get('company') == 'theDesignerz'
+    assert info.get('company_founder_id') == '26684749'
+    assert info.get('role') == 'freelancer'
+    assert info.get('location') == 'Islamabad, Pakistan'
+    assert info.get('created_at').startswith('2012-12-09')
+
+
+def test_yelp_username():
+    info = extract(parse('http://dima.yelp.com')[0])
+
+    assert info.get('yelp_userid') == 'b_a5icXGK-AXVYZKehgKLw'
+    assert info.get('fullname') == 'Dima "ZOMG" M.'
+    assert info.get('location') == 'Brooklyn, NY'
+    assert info.get('image') == 'https://s3-media0.fl.yelpcdn.com/photo/bGiNMDL6FZAtPpMfljRGtg/ls.jpg'
+
+
+def test_yelp_userid():
+    info = extract(parse('https://www.yelp.com/user_details?userid=b_a5icXGK-AXVYZKehgKLw')[0])
+
+    assert info.get('yelp_userid') == 'b_a5icXGK-AXVYZKehgKLw'
+    assert info.get('fullname') == 'Dima "ZOMG" M.'
+    assert info.get('location') == 'Brooklyn, NY'
+    assert info.get('image') == 'https://s3-media0.fl.yelpcdn.com/photo/bGiNMDL6FZAtPpMfljRGtg/ls.jpg'
+
+
+def test_trello():
+    info = extract(parse('https://trello.com/1/Members/xFubuki')[0])
+
+    assert info.get("id") == "5e78cae55d711a6382e239c1"
+    assert info.get("username") == "xfubuki"
+    assert info.get("fullname") == "xFubuki"
+    assert info.get("image") == "https://trello-members.s3.amazonaws.com/5e78cae55d711a6382e239c1/d9c5264e657de6175f14a9067126873f/170.png"
+    assert info.get("type") == "normal"
+    assert info.get("is_verified") == "True"
+
+
+@pytest.mark.github_failed
+def test_weibo():
+    headers = {"cookie": "SUB=_2AkMXyuc_f8NxqwJRmP8SyWPrbo13zAvEieKhlhbkJRMxHRl-123", "cache-control": "no-cache"}
+    info = extract(parse('https://weibo.com/clairekuo?is_all=1', headers=headers, timeout=10)[0])
+
+    assert info.get("weibo_id") == "1733299783"
+    assert info.get("fullname") == "郭靜Claire"
