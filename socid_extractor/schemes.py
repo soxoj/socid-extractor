@@ -1376,5 +1376,41 @@ schemes = {
             'gender': lambda x: x['sex'],
             'language': lambda x: x['lang'],
         }
-    }
+    },
+    'ICQ': {
+        'flags': ['a href="//icq.com/app" class="icq-prompt__banner-link"'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('h2', {'class': 'icq-profile__name'}).contents[0],
+            'username': lambda x: x.find('p', {'class': 'icq-profile__subtitle'}).contents[0].strip('\n\t@'),
+            'bio': lambda x: x.find('p', {'class': 'icq-profile__description box'}).contents[0].strip('\n\t'),
+            'image': lambda x: x.find('meta', {'itemprop': 'image'}).get("content"),
+        }
+    },
+    'Pastebin': {
+        'flags': ['src="/themes/pastebin/js/'],
+        'bs': True,
+        'fields': {
+            'image': lambda x: 'https://pastebin.com' + x.find('div', {'class': 'user-icon'}).find('img').get('src'),
+            'website': lambda x: x.find('a', {'class': 'web'}).get('href'),
+            'location': lambda x: x.find('span', {'class': 'location'}).contents[0],
+            'views_count': lambda x: x.find('span', {'class': 'views'}).contents[0].replace(',', ''),
+            'all_views_count': lambda x: x.find('span', {'class': 'views -all'}).contents[0].replace(',', ''),
+            'created_at': lambda x: x.find('span', {'class': 'date-text'}).get("title"),
+        }
+    },
+    'Periscope': {
+        'flags': ['canonicalPeriscopeUrl', 'pscp://user/', 'property="og:site_name" content="Periscope"/>'],
+        'regex': r'data-store="(.*)"><div id="PageView"',
+        'extract_json': True,
+        'transforms': [
+            lambda x: x.replace('&quot;', '"'),
+            json.loads,
+            lambda x: list(x['UserCache']['users'].values())[0],
+            json.dumps,
+        ],
+        'fields': {
+            'periscope_user_id': lambda x: x['user']['id']
+        }
+    },
 }

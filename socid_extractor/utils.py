@@ -77,3 +77,7 @@ def get_ucoz_image(dom):
 
 def get_ucoz_uid_node(dom):
     return dom.find('b', string='uID профиль') or dom.find('b', string='uNet профиль')
+
+def extract_periscope_uid(text):
+    userId = re.search(r'"userId":"([\w\d]*)"}', text)
+    return userId.group(1)
