@@ -1410,7 +1410,7 @@ schemes = {
             json.dumps,
         ],
         'fields': {
-            'id': lambda x: x['user']['id']
+            'id': lambda x: x['id']
             'created_at': lambda x: x['created_at'],
             'periscope_username': lambda x: x['username'],
             'fullname': lambda x: x['display_name'],
