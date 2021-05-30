@@ -6,6 +6,7 @@ import requests
 
 from .schemes import *
 from .postprocessor import POSTPROCESSORS
+from .utils import parse_cookies
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
@@ -13,13 +14,6 @@ HEADERS = {
 }
 
 PROCESS_ERRORS = (AttributeError, KeyError, IndexError, TypeError)
-
-
-def parse_cookies(cookies_str):
-    cookies = SimpleCookie()
-    cookies.load(cookies_str)
-    logging.debug(cookies)
-    return {key: morsel.value for key, morsel in cookies.items()}
 
 
 def parse(url, cookies_str='', timeout=3, headers={}):

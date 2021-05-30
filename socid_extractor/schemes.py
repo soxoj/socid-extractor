@@ -77,8 +77,13 @@ schemes = {
     },
     'Yandex Market user profile': {
         'flags': ['MarketNode', '{"entity":"user"'],
-        'regex': r'{"user":({"entity":"user".+?}),"isEmptyList',
+        'regex': r'type="application/json">({"widgets":{"@MarketNode/UserReviews".+?)</script>',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: list(x['collections']['user'].values())[0],
+            json.dumps,
+        ],
         'fields': {
             'username': lambda x: x.get('login'),
             'yandex_uid': lambda x: x.get('uid'),
