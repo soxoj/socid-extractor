@@ -6,6 +6,7 @@ from functools import reduce
 from .activation import *
 from .main import parse, extract, mutate_url
 from .schemes import schemes
+from .utils import parse_cookies, import_cookiejar, join_cookies
 
 
 def print_info(info):
@@ -27,7 +28,8 @@ def run():
         prog='socid_extractor',
     )
     parser.add_argument('--url', help='url to parse')
-    parser.add_argument('--cookies', default='', help='cookies to make http requests with auth')
+    parser.add_argument('--cookies', default='', help='plaintext cookies (a=b; c=d) to make http requests with')
+    parser.add_argument('--cookie-jar', help='cookiejar file to make http requests with')
     parser.add_argument('-v', '--verbose', action='store_true', help='display verbose information')
     parser.add_argument('-d', '--debug', action='store_true', help='display debug information')
     parser.add_argument('--file', help='file to parse')
@@ -43,10 +45,17 @@ def run():
 
     logging.basicConfig(level=log_level, format='-' * 40 + '\n%(levelname)s: %(message)s')
 
+    cookies = {}
+    cookies.update(parse_cookies(args.cookies))
+    if args.cookie_jar:
+        cookies.update(import_cookiejar(args.cookie_jar))
+
+    cookies_str = join_cookies(cookies)
+
     headers = {}
     if args.activation:
-        cookies, headers = globals().get(args.activation)(args.cookies)
-        logging.debug(cookies)
+        cookies_str, headers = globals().get(args.activation)(cookies_str)
+        logging.debug(cookies_str)
         logging.debug(headers)
 
     # load from file
@@ -70,7 +79,7 @@ def run():
             url_headers = dict(headers)
             url_headers.update(add_headers)
 
-            page = get_site_response(url, args.cookies, url_headers)
+            page = get_site_response(url, cookies_str, url_headers)
             info = extract(page)
             if info:
                 print_info(info)

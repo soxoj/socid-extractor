@@ -75,7 +75,7 @@ class YandexUsernameToEmail:
         email = None
 
         if 'yandex_uid' in self.data or 'yandex_public_id' in self.data:
-            if 'username' in self.data:
+            if 'username' in self.data and self.data['username']:
                 email = self.data['username'] + '@yandex.ru'
                 output['email'] = email
 
