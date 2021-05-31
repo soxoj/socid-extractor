@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.21] - 2021-05-31
+* added ICQ, Pastebin, Periscope, Paypal, Imgur API
+* improved Google Docs extractors
+* fixed Yandex service processing
+* added cookiejar support
+
 ## [0.0.20] - 2021-05-15
 * fixed email-to-username postprocessor bug
 * added yandex-username-to-email postprocessor
