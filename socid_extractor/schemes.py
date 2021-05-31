@@ -1466,5 +1466,5 @@ schemes = {
             'primaryCurrencyCode': lambda x: x['userInfo']['primaryCurrencyCode'],
             'image': lambda x: x['userInfo']['profilePhotoUrl'],
         }
-    },    
+    },
 }

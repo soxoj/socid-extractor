@@ -1021,6 +1021,6 @@ def test_pastebin():
 
     assert info.get("image") == "https://pastebin.com/cache/img/1/2/20/726408.jpg"
     assert info.get("location") == "Eastern United States | Contact: GCCXGeneral@gmail.com"
-    assert info.get("views_count") == "278209"
-    assert info.get("all_views_count") == "490867"
+    assert 'views_count' in info
+    assert 'all_views_count' in info
     assert info.get("created_at") == "Monday 24th of June 2013 12:25:12 AM CDT"
