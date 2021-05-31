@@ -1006,3 +1006,21 @@ def test_weibo():
 
     assert info.get("weibo_id") == "1733299783"
     assert info.get("fullname") == "郭靜Claire"
+
+
+def test_icq():
+    info = extract(parse('https://icq.im/CaZaNoVa163')[0])
+
+    assert info.get("fullname") == "Cazanova Haxor"
+    assert info.get("username") == "CaZaNoVa163"
+    assert info.get("image") == "https://ub.icq.net/api/v26/files/avatar/get/?targetNick=CaZaNoVa163&size=1024"
+
+
+def test_pastebin():
+    info = extract(parse('https://pastebin.com/u/GCCXGeneral')[0])
+
+    assert info.get("image") == "https://pastebin.com/cache/img/1/2/20/726408.jpg"
+    assert info.get("location") == "Eastern United States | Contact: GCCXGeneral@gmail.com"
+    assert 'views_count' in info
+    assert 'all_views_count' in info
+    assert info.get("created_at") == "Monday 24th of June 2013 12:25:12 AM CDT"

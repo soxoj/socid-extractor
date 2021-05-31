@@ -1381,5 +1381,95 @@ schemes = {
             'gender': lambda x: x['sex'],
             'language': lambda x: x['lang'],
         }
-    }
+    },
+    'ICQ': {
+        'flags': ['a href="//icq.com/app" class="icq-prompt__banner-link"'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find('h2', {'class': 'icq-profile__name'}).contents[0],
+            'username': lambda x: x.find('p', {'class': 'icq-profile__subtitle'}).contents[0].strip('\n\t@'),
+            'bio': lambda x: x.find('p', {'class': 'icq-profile__description box'}).contents[0].strip('\n\t'),
+            'image': lambda x: x.find('meta', {'itemprop': 'image'}).get("content"),
+        }
+    },
+    'Pastebin': {
+        'flags': ['src="/themes/pastebin/js/'],
+        'bs': True,
+        'fields': {
+            'image': lambda x: 'https://pastebin.com' + x.find('div', {'class': 'user-icon'}).find('img').get('src'),
+            'website': lambda x: x.find('a', {'class': 'web'}).get('href'),
+            'location': lambda x: x.find('span', {'class': 'location'}).contents[0],
+            'views_count': lambda x: x.find('span', {'class': 'views'}).contents[0].replace(',', ''),
+            'all_views_count': lambda x: x.find('span', {'class': 'views -all'}).contents[0].replace(',', ''),
+            'created_at': lambda x: x.find('span', {'class': 'date-text'}).get("title"),
+        }
+    },
+    'Periscope': {
+        'flags': ['canonicalPeriscopeUrl', 'pscp://user/', 'property="og:site_name" content="Periscope"/>'],
+        'regex': r'data-store="(.*)"><div id="PageView"',
+        'extract_json': True,
+        'transforms': [
+            lambda x: x.replace('&quot;', '"'),
+            json.loads,
+            lambda x: list(x['UserCache']['users'].values())[0]['user'],
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x['id'],
+            'created_at': lambda x: x['created_at'],
+            'periscope_username': lambda x: x['username'],
+            'fullname': lambda x: x['display_name'],
+            'bio': lambda x: x['description'], 
+            'follower_count': lambda x: x['n_followers'],
+            'following_count': lambda x: x['n_following'],
+            'hearts_count': lambda x: x['n_hearts'],
+            'is_beta_user': lambda x: x['is_beta_user'],
+            'is_employee': lambda x: x['is_employee'],
+            'isVerified': lambda x: x['isVerified'],
+            'is_twitter_verified': lambda x: x['is_twitter_verified'],
+            'twitterUserId': lambda x: x.get('twitterUserId'),
+            'twitter_screen_name': lambda x: x.get('twitter_screen_name'), 
+            'image': lambda x: x['profile_image_urls'][0]['url'],
+        }
+    },
+    'Imgur API': {
+        'flags': ['"reputation_count"', '"reputation_name"'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://imgur.com/user/(?P<username>[^/]+)',
+                'to': 'https://api.imgur.com/account/v1/accounts/{username}?client_id=546c25a59c58ad7',
+            }
+        ],
+        'fields': {
+            'id': lambda x: x['id'],
+            'imgur_username': lambda x: x['username'],
+            'bio': lambda x: x['bio'],
+            'reputation_count': lambda x: x['reputation_count'],
+            'reputation_name': lambda x: x['reputation_name'],
+            'image': lambda x: x['avatar_url'],
+            'created_at': lambda x: x['created_at'],
+        }
+    },
+    'PayPal': {
+        'flags': ["indexOf('qa.paypal.com')", 'PayPalSansSmall-Regular'],
+        'regex': r'application/json" id="client-data">(.*)</script><script type="application/json" id="l10n-content">',
+        'extract_json': True,       
+        'transforms': [
+            json.loads,
+            lambda x: x['recipientSlugDetails']['slugDetails'],
+            json.dumps,
+        ],
+        'fields': {
+            'fullname': lambda x: x['userInfo']['displayName'],
+            'alternative_fullname': lambda x: x['userInfo'].get('alternateFullName'),
+            'username': lambda x: x['paypalmeSlugName'],
+            'payerId': lambda x: x['payerId'],
+            'address': lambda x: x['userInfo']['displayAddress'],
+            'isProfileStatusActive': lambda x: x['isProfileStatusActive'],
+            'primaryCurrencyCode': lambda x: x['userInfo']['primaryCurrencyCode'],
+            'image': lambda x: x['userInfo']['profilePhotoUrl'],
+        }
+    },
 }
