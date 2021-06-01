@@ -1472,4 +1472,88 @@ schemes = {
             'image': lambda x: x['userInfo']['profilePhotoUrl'],
         }
     },
+    'Tinder': {
+        'flags': ['<html id="Tinder"', 'content="tinder:'],
+        'regex': r'window.__data=(.*);</script><script>window.__intlData=JSON.parse',
+        'extract_json': True,       
+        'transforms': [
+            json.loads,
+            lambda x: x['webProfile'],
+            json.dumps,
+        ],
+        'fields': {
+            'tinder_username': lambda x: x['username'],
+            'birth_date': lambda x: x['user']['birth_date'],
+            'id': lambda x: x['user']['_id'],
+            'badges': lambda x: [badge['type'] for badge in x['user']['badges']],
+            'company': lambda x: x['user'].get('jobs')[0]['company']['name'],
+            'position_held': lambda x: x['user'].get('jobs')[0]['title']['name'],
+            'fullname': lambda x: x['user']['name'],
+            'image': lambda x: x['user']['photos'][0]['url'],
+            'images': lambda x: [photo['url'] for photo in x['user']['photos']],
+            'education': lambda x: [school['name'] for school in x['user']['schools']],
+
+        }
+    },
+    'Disqus API': {
+        'flags': ['"permalink":"https://disqus.com/api/users/'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://disqus.com/by/(?P<username>[^/]+)/',
+                'to': 'https://disqus.com/api/3.0/users/details?user=username:{username}&attach=userFlaggedUser&api_key=E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F',
+            }
+        ],
+        'transforms': [
+            json.loads,
+            lambda x: x['response'],
+            json.dumps,
+        ],
+        'fields': {
+            'disable3rdPartyTrackers': lambda x: x['disable3rdPartyTrackers'],
+            'isPowerContributor': lambda x: x['isPowerContributor'],
+            'isPrimary': lambda x: x['isPrimary'],
+            'id': lambda x: x['id'],
+            'follower_count': lambda x: x['numFollowers'],
+            'folowing_count': lambda x: x['numFollowing'],
+            'comments_count': lambda x: x['nnumPosts'],
+            'location': lambda x: x['location'],
+            'created_at': lambda x: x['joinedAt'],
+            'isPrivate': lambda x: x['isPrivate'],  
+            'disqus_username': lambda x: x['username'], 
+            'upvotes_count': lambda x: x['numLikesReceived'],
+            'forumfollowing_count': lambda x: x['numForumsFollowing'],            
+            'reputation': lambda x: x['rep'], 
+            'reputationLabel': lambda x: x['reputationLabel'],   
+            'bio': lambda x: x.get('about'),  
+            'fullname': lambda x: x['name'],
+            'link': lambda x: x['url'],
+            'image': lambda x: x['avatar']['small']['permalink'],              
+        }
+    },
+    'ifunny.co': {
+        'flags': ['"og:site_name" content="iFunny"/>', '"preconnect" href="//img.ifunny.co/'],
+        'regex': r'window.__INITIAL_STATE__ = (.*);</script>  <script>function loadScriptAsync',
+        'extract_json': True,       
+        'transforms': [
+            json.loads,
+            lambda x: x['user']['data'],
+            json.dumps,
+        ],
+        'fields': {
+            'id': lambda x: x['id'],
+            'nick': lambda x: x['nick'],
+            'bio': lambda x: x['about'],
+            'image': lambda x: x['photo']['url'],
+            'subscription_count': lambda x: x['num']['subscriptions'],
+            'subscribers_count': lambda x: x['num']['subscribers'],            
+            'post_count': lambda x: x['num']['total_posts'], 
+            'created_count': lambda x: x['num']['created'], 
+            'featured_count': lambda x: x['num']['featured'], 
+            'smile_count': lambda x: x['num']['total_smiles'], 
+            'achievement_count': lambda x: x['num']['achievements'], 
+            'isVerified': lambda x: x['isVerified'],
+        }
+    },
 }
