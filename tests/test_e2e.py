@@ -868,9 +868,12 @@ def test_disqus_api():
     assert info.get('is_power_contributor') == 'False'
     assert info.get('is_anonymous') == 'False'
     assert info.get('created_at') == '2007-11-06T01:14:28'
-    assert info.get('likes_count') == '0'
+    assert info.get('upvotes_count') == '0'
     assert info.get('forums_count') == '0'
     assert info.get('image') == 'https://disqus.com/api/users/avatars/margaret.jpg'
+    assert info.get("forums_following_count") == "0"
+    assert info.get("is_private") == "False"
+    assert info.get("comments_count") == "0"
 
 
 def test_ucoz_1():
@@ -1024,3 +1027,35 @@ def test_pastebin():
     assert 'views_count' in info
     assert 'all_views_count' in info
     assert info.get("created_at") == "Monday 24th of June 2013 12:25:12 AM CDT"
+
+
+def test_tinder():
+    info = extract(parse('https://tinder.com/@john_mclean')[0])
+
+    assert info.get("tinder_username") == "john_mclean"
+    assert info.get("birth_date").startswith("1990-06-04T21:")
+    assert info.get("id") == "5f4b5bc57f87b00100caa6f9"
+    assert info.get("badges") == "['selfie_verified']"
+    assert info.get("position_held") == "Something something consultant"
+    assert info.get("fullname") == "John"
+    assert info.get("image") == "https://images-ssl.gotinder.com/5f4b5bc57f87b00100caa6f9/original_819f94bd-b1d8-4946-a9bf-ab9a3ced1ff0.jpeg"
+
+    images_list = eval(info.get("images"))
+    assert 'https://images-ssl.gotinder.com/5f4b5bc57f87b00100caa6f9/original_42294ebf-cbcc-42a4-9f6b-71ba9234c237.jpeg' in images_list
+
+
+def test_ifunny():
+    info = extract(parse('https://ifunny.co/user/CuddleKinnz')[0])
+
+    assert info.get("id") == "5ab1fd49a2cf59ac948b456e"
+    assert info.get("username") == "CuddleKinnz"
+    assert info.get("bio") == "Humor Some Like, Some Hate"
+    assert info.get("image") == "https://imageproxy.ifunny.co/noop/user_photos/5f8125401673edecc262eba6c111b05ead316e37_0.jpg"
+    assert int(info.get("follower_count")) >= 0
+    assert int(info.get("following_count")) >= 70
+    assert int(info.get("post_count")) >= 127
+    assert int(info.get("created_count")) >= 127
+    assert info.get("featured_count") == "7"
+    assert int(info.get("smile_count")) > 32000
+    assert int(info.get("achievement_count")) >= 1
+    assert info.get("is_verified") == "False"
