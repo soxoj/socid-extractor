@@ -549,7 +549,8 @@ schemes = {
         'regex': r'journal">\s+({\s+"name":[\s\S]+?})',
         'extract_json': True,
         'fields': {
-            'uid': lambda x: x.get('id'),
+            'mail_uid': lambda x: get_mymail_uid(x.get('dir').split('/')[-2] if x else ''),
+            'mail_id': lambda x: x.get('id'),
             'username': lambda x: x.get('dir').split('/')[-2] if x else '',
             'auId': lambda x: x.get('auId'),
             'email': lambda x: x.get('email'),
@@ -557,6 +558,7 @@ schemes = {
             'is_vip': lambda x: x.get('isVip'),
             'is_community': lambda x: x.get('isCommunity'),
             'is_video_channel': lambda x: x.get('isVideoChannel'),
+            'image': lambda x: 'https://filin.mail.ru/pic?email=' + x.get('email'),
         }
     },
     'Behance': {
