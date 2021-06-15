@@ -494,8 +494,13 @@ schemes = {
     },
     'Facebook user profile': {
         'flags': ['<html id="facebook"', 'content="Facebook"'],
-        'regex': r'"__bbox":{"complete":false,"result":{"data":{"user":({"__isProfile":"User".+?}}})',
+        'regex': r'"__bbox":({"complete":\w+,"result":{"data":{"user":{"__isProfile":"User".+?})}]]',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['result']['data']['user'],
+            json.dumps,
+        ],
         'fields': {
             'uid': lambda x: x.get('id'),
             'username': lambda x: x.get('url').split('/')[-1],
@@ -552,7 +557,7 @@ schemes = {
             'mail_uid': lambda x: get_mymail_uid(x.get('dir').split('/')[-2] if x else ''),
             'mail_id': lambda x: x.get('id'),
             'username': lambda x: x.get('dir').split('/')[-2] if x else '',
-            'auId': lambda x: x.get('auId'),
+            'au_id': lambda x: x.get('auId'),
             'email': lambda x: x.get('email'),
             'name': lambda x: x.get('name'),
             'is_vip': lambda x: x.get('isVip'),
