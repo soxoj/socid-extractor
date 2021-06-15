@@ -1,7 +1,35 @@
+from http.cookiejar import MozillaCookieJar
+from http.cookies import Morsel
+
+import logging
 import math
 import re
 import requests
 from datetime import datetime
+from http.cookies import SimpleCookie
+
+
+def import_cookiejar(filename):
+    cookies_obj = MozillaCookieJar(filename)
+    cookies_obj.load(ignore_discard=True, ignore_expires=True)
+    cookies = {}
+
+    for domain in cookies_obj._cookies.values():
+        for key, cookie in list(domain.values())[0].items():
+            cookies[key] = cookie.value
+    return cookies
+
+
+def parse_cookies(cookies_str):
+    cookies = SimpleCookie()
+    cookies.load(cookies_str)
+    logging.debug(cookies)
+    return {key: morsel.value for key, morsel in cookies.items()}
+
+
+def join_cookies(cookies: dict):
+    return ' ;'.join(f'{k}={v}' for k, v in cookies.items())
+
 
 def check_empty_object(res):
     return res if res or type(res) == bool else None
@@ -77,3 +105,7 @@ def get_ucoz_image(dom):
 
 def get_ucoz_uid_node(dom):
     return dom.find('b', string='uID профиль') or dom.find('b', string='uNet профиль')
+
+def extract_periscope_uid(text):
+    userId = re.search(r'"userId":"([\w\d]*)"}', text)
+    return userId.group(1)
