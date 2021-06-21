@@ -185,6 +185,7 @@ def test_reddit():
     assert int(info.get('post_karma')) > int(7000)
 
 
+@pytest.mark.github_failed
 def test_facebook_user_profile():
     info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
 
