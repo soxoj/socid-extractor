@@ -1037,7 +1037,7 @@ def test_tinder():
     assert info.get("tinder_username") == "john_mclean"
     assert info.get("birth_date").startswith("1990-06")
     assert info.get("id") == "5f4b5bc57f87b00100caa6f9"
-    assert info.get("badges") == "['selfie_verified']"
+    assert info.get("badges_list") == "['selfie_verified']"
     assert info.get("position_held") == "Something something consultant"
     assert info.get("fullname") == "John"
     assert info.get("image") == "https://images-ssl.gotinder.com/5f4b5bc57f87b00100caa6f9/original_819f94bd-b1d8-4946-a9bf-ab9a3ced1ff0.jpeg"

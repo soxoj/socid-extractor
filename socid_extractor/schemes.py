@@ -1118,7 +1118,7 @@ schemes = {
         }
     },
     'Twitch': {
-        'flags': ['<meta property="al:android:url" content="twitch://'],
+        'flags': ['crossorigin="anonymous" href="https://gql.twitch.tv/gql"'],
         'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
         'extract_json': True,
         'transforms': [
@@ -1508,7 +1508,7 @@ schemes = {
             'tinder_username': lambda x: x['username'],
             'birth_date': lambda x: x['user']['birth_date'],
             'id': lambda x: x['user']['_id'],
-            'badges': lambda x: [badge['type'] for badge in x['user']['badges']],
+            'badges_list': lambda x: [badge['type'] for badge in x['user']['badges']],
             'company': lambda x: x['user'].get('jobs')[0]['company']['name'],
             'position_held': lambda x: x['user'].get('jobs')[0]['title']['name'],
             'fullname': lambda x: x['user']['name'],
