@@ -109,3 +109,7 @@ def get_ucoz_uid_node(dom):
 def extract_periscope_uid(text):
     userId = re.search(r'"userId":"([\w\d]*)"}', text)
     return userId.group(1)
+    
+def get_mymail_uid(username):
+    req = requests.get('http://appsmail.ru/platform/mail/' + username)
+    return req.json()['uid']

@@ -494,8 +494,13 @@ schemes = {
     },
     'Facebook user profile': {
         'flags': ['<html id="facebook"', 'content="Facebook"'],
-        'regex': r'"__bbox":{"complete":false,"result":{"data":{"user":({"__isProfile":"User".+?}}})',
+        'regex': r'"__bbox":({"complete":\w+,"result":{"data":{"user":{"__isProfile":"User".+?})}]]',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['result']['data']['user'],
+            json.dumps,
+        ],
         'fields': {
             'uid': lambda x: x.get('id'),
             'username': lambda x: x.get('url').split('/')[-1],
@@ -549,14 +554,16 @@ schemes = {
         'regex': r'journal">\s+({\s+"name":[\s\S]+?})',
         'extract_json': True,
         'fields': {
-            'uid': lambda x: x.get('id'),
+            'mail_uid': lambda x: get_mymail_uid(x.get('dir').split('/')[-2] if x else ''),
+            'mail_id': lambda x: x.get('id'),
             'username': lambda x: x.get('dir').split('/')[-2] if x else '',
-            'auId': lambda x: x.get('auId'),
+            'au_id': lambda x: x.get('auId'),
             'email': lambda x: x.get('email'),
             'name': lambda x: x.get('name'),
             'is_vip': lambda x: x.get('isVip'),
             'is_community': lambda x: x.get('isCommunity'),
             'is_video_channel': lambda x: x.get('isVideoChannel'),
+            'image': lambda x: 'https://filin.mail.ru/pic?email=' + x.get('email'),
         }
     },
     'Behance': {
@@ -1111,7 +1118,7 @@ schemes = {
         }
     },
     'Twitch': {
-        'flags': ['<meta property="al:android:url" content="twitch://'],
+        'flags': ['crossorigin="anonymous" href="https://gql.twitch.tv/gql"'],
         'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
         'extract_json': True,
         'transforms': [
@@ -1501,7 +1508,7 @@ schemes = {
             'tinder_username': lambda x: x['username'],
             'birth_date': lambda x: x['user']['birth_date'],
             'id': lambda x: x['user']['_id'],
-            'badges': lambda x: [badge['type'] for badge in x['user']['badges']],
+            'badges_list': lambda x: [badge['type'] for badge in x['user']['badges']],
             'company': lambda x: x['user'].get('jobs')[0]['company']['name'],
             'position_held': lambda x: x['user'].get('jobs')[0]['title']['name'],
             'fullname': lambda x: x['user']['name'],
