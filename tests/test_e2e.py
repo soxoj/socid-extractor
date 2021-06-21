@@ -104,6 +104,7 @@ def test_ok():
     assert info.get('ok_id') == '576861363171'
 
 
+@pytest.mark.github_failed
 def test_habr():
     info = extract(parse('https://habr.com/ru/users/m1rko/')[0])
 
@@ -112,7 +113,7 @@ def test_habr():
     assert info.get('image') == 'http://habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
 
 
-@pytest.mark.skip(reason="failed from github CI infra IPs")
+@pytest.mark.github_failed
 def test_habr_no_image():
     info = extract(parse('https://habr.com/ru/users/ne555/')[0])
 
