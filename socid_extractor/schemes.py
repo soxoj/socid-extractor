@@ -477,6 +477,12 @@ schemes = {
         'flags': ['{"data":{"'],
         'regex': r'^{"data":{"user":({.+})}}$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www.)?twitter.com/(?P<username>[^/]+).*',
+                'to': 'https://twitter.com/i/api/graphql/ZRnOhhXPwue_JGILb9TNug/UserByScreenName?variables=%7B%22screen_name%22%3A%22{username}%22%2C%22withHighlightedLabel%22%3Atrue%7D',
+            }
+        ],
         'fields': {
             'uid': lambda x: x.get('id'),
             'fullname': lambda x: x.get('legacy', {}).get('name'),
