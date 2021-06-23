@@ -104,6 +104,7 @@ def test_ok():
     assert info.get('ok_id') == '576861363171'
 
 
+@pytest.mark.github_failed
 def test_habr():
     info = extract(parse('https://habr.com/ru/users/m1rko/')[0])
 
@@ -112,7 +113,7 @@ def test_habr():
     assert info.get('image') == 'http://habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
 
 
-@pytest.mark.skip(reason="failed from github CI infra IPs")
+@pytest.mark.github_failed
 def test_habr_no_image():
     info = extract(parse('https://habr.com/ru/users/ne555/')[0])
 
@@ -184,6 +185,7 @@ def test_reddit():
     assert int(info.get('post_karma')) > int(7000)
 
 
+@pytest.mark.github_failed
 def test_facebook_user_profile():
     info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
 
@@ -1037,7 +1039,7 @@ def test_tinder():
     assert info.get("tinder_username") == "john_mclean"
     assert info.get("birth_date").startswith("1990-06")
     assert info.get("id") == "5f4b5bc57f87b00100caa6f9"
-    assert info.get("badges") == "['selfie_verified']"
+    assert info.get("badges_list") == "['selfie_verified']"
     assert info.get("position_held") == "Something something consultant"
     assert info.get("fullname") == "John"
     assert info.get("image") == "https://images-ssl.gotinder.com/5f4b5bc57f87b00100caa6f9/original_819f94bd-b1d8-4946-a9bf-ab9a3ced1ff0.jpeg"

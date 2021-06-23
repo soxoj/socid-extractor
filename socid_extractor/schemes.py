@@ -477,6 +477,12 @@ schemes = {
         'flags': ['{"data":{"'],
         'regex': r'^{"data":{"user":({.+})}}$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www.)?twitter.com/(?P<username>[^/]+).*',
+                'to': 'https://twitter.com/i/api/graphql/ZRnOhhXPwue_JGILb9TNug/UserByScreenName?variables=%7B%22screen_name%22%3A%22{username}%22%2C%22withHighlightedLabel%22%3Atrue%7D',
+            }
+        ],
         'fields': {
             'uid': lambda x: x.get('id'),
             'fullname': lambda x: x.get('legacy', {}).get('name'),
@@ -1118,7 +1124,7 @@ schemes = {
         }
     },
     'Twitch': {
-        'flags': ['<meta property="al:android:url" content="twitch://'],
+        'flags': ['crossorigin="anonymous" href="https://gql.twitch.tv/gql"'],
         'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
         'extract_json': True,
         'transforms': [
@@ -1508,7 +1514,7 @@ schemes = {
             'tinder_username': lambda x: x['username'],
             'birth_date': lambda x: x['user']['birth_date'],
             'id': lambda x: x['user']['_id'],
-            'badges': lambda x: [badge['type'] for badge in x['user']['badges']],
+            'badges_list': lambda x: [badge['type'] for badge in x['user']['badges']],
             'company': lambda x: x['user'].get('jobs')[0]['company']['name'],
             'position_held': lambda x: x['user'].get('jobs')[0]['title']['name'],
             'fullname': lambda x: x['user']['name'],
