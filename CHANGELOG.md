@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.22] - 2021-06-23
+* added Tinder, Disqus API and ifunny.co
+* fixed Twitter scraping from CLI
+* extended My.Mail.ru extractor
+* improved tests
+
 ## [0.0.21] - 2021-05-31
 * added ICQ, Pastebin, Periscope, Paypal, Imgur API
 * improved Google Docs extractors
