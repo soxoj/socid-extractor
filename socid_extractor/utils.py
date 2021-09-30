@@ -7,7 +7,6 @@ import re
 import requests
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
-import pytz
 
 def import_cookiejar(filename):
     cookies_obj = MozillaCookieJar(filename)
