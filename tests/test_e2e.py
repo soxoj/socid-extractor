@@ -1110,7 +1110,7 @@ def test_mixcloud():
     assert int(info.get("follower_count")) >=  25
     assert int(info.get("following_count")) >= 6
     assert int(info.get("cloudcast_count")) >= 5
-    assert int(info.get("favorite_count")) = 0
+    assert int(info.get("favorite_count")) >= 0
     assert int(info.get("listen_count")) >= 15
     assert info.get("is_pro") == "False" 
     assert info.get("is_premium") == "False"    
@@ -1119,7 +1119,7 @@ def test_mixcloud():
 def test_binarysearch():
     info = extract(parse('https://ifunny.co/user/CuddleKinnz')[0])   
 
-    assert int(info.get("uid")) = 10435
+    assert int(info.get("uid")) >= 10435
     assert info.get("username") == "LarryNY" 
     assert info.get("image") == "https://binarysearch.s3-us-west-2.amazonaws.com/LarryNY?hash=1599781403401" 
     assert info.get("location") == "New York, NY, USA" 
@@ -1135,7 +1135,7 @@ def test_binarysearch():
 def test_pr0gramm():
     info = extract(parse('https://pr0gramm.com/user/TheBorderCrash')[0])    
    
-    assert int(info.get("uid")) = 323469  
+    assert int(info.get("uid")) >= 323469  
     assert info.get("username") == "TheBorderCrash" 
     assert int(info.get("uploadCount")) >= 5859
     assert int(info.get("commentCount")) >= 2497
