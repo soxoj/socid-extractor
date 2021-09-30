@@ -548,7 +548,7 @@ schemes = {
         }
     },
     'Gitlab API': {
-        'flags': ['[{"id":'],
+        'flags': ['"web_url":"https://gitlab.com/'],
         'regex': r'^([{[\S\s]+?}])$',
         'extract_json': True,
         'url_mutations': [
