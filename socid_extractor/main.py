@@ -1,8 +1,5 @@
 import logging
 from http.cookies import SimpleCookie
-from bs4 import BeautifulSoup as bs
-
-import requests
 
 from .schemes import *
 from .postprocessor import POSTPROCESSORS
@@ -21,6 +18,8 @@ def parse(url, cookies_str='', timeout=3, headers={}):
     req_headers = dict(HEADERS)
     req_headers.update(headers)
     logging.debug(req_headers)
+
+    import requests
     page = requests.get(url, headers=req_headers, cookies=cookies, allow_redirects=True, timeout=(timeout, timeout))
     logging.debug('Server response: \'%s\'', page.text)
     logging.debug('Status code: %d', page.status_code)
@@ -129,6 +128,7 @@ def extract(page):
                     values = map_fields(scheme_data, transformed_data)
 
         if use_html_parser:
+            from bs4 import BeautifulSoup as bs
             soup = bs(page, 'html.parser')
             for name, get_field in scheme_data['fields'].items():
                 try:

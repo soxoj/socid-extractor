@@ -1,5 +1,4 @@
 import re
-import requests
 
 
 class Gravatar:
@@ -28,6 +27,7 @@ class Gravatar:
         return f'https://en.gravatar.com/{self.email_hash}'
 
     def get_username(self):
+        import requests
         gravatar_account_location = requests.head(self.make_en_url())
         username = gravatar_account_location.headers.get('location', '').strip('/')
         if username == 'profiles/no-such-user':
