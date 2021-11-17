@@ -4,7 +4,6 @@ import re
 from datetime import datetime
 from http.cookies import SimpleCookie
 
-
 def import_cookiejar(filename):
     from http.cookiejar import MozillaCookieJar
     cookies_obj = MozillaCookieJar(filename)
@@ -59,15 +58,18 @@ def enrich_link(html_url):
         fixed_url = 'https://' + fixed_url
     return fixed_url
 
-
+# support timestamp with milliseconds
+# coming to common UTC timezone with print it
 def timestamp_to_datetime(t):
     if not t:
         return ''
     elif len(str(t)) < 10:
-        t = math.floor(datetime.today().timestamp()) - t
-
-    return datetime.fromtimestamp(int(t))
-
+        t = math.floor(datetime.today().timestamp()) - t        
+    elif len(str(t)) == 13:
+        return datetime.fromtimestamp(float(t)/ 1000.0, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S.{} %Z'.format(str(t)[-3:]))
+    
+    return datetime.fromtimestamp(int(t), tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
+  
 
 def extract_digits(text):
     digits_re = re.search(r'\d+', text)

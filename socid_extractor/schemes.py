@@ -549,10 +549,20 @@ schemes = {
     },
     'Gitlab API': {
         'flags': ['"web_url":"https://gitlab.com/'],
-        'regex': r'^({[\S\s]+?})$',
+        'regex': r'^([{[\S\s]+?}])$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https://gitlab.com/(?P<username>.+)/?',
+                'to': 'https://gitlab.com/api/v4/users?username={username}',
+            }
+        ],
         'fields': {
             'uid': lambda x: x[0].get('id'),
+            'fullname': lambda x: x[0].get('name'),
+            'username': lambda x: x[0].get('username'),
+            'state': lambda x: x[0].get('state'),
+            'image': lambda x: x[0].get('avatar_url'),             
         }
     },
     'My Mail.ru': {
@@ -1549,6 +1559,161 @@ schemes = {
             'smile_count': lambda x: x['num']['total_smiles'],
             'achievement_count': lambda x: x['num']['achievements'],
             'is_verified': lambda x: x['isVerified'],
+        }
+    },
+    'Wattpad API': {
+        'flags': ['{"username":"'],
+        'regex': r'^({"username":"(.+)})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www.|a.)?wattpad.com/user/(?P<username>[^/]+).*',
+                'to': 'https://www.wattpad.com/api/v3/users/{username}',
+            }
+        ],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('avatar'),
+            'image_bg': lambda x: x.get('backgroundUrl'),
+            'fullname': lambda x: x.get('name'),
+            'description': lambda x: x.get('description'),
+            'status': lambda x: x.get('status'),
+            'gender': lambda x: x.get('gender'),
+            'locale': lambda x: x.get('locale'),
+            'created_at': lambda x: x.get('createDate'),
+            'updated_at': lambda x: x.get('modifyDate'),
+            'location': lambda x: x.get('location'),
+            'isPrivate': lambda x: x.get('isPrivate'),
+            'verified': lambda x: x.get('verified'),
+            'verified_email': lambda x: x.get('verified_email'),
+            'ambassador': lambda x: x.get('ambassador'),
+            'isMuted': lambda x: x.get('isMuted'),
+            'allowCrawler': lambda x: x.get('allowCrawler'),
+            'follower_count': lambda x: x.get('numFollowers'),
+            'following_count': lambda x: x.get('numFollowing'),
+            'facebook': lambda x: 'https://www.facebook.com/' + x.get('facebook') if x.get('facebook') else None,
+            'twitter': lambda x: 'https://twitter.com/' + x.get('twitter') if x.get('twitter') else None,
+            'website': lambda x: x.get('website'),
+            'lulu': lambda x: x.get('lulu'),
+            'smashwords': lambda x: x.get('smashwords'),
+            'bubok': lambda x: x.get('bubok'),
+        }
+    },
+    'Kik': {
+        'flags': ['{"firstName":"'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://kik.me/(?P<username>[^/]+).*',
+                'to': 'https://ws2.kik.com/user/{username}',
+            }
+        ],
+        'fields': {
+            'fullname': lambda x: x.get('firstName') + ' ' + x.get('lastName'),
+            'image': lambda x: x.get('displayPic'),
+            'update_pic_at': lambda x: timestamp_to_datetime(x.get('displayPicLastModified')),
+        }
+    },
+    'Docker Hub API': {
+        'flags': ['{"id": "'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://hub.docker.com/u/(?P<username>[^/]+).*',
+                'to': 'https://hub.docker.com/v2/users/{username}/',
+            }
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'full_name': lambda x: x.get('full_name'),
+            'location': lambda x: x.get('location'), 
+            'company': lambda x: x.get('company'), 
+            'created_at': lambda x: x.get('data_joined'),
+            'type': lambda x: x.get('type'),              
+            'image': lambda x: x.get('gravatar_url'),
+        }
+    },
+    'Mixcloud API': {
+        'flags': ['"key": "'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www.)?mixcloud.com/(?P<username>[^/]+).*',
+                'to': 'https://api.mixcloud.com/{username}/',
+            }
+        ],
+        'fields': {
+            'fullname': lambda x: x.get('fullname'),
+            'username': lambda x: x.get('username'),
+            'country': lambda x: x.get('country'), 
+            'city': lambda x: x.get('city'), 
+            'created_at': lambda x: x.get('created_time'),
+            'updated_at': lambda x: x.get('updated_time'),            
+            'description': lambda x: x.get('blog'),              
+            'image': lambda x: x['pictures'].get('640wx640h'),
+            'follower_count': lambda x: x.get('follower_count'),
+            'following_count': lambda x: x.get('following_count'),
+            'cloudcast_count': lambda x: x.get('cloudcast_count'),
+            'favorite_count': lambda x: x.get('favorite_count'),
+            'listen_count': lambda x: x.get('listen_count'),
+            'is_pro': lambda x: x.get('is_pro'),
+            'is_premium': lambda x: x.get('is_premium'),
+        }
+    },
+    'binarysearch API': {
+        'flags': [',"preferredSubmissionPrivacy":'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://binarysearch.com/@/(?P<username>[^/]+).*',
+                'to': 'https://binarysearch.com/api/users/{username}/profile',
+            }
+        ],
+        'fields': {
+            'uid': lambda x: x['user'].get('id'),
+            'username': lambda x: x['user'].get('username'),
+            'image': lambda x: x['user'].get('profilePic'),            
+            'location': lambda x: x['user'].get('location'),  
+            'created_at': lambda x: timestamp_to_datetime(x['user'].get('createTime')),
+            'updated_at': lambda x: timestamp_to_datetime(x['user'].get('updateTime')),            
+            'bio': lambda x: x['user'].get('bio'), 
+            'work': lambda x: x['user'].get('work'), 
+            'college': lambda x: x['user'].get('college'),             
+            'Role': lambda x: x['user'].get('preferredRole'),
+            'github_url': lambda x: x['user'].get('githubHandle'),
+            'twitter_url': lambda x: x['user'].get('twitterHandle'),
+            'linkedin_url': lambda x: x['user'].get('linkedinHandle'),
+            'links': lambda x: x['user'].get('personalWebsite'),            
+            'isAdmin': lambda x: x['user'].get('isAdmin'),
+            'isVerified': lambda x: x['user'].get('isVerified'),
+            'HistoryPublic': lambda x: x['user'].get('preferredHistoryPublic'),
+            'RoomPublic': lambda x: x['user'].get('preferredRoomPublic'),
+            'InviteOnly': lambda x: x['user'].get('preferredInviteOnly'),
+        }
+    },
+    'pr0gramm API': {
+        'flags': [',"likesArePublic":'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://pr0gramm.com/user/(?P<username>[^/]+).*',
+                'to': 'https://pr0gramm.com/api/profile/info?name={username}',
+            }
+        ],
+        'fields': {
+            'uid': lambda x: x['user'].get('id'),
+            'username': lambda x: x['user'].get('name'),             
+            'created_at': lambda x: timestamp_to_datetime(x['user'].get('registered')),
+            'uploadCount': lambda x: x.get('uploadCount'),
+            'commentCount': lambda x: x.get('commentCount'), 
+            'tagCount': lambda x: x.get('tagCount'), 
+            'likesArePublic': lambda x: x.get('likesArePublic'),                         
         }
     },
 }

@@ -1063,3 +1063,82 @@ def test_ifunny():
     assert int(info.get("smile_count")) > 32000
     assert int(info.get("achievement_count")) >= 1
     assert info.get("is_verified") == "False"
+
+
+def test_wattpad():
+    info = extract(parse('https://wattpad.com/user/JeniferBalanzar')[0])
+    
+    assert info.get("username") == "JeniferBalanzar"
+    assert info.get("fullname") == "Jenifer Balanzar"
+    assert info.get("image") == "https://img.wattpad.com/useravatar/JeniferBalanzar.128.615375.jpg"
+    assert info.get("image_bg") == "https://img.wattpad.com/userbg/JeniferBalanzar.36464.jpg"
+    assert info.get("gender") == "Female"  
+    assert info.get("locale") == "es_MX"    
+    assert int(info.get("follower_count")) >= 266
+    assert int(info.get("following_count")) >= 89
+    assert info.get("created_at") == "2019-12-10T00:25:02Z"  
+    assert info.get("updated_at") == "2020-09-08T08:24:38Z" 
+    assert info.get("verified") == "False"  
+    assert info.get("verified_email") == "False"      
+
+
+def test_kik():
+    info = extract(parse('http://kik.me/mksyx')[0])
+    
+    assert info.get("fullname") == "experience true satisfaction"
+    assert info.get("image") == "http://profilepics.cf.kik.com/QUwticPE8XU7qm7qrTXbWgCfSu4/orig.jpg"
+  
+    
+def test_dockerub():
+    info = extract(parse('https://hub.docker.com/u/adastra2ankudinov')[0])
+    
+    assert info.get("uid") == "b4f92258ad95428ea88ba498a883b40a"  
+    assert info.get("username") == "adastra2ankudinov" 
+    assert info.get("type") == "User"  
+    assert info.get("image") == "https://secure.gravatar.com/avatar/410bf05a8e85652a6b174d627dce4e3d.jpg?s=80&r=g&d=mm"  
+    
+    
+def test_mixcloud():
+    info = extract(parse('https://www.mixcloud.com/savath69/')[0])
+
+    assert info.get("username") == "savath69"
+    assert info.get("country") == "France"
+    assert info.get("city") == "Lyon" 
+    assert info.get("created_at") == "2017-08-06T11:41:02Z" 
+    assert info.get("updated_at") == "2017-08-06T11:41:02Z" 
+    assert info.get("image") == "https://thumbnailer.mixcloud.com/unsafe/640x640/profile/d/1/c/a/0f1c-60ec-4f2c-9b04-5a9536c96d51"     
+    assert int(info.get("follower_count")) >=  25
+    assert int(info.get("following_count")) >= 6
+    assert int(info.get("cloudcast_count")) >= 5
+    assert int(info.get("favorite_count")) >= 0
+    assert int(info.get("listen_count")) >= 15
+    assert info.get("is_pro") == "False" 
+    assert info.get("is_premium") == "False"    
+   
+    
+def test_binarysearch():
+    info = extract(parse('https://ifunny.co/user/CuddleKinnz')[0])   
+
+    assert int(info.get("uid")) >= 10435
+    assert info.get("username") == "LarryNY" 
+    assert info.get("image") == "https://binarysearch.s3-us-west-2.amazonaws.com/LarryNY?hash=1599781403401" 
+    assert info.get("location") == "New York, NY, USA" 
+    assert info.get("bio") == "This is fun." 
+    assert info.get("links") == "https://www.youtube.com/c/Algorithmist/" 
+    assert info.get("isAdmin") == "False" 
+    assert info.get("isVerified") == "True" 
+    assert info.get("HistoryPublic") == "False" 
+    assert info.get("RoomPublic") == "True" 
+    assert info.get("InviteOnly") == "False" 
+    
+
+def test_pr0gramm():
+    info = extract(parse('https://pr0gramm.com/user/TheBorderCrash')[0])    
+   
+    assert int(info.get("uid")) >= 323469  
+    assert info.get("username") == "TheBorderCrash" 
+    assert int(info.get("uploadCount")) >= 5859
+    assert int(info.get("commentCount")) >= 2497
+    assert int(info.get("tagCount")) >= 22900
+    assert info.get("likesArePublic") == "False"     
+
