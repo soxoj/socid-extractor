@@ -4,7 +4,6 @@ import re
 from datetime import datetime
 from http.cookies import SimpleCookie
 
-
 def import_cookiejar(filename):
     from http.cookiejar import MozillaCookieJar
     cookies_obj = MozillaCookieJar(filename)
