@@ -1,14 +1,11 @@
-from http.cookiejar import MozillaCookieJar
-from http.cookies import Morsel
-
 import logging
 import math
 import re
-import requests
-from datetime import datetime, timezone
+from datetime import datetime
 from http.cookies import SimpleCookie
 
 def import_cookiejar(filename):
+    from http.cookiejar import MozillaCookieJar
     cookies_obj = MozillaCookieJar(filename)
     cookies_obj.load(ignore_discard=True, ignore_expires=True)
     cookies = {}
@@ -113,5 +110,7 @@ def extract_periscope_uid(text):
     return userId.group(1)
     
 def get_mymail_uid(username):
+    # TODO: move to external function
+    import requests
     req = requests.get('http://appsmail.ru/platform/mail/' + username)
     return req.json()['uid']

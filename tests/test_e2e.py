@@ -175,7 +175,7 @@ def test_reddit():
     assert info.get('reddit_username') == 'Diascamara'
     assert info.get('fullname') == 'Diascamara'
     assert info.get('is_employee') == 'False'
-    assert info.get('is_nsfw') == 'False'
+    assert info.get('is_nsfw') == 'True'
     assert info.get('is_mod') == 'True'
     assert info.get('is_following') == 'True'
     assert info.get('has_user_profile') == 'True'
@@ -776,7 +776,7 @@ def test_last_fm():
 
     assert info.get('fullname') == 'Alex'
     assert info.get('bio') == '• scrobbling since 21 Feb 2003'
-    assert info.get('image') == 'https://lastfm.freetls.fastly.net/i/u/avatar170s/15e455555655c8503ed9ba6fce71d2d6.webp'
+    assert info.get('image') == 'https://lastfm.freetls.fastly.net/i/u/avatar170s/15e455555655c8503ed9ba6fce71d2d6.png'
 
 
 def test_ask_fm():
@@ -807,11 +807,11 @@ def test_twitch():
 
     assert info.get('id') == '36536868'
     assert info.get('username') == 'johnwolfe'
-    assert info.get('bio') == 'Playing horror games all the time for charity.'
+    assert info.get('bio') == 'Horror games. Dead By Daylight. Charity streams. '
     assert info.get('fullname') == 'JohnWolfe'
-    assert info.get('image') == 'https://static-cdn.jtvnw.net/jtv_user_pictures/johnwolfe-profile_image-61f8e374d34a8bbd-300x300.png'
+    assert info.get('image') == 'https://static-cdn.jtvnw.net/jtv_user_pictures/johnwolfe-profile_image-61f8e374d34a8bbd-150x150.png'
     assert info.get('image_bg') == 'https://static-cdn.jtvnw.net/jtv_user_pictures/9d88705b5a305a7e-profile_banner-480.jpeg'
-    assert 'views_count' in info
+    # assert 'views_count' in info
     assert 'likes_count' in info
 
 
