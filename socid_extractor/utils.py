@@ -1,7 +1,7 @@
 import logging
 import math
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 
 def import_cookiejar(filename):

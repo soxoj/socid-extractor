@@ -690,7 +690,7 @@ schemes = {
         'fields': {
             'created_at': lambda x: x.get('createdDate'),
             'updated_at': lambda x: x.get('modifiedDate'),
-            'gaia_id': lambda x: x.get('permissions')[1]['id'],
+            'fake_gaia_id': lambda x: x.get('permissions')[1]['id'],
             'fullname': lambda x: x.get('permissions')[1]['name'],
             'email': lambda x: x.get('permissions')[1]['emailAddress'],
             'image': lambda x: x.get('permissions')[1]['photoLink'],
@@ -863,21 +863,25 @@ schemes = {
     },
     'SoundCloud': {
         'flags': ['eventlogger.soundcloud.com'],
-        'regex': r'catch\(e\)\{\}\}\)\},(\[\{"id":.+?)\);',
+        'regex': r'{"hydratable":"user","data":({.+?)}];',
         'extract_json': True,
         'message': 'Run with auth cookies to get your ids.',
+        'transforms': [
+            json.loads,
+            json.dumps,
+        ],
         'fields': {
-            'uid': lambda x: x[-1]['data'][0]['id'],
-            'name': lambda x: x[-1]['data'][0]['full_name'],
-            'username': lambda x: x[-1]['data'][0]['username'].lstrip('@'),
-            'following_count': lambda x: x[-1]['data'][0]['followings_count'],
-            'follower_count': lambda x: x[-1]['data'][0]['followers_count'],
-            'is_verified': lambda x: x[-1]['data'][0]['verified'],
-            'image': lambda x: x[-1]['data'][0]['avatar_url'],
-            'location': lambda x: x[-1]['data'][0]['city'],
-            'country_code': lambda x: x[-1]['data'][0]['country_code'],
-            'bio': lambda x: x[-1]['data'][0]['description'],
-            'created_at': lambda x: x[-1]['data'][0]['created_at'],
+            'uid': lambda x: x['id'],
+            'name': lambda x: x['full_name'],
+            'username': lambda x: x['username'].lstrip('@'),
+            'following_count': lambda x: x['followings_count'],
+            'follower_count': lambda x: x['followers_count'],
+            'is_verified': lambda x: x['verified'],
+            'image': lambda x: x['avatar_url'],
+            'location': lambda x: x['city'],
+            'country_code': lambda x: x['country_code'],
+            'bio': lambda x: x['description'],
+            'created_at': lambda x: x['created_at'],
         }
     },
     'TikTok': {
@@ -1538,8 +1542,8 @@ schemes = {
         }
     },
     'ifunny.co': {
-        'flags': ['"og:site_name" content="iFunny"/>', '"preconnect" href="//img.ifunny.co/'],
-        'regex': r'window.__INITIAL_STATE__ = (.*);</script>  <script>function loadScriptAsync',
+        'flags': ["gtag('config', 'UA-23094255-1');"],
+        'regex': r'window.__INITIAL_STATE__=(.+?);',
         'extract_json': True,
         'transforms': [
             json.loads,
@@ -1550,7 +1554,7 @@ schemes = {
             'id': lambda x: x['id'],
             'username': lambda x: x['nick'],
             'bio': lambda x: x['about'],
-            'image': lambda x: x['photo']['url'],
+            'image': lambda x: x['avatar']['url'],
             'follower_count': lambda x: x['num']['subscriptions'],
             'following_count': lambda x: x['num']['subscribers'],
             'post_count': lambda x: x['num']['total_posts'],
