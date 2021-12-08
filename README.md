@@ -72,3 +72,10 @@ As a Python library:
 ...and many others.
 
 Check [tests file](./tests/test_e2e.py) for extracted data examples, [schemes file](./socid_extractor/schemes.py) to check all supported sites.
+
+
+## Testing
+
+```sh
+python3 -m pytest tests/test_e2e.py -n 10  -k 'not cookies' -m 'not github_failed and not rate_limited'
+```
