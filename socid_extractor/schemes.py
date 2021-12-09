@@ -75,13 +75,14 @@ schemes = {
             'following_count': lambda x: x.get('stats', {}).get('subscribersCount'),
         }
     },
+    # TODO: rework
     'Yandex Market user profile': {
         'flags': ['MarketNode', '{"entity":"user"'],
-        'regex': r'type="application/json">({"widgets":{"@MarketNode/UserReviews".+?)</script>',
+        'regex': r'>{"widgets":{"@MarketNode/MyArticles/ArticlesGrid.+?"collections":({"publicUser":{"\d+".+?}}})}<',
         'extract_json': True,
         'transforms': [
             json.loads,
-            lambda x: list(x['collections']['user'].values())[0],
+            lambda x: list(x['publicUser'].values())[0],
             json.dumps,
         ],
         'fields': {
@@ -440,7 +441,7 @@ schemes = {
         'flags': ['OK.startupData'],
         'regex': r'path:"/(profile/)?(?P<ok_user_name_id>.+?)",state:".+?friendId=(?P<ok_id>\d+?)"',
     },
-    'Habrahabr': {
+    'Habrahabr HTML (old)': {
         'flags': ['habracdn.net'],
         'bs': True,
         'fields': {
@@ -448,6 +449,30 @@ schemes = {
             'username': lambda x: x.find('a', {'class': 'media-obj__image'}).get('href').split('/')[-2],
             'image': lambda x: 'http:' + x.find('div', {'class': 'user-info__stats'}).find('img').get('src'),
         },
+    },
+    'Habrahabr JSON': {
+        'flags': ['habrastorage.org'],
+        'regex': r'({"authorRefs":{.+?}),"viewport',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: list(x['authorRefs'].values())[0],
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x['alias'],
+            'about': lambda x: x['speciality'],
+            'birthday': lambda x: x['birthday'],
+            'gender': lambda x: x['gender'],
+            'rating': lambda x: x['rating'],
+            'karma': lambda x: x['scoreStats']['score'],
+            'fullname': lambda x: x['fullname'],
+            'is_readonly': lambda x: x['isReadonly'],
+            'location': lambda x: x['location'],
+            'image': lambda x: x['avatarUrl'],
+            'follower_count': lambda x: x.get('legacy', {}).get('followStats', {}).get('followStats'),
+            'following_count': lambda x: x.get('legacy', {}).get('followStats', {}).get('followersCount'),
+        }
     },
     # unactual
     'Twitter HTML': {
@@ -886,7 +911,7 @@ schemes = {
     },
     'TikTok': {
         'flags': ['tiktokcdn.com', '__NEXT_DATA__'],
-        'regex': r'<script id="__NEXT_DATA__" type="application/json" crossorigin="anonymous">(.+?)</script>',
+        'regex': r'<script id="__NEXT_DATA__"[^>]+>(.+?)</script>',
         'extract_json': True,
         'transforms': [
             json.loads,

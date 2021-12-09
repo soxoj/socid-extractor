@@ -109,10 +109,14 @@ def test_ok():
 def test_habr():
     info = extract(parse('https://habr.com/ru/users/m1rko/')[0])
 
-    assert info.get('uid') == '1371978'
-    assert info.get('username') == 'm1rko'
-    assert info.get('image') == 'http://habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png'
-
+    assert info.get("username") == "m1rko"
+    assert info.get("about") == "автор, переводчик, редактор"
+    assert info.get("gender") == "0"
+    assert info.get("rating") == "0"
+    assert info.get("karma") == "1236.5"
+    assert info.get("fullname") == "Анатолий Ализар"
+    assert info.get("is_readonly") == "False"
+    assert info.get("image") == "//habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png"
 
 @pytest.mark.github_failed
 def test_habr_no_image():
@@ -380,7 +384,7 @@ def test_behance():
     assert 'appreciations' in info
 
 
-@pytest.mark.github_failed
+@pytest.mark.skip(reason="non-actual, 500px requires POST requests for now")
 def test_500px():
     info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22105058632482dd2786fd5775745908dc928f537b28e28356b076522757d65c19%22%7D%7D')[0])
 
@@ -633,7 +637,7 @@ def test_pinterest_api():
     assert info.get('is_website_verified') == 'False'
     assert info.get('follower_count') == '2'
     assert info.get('group_board_count') == '0'
-    assert info.get('following_count') == '16'
+    assert 'following_count' in info
     assert info.get('board_count') == '11'
     assert int(info.get('pin_count')) > 100
 
