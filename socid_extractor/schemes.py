@@ -290,7 +290,6 @@ schemes = {
     'VK user profile foaf page': {
         'flags': ['<foaf:Person>', '<ya:publicAccess>'],
         'bs': True,
-        'parser_type': 'lxml',
         'fields': {
             'is_private': lambda x: x.find('ya:publicaccess').contents[0] == 'allowed',
             'state': lambda x: x.find('ya:profilestate').contents[0],
