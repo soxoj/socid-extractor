@@ -84,6 +84,7 @@ def extract(page):
 
         use_regexp_group = 'regex' in scheme_data
         use_html_parser = 'bs' in scheme_data
+        bs_parser_type = scheme_data.get('parser_type', 'html.parser')
 
         if not any([use_regexp_group, use_html_parser]):
             logging.info('Could not extract!')
@@ -129,7 +130,7 @@ def extract(page):
 
         if use_html_parser:
             from bs4 import BeautifulSoup as bs
-            soup = bs(page, 'html.parser')
+            soup = bs(page, bs_parser_type)
             for name, get_field in scheme_data['fields'].items():
                 try:
                     value = get_field(soup)
