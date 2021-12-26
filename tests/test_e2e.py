@@ -1163,9 +1163,9 @@ def test_vk_foaf():
 
     assert info.get("is_private") == "True"
     assert info.get("state") == "verified"
-    assert info.get("first_name") == "Павел"
-    assert info.get("last_name") == "Дуров"
-    assert info.get("fullname") == "Павел Дуров"
+    assert info.get("first_name") in ("Павел", "Pavel")
+    assert info.get("last_name") in ("Дуров", "Durov")
+    assert info.get("fullname") in ("Павел Дуров", "Pavel Durov")
     assert info.get("gender") == "male"
     assert info.get("created_at") == "2006-09-23 20:27:12+03:00"
     assert info.get("updated_at") == "2018-01-30 01:51:19+03:00"
