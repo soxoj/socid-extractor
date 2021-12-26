@@ -178,7 +178,7 @@ schemes = {
         }
     },
     'Yandex Collections API': {
-        'flags': ['board_subscriptions', 'subscriptions_on_self_boards'],
+        'flags': ['default_avatar_id', 'collections', 'is_passport'],
         'regex': r'^(.+)$',
         'extract_json': True,
         'fields': {
@@ -287,8 +287,35 @@ schemes = {
         'flags': ['yandex_bug_bounty_terms_conditions', 'user__pic'],
         'regex': r'upics\.yandex\.net\/(?P<yandex_uid>\d+)[\s\S]+<span>(?P<firstname>.+?)<\/span>\s+<em>(?P<username>.+?)<\/em>([\s\S]+?class="link">(?P<email>.+?)<\/a>)?([\s\S]+?<a href="(?P<url>.+?)" target="_blank" class="link link_social">)?',
     },
+    'VK user profile foaf page': {
+        'flags': ['<foaf:Person>', '<ya:publicAccess>'],
+        'bs': True,
+        'parser_type': 'lxml',
+        'fields': {
+            'is_private': lambda x: x.find('ya:publicaccess').contents[0] == 'allowed',
+            'state': lambda x: x.find('ya:profilestate').contents[0],
+            'first_name': lambda x: x.find('ya:firstname').contents[0],
+            'last_name': lambda x: x.find('ya:secondname').contents[0],
+            'fullname': lambda x: x.find('foaf:name').contents[0],
+            'gender': lambda x: x.find('foaf:gender').contents[0],
+            'created_at': lambda x: parse_datetime_str(x.find('ya:created').get('dc:date')),
+            'updated_at': lambda x: parse_datetime_str(x.find('ya:modified').get('dc:date')),
+            # 'following_count': lambda x: x.find('ya:subscribedToCount'),
+            # 'follower_count': lambda x: x.find('ya:friendsCount'),
+            # 'friends_count': lambda x: x.find('ya:subscribersCount'),
+            # 'image': lambda x: x.find('foaf:Image'),
+            'website': lambda x: x.find('foaf:homepage').contents[0],
+            # 'links': lambda x: x.find('foaf:externalProfile'),
+        },
+    },
     'VK user profile': {
         'flags': ['Profile.init({', 'change_current_info'],
+        'url_mutations': [
+            {
+                'from': r'https?://.*?vk.com/id(?P<vk_id>[^/]+)',
+                'to': 'https://vk.com/foaf.php?id={vk_id}',
+            }
+        ],
         'regex': r'Profile\.init\({"user_id":(?P<vk_id>\d+).*?(,"loc":"(?P<vk_username>.*?)")?,"back":"(?P<fullname>.*?)"'
     },
     'VK closed user profile': {
@@ -409,7 +436,7 @@ schemes = {
             'fullname': lambda x: x['fullname'],
             'bio': lambda x: x['description'],
             'follower_count': lambda x: x['totalFollowers'],
-            'friends': lambda x: x['totalFriends'],
+            'friends_count': lambda x: x['totalFriends'],
             'liked_photos': lambda x: x['totalLikedPhotos'],
             'photos': lambda x: x['totalPhotos'],
             'facebook_uid': lambda x: extract_facebook_uid(x['thumbUrl'])
