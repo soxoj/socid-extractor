@@ -876,7 +876,7 @@ def test_disqus_api():
 
     assert info.get('id') == '1593'
     assert info.get('fullname') == 'margaret'
-    assert info.get('reputation') == '1.231755'
+    assert float(info.get('reputation')) > 1
     assert info.get('reputation_label') == 'Average'
     assert info.get('following_count') == '0'
     assert info.get('follower_count') == '0'
