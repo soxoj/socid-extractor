@@ -230,7 +230,7 @@ def test_github_api():
     assert 'public_gists_count' in info
     assert 'public_repos_count' in info
     assert info.get('bio') == 'dev, infosec, osint'
-    assert info.get('blog_url') == 'https://t.me/s/osint_mindset'
+    assert info.get('blog_url') == 'https://www.patreon.com/soxoj'
 
 
 def test_yandex_disk_photos():
@@ -583,7 +583,7 @@ def test_eyeem():
     assert info.get('fullname') == 'Blue Lee'
     assert info.get('bio') == 'hello!^_^'
     assert info.get('follower_count') == '8'
-    assert info.get('friends') == '0'
+    assert info.get('friends_count') == '0'
     assert info.get('liked_photos') == '0'
     assert info.get('photos') == '3'
     assert info.get('facebook_uid') == '1610716256'
@@ -851,6 +851,7 @@ def test_xakep():
     assert info.get('gravatar_email_md5_hash') == 'b1859c813547de1bba3c65bc4b1a217c'
 
 
+@pytest.mark.skip(reason="no more author pages for now")
 def test_tproger():
     info = extract(parse('https://tproger.ru/author/NickPrice/')[0])
 
@@ -1156,3 +1157,16 @@ def test_pr0gramm():
     assert int(info.get("tagCount")) >= 22900
     assert info.get("likesArePublic") == "False"     
 
+
+def test_vk_foaf():
+    info = extract(parse('https://vk.com/foaf.php?id=1')[0])
+
+    assert info.get("is_private") == "True"
+    assert info.get("state") == "verified"
+    assert info.get("first_name") in ("Павел", "Pavel")
+    assert info.get("last_name") in ("Дуров", "Durov")
+    assert info.get("fullname") in ("Павел Дуров", "Pavel Durov")
+    assert info.get("gender") == "male"
+    assert info.get("created_at") == "2006-09-23 20:27:12+03:00"
+    assert info.get("updated_at") == "2018-01-30 01:51:19+03:00"
+    assert info.get("website") == "http://t.me/durov"
