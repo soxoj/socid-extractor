@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.0.23] - 2022-01-02
+* Accelerated module import time by @soxoj in https://github.com/soxoj/socid-extractor/pull/104
+* Reddit, Twitch and Last.fm fixes by @soxoj in https://github.com/soxoj/socid-extractor/pull/105
+* September update by @cyb3rk0tik in https://github.com/soxoj/socid-extractor/pull/106
+* Bump pytest-xdist from 2.2.1 to 2.4.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/107
+* Bump pytest-rerunfailures from 9.1.1 to 10.2 by @dependabot in https://github.com/soxoj/socid-extractor/pull/108
+* Tests fixes by @soxoj in https://github.com/soxoj/socid-extractor/pull/109
+* Fixes by @soxoj in https://github.com/soxoj/socid-extractor/pull/110
+* Bump pytest-xdist from 2.4.0 to 2.5.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/111
+* Added VK foaf page check by @soxoj in https://github.com/soxoj/socid-extractor/pull/113
+* Update beautifulsoup4 requirement from ~=4.9.1 to ~=4.10.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/114
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.22...v0.0.23
+
 ## [0.0.22] - 2021-06-23
 * added Tinder, Disqus API and ifunny.co
 * fixed Twitter scraping from CLI
