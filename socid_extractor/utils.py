@@ -58,17 +58,23 @@ def enrich_link(html_url):
         fixed_url = 'https://' + fixed_url
     return fixed_url
 
+
 # support timestamp with milliseconds
 # coming to common UTC timezone with print it
-def timestamp_to_datetime(t):
+def parse_datetime(t):
     if not t:
         return ''
     elif len(str(t)) < 10:
-        t = math.floor(datetime.today().timestamp()) - t        
+        t = math.floor(datetime.today().timestamp()) - t
+
+    if len(str(t)) == 10 and not '-' in str(t):
+        return datetime.fromtimestamp(int(t), tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
+    elif len(str(t)) == 10 and '-' in str(t):
+        return datetime.strptime(t, '%Y-%m-%d').strftime('%Y-%m-%d %H:%M:%S %Z')
     elif len(str(t)) == 13:
         return datetime.fromtimestamp(float(t)/ 1000.0, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S.{} %Z'.format(str(t)[-3:]))
     
-    return datetime.fromtimestamp(int(t), tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
+    return t
   
 
 def extract_digits(text):
