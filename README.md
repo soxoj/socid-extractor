@@ -84,3 +84,7 @@ You can also check [tests file](https://github.com/soxoj/socid-extractor/blob/ma
 ```sh
 python3 -m pytest tests/test_e2e.py -n 10  -k 'not cookies' -m 'not github_failed and not rate_limited'
 ```
+
+## Contributing
+
+Check [separate page](https://github.com/soxoj/socid-extractor/blob/master/CONTRIBUTING.md) if you want to add a new methods of fix anything.
