@@ -6,6 +6,7 @@ from socid_extractor.main import parse, extract, mutate_url, HEADERS
 
 
 def test_vk_user_profile_full():
+    """VK user profile"""
     info = extract(parse('https://vk.com/idsvyatoslavs')[0])
 
     assert info.get('vk_id') == '134173165'
@@ -14,6 +15,10 @@ def test_vk_user_profile_full():
 
 
 def test_vk_user_profile_no_username():
+    """
+    VK user profile
+    VK user profile foaf page
+    """
     info = extract(parse('https://vk.com/id568161939')[0])
 
     assert info.get('vk_id') == '568161939'
@@ -22,12 +27,14 @@ def test_vk_user_profile_no_username():
 
 
 def test_vk_closed_user_profile():
+    """VK user profile"""
     info = extract(parse('https://vk.com/alex')[0])
 
     assert info.get('fullname') in ('Александр Чудаев', 'Alexander Chudaev')
 
 
 def test_vk_blocked_user_profile():
+    """VK user profile"""
     headers = {'User-Agent': 'Curl'}
     info = extract(parse('https://vk.com/alexaimephotography', headers=headers)[0])
 
@@ -35,6 +42,7 @@ def test_vk_blocked_user_profile():
 
 
 def test_yandex_disk():
+    """Yandex Disk file"""
     info = extract(parse('https://yadi.sk/d/xRJFp3s2QWYv8')[0])
 
     assert info.get('yandex_uid') == '225171618'
@@ -43,6 +51,7 @@ def test_yandex_disk():
 
 @pytest.mark.rate_limited
 def test_yandex_reviews():
+    """Yandex Reviews user profile"""
     info = extract(parse('https://reviews.yandex.ru/user/1a7dv00dqrdgjf6qkyn8kw37jw')[0])
 
     assert info.get('yandex_public_id') == '1a7dv00dqrdgjf6qkyn8kw37jw'
@@ -56,19 +65,30 @@ def test_yandex_reviews():
 
 @pytest.mark.github_failed
 def test_instagram():
+    """
+    Instagram
+    Instagram page JSON
+    """
     URLs = [
-        'https://www.instagram.com/alexaimephotography/',
-        'https://www.instagram.com/alexaimephotography/?__a=1',
+        'https://www.instagram.com/zhanna/',
+        'https://www.instagram.com/zhanna/?__a=1',
     ]
     for url in URLs:
         info = extract(parse(url, headers=HEADERS)[0])
+        print(info)
 
-        assert info.get('id') == '6828488620'
-        assert info.get('username') == 'alexaimephotography'
-        assert info.get('fullname') == 'Alexaimephotography'
-        assert info.get('facebook_uid') == '17841406738613561'
-        assert info.get('is_private') == 'False'
-        assert info.get('is_verified') == 'False'
+        assert info.get("username") == "zhanna"
+        assert info.get("fullname") == "Zhanna Shamis"
+        assert info.get("id") == "105153"
+        assert info.get("image") == "https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/11375383_434870180034484_1429353554_a.jpg?_nc_ht=scontent-hel3-1.cdninstagram.com&_nc_cat=104&_nc_ohc=25Ow2Br6xhwAX-ybdqd&edm=ABfd0MgBAAAA&ccb=7-4&oh=00_AT8c23cG3e2dwhT52s6pARMj_4Jhi9v7UWTt93jFJxNSyA&oe=61DE93D1&_nc_sid=7bff83"
+        assert info.get("external_url") == "http://twitter.com/zhanna"
+        assert info.get("facebook_uid") == "17841401234590001"
+        assert info.get("is_business") == "False"
+        assert info.get("is_joined_recently") == "False"
+        assert info.get("is_private") == "False"
+        assert info.get("is_verified") == "False"
+        assert "follower_count" in info
+        assert "following_count" in info
 
 
 @pytest.mark.github_failed
@@ -94,7 +114,7 @@ def test_medium():
     assert info.get('is_suspended') == 'False'
 
 
-def test_ok():
+def test_odnoklassniki():
     info = extract(parse('https://ok.ru/profile/46054003')[0])
 
     assert info.get('ok_id') == '46054003'
@@ -107,6 +127,7 @@ def test_ok():
 
 @pytest.mark.github_failed
 def test_habr():
+    """Habrahabr JSON"""
     info = extract(parse('https://habr.com/ru/users/m1rko/')[0])
 
     assert info.get("username") == "m1rko"
@@ -120,6 +141,7 @@ def test_habr():
 
 @pytest.mark.github_failed
 def test_habr_no_image():
+    """Habrahabr JSON"""
     info = extract(parse('https://habr.com/ru/users/ne555/')[0])
 
     assert info.get('uid') == '1800409'
@@ -271,6 +293,7 @@ def test_my_mail_communities():
 
 @pytest.mark.skip(reason="captcha")
 def test_yandex_music_user_profile():
+    """Yandex Music AJAX request"""
     headers = {'referer': 'https://music.yandex.ru/users/pritisk/playlists'}
     info = extract(parse('https://music.yandex.ru/handlers/library.jsx?owner=pritisk', headers=headers)[0])
 
@@ -301,6 +324,7 @@ def test_yandex_zen_user_profile():
 
 
 def test_yandex_o_user_profile():
+    """Yandex O"""
     info = extract(parse('https://o.yandex.ru/profile/9q4zmvn5437umdqqyge3tp3vpr/')[0])
 
     assert info.get('yandex_public_id') == '9q4zmvn5437umdqqyge3tp3vpr'
@@ -386,6 +410,7 @@ def test_behance():
 
 @pytest.mark.skip(reason="non-actual, 500px requires POST requests for now")
 def test_500px():
+    """500px GraphQL API"""
     info = extract(parse('https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22105058632482dd2786fd5775745908dc928f537b28e28356b076522757d65c19%22%7D%7D')[0])
 
     assert info.get('uid') == 'dXJpOm5vZGU6VXNlcjoyMzg5Ng=='
@@ -401,6 +426,7 @@ def test_500px():
 
 
 def test_google_documents():
+    """Google Document API"""
     URL = 'https://docs.google.com/spreadsheets/d/1HtZKMLRXNsZ0HjtBmo0Gi03nUPiJIA4CC4jTYbCAnXw/edit#gid=0'
     info = extract(parse(URL)[0])
 
@@ -453,6 +479,7 @@ def test_steam_hidden():
     assert info.get('nickname') == 'Elvoc'
 
 
+@pytest.mark.requires_cookies
 def test_yandex_realty_offer_cookies():
     cookies = open('yandex.test.cookies').read()
     info = extract(parse('https://realty.yandex.ru/offer/363951114410351104/', cookies)[0])
@@ -461,6 +488,7 @@ def test_yandex_realty_offer_cookies():
     assert info.get('name') == 'Севостьянова Мария Владимировна'
 
 
+@pytest.mark.requires_cookies
 def test_gitlab_cookies():
     cookies = open('gitlab.test.cookies').read()
     info = extract(parse('https://gitlab.com/markglenfletcher', cookies)[0])
@@ -635,8 +663,8 @@ def test_pinterest_api():
     assert info.get('website') == 'https://plus.google.com/106803550602898494752'
     assert info.get('last_pin_save_datetime') is not None
     assert info.get('is_website_verified') == 'False'
-    assert info.get('follower_count') == '2'
     assert info.get('group_board_count') == '0'
+    assert 'follower_count' in info
     assert 'following_count' in info
     assert info.get('board_count') == '11'
     assert int(info.get('pin_count')) > 100
@@ -758,7 +786,7 @@ def test_telegram():
     assert 'image' in info
 
 
-def test_mssg():
+def test_mssg_me():
     info = extract(parse('https://mssg.me/mr.adam')[0])
 
     assert info.get('fullname') == 'Mr.Adam'
@@ -852,7 +880,7 @@ def test_xakep():
 
 
 @pytest.mark.skip(reason="no more author pages for now")
-def test_tproger():
+def test_tproger_ru():
     info = extract(parse('https://tproger.ru/author/NickPrice/')[0])
 
     assert info.get('fullname') == 'Никита Прияцелюк'
@@ -989,6 +1017,7 @@ def test_freelancer():
 
 
 def test_yelp_username():
+    """Yelp"""
     info = extract(parse('http://dima.yelp.com')[0])
 
     assert info.get('yelp_userid') == 'b_a5icXGK-AXVYZKehgKLw'
@@ -998,6 +1027,7 @@ def test_yelp_username():
 
 
 def test_yelp_userid():
+    """Yelp"""
     info = extract(parse('https://www.yelp.com/user_details?userid=b_a5icXGK-AXVYZKehgKLw')[0])
 
     assert info.get('yelp_userid') == 'b_a5icXGK-AXVYZKehgKLw'
@@ -1007,6 +1037,7 @@ def test_yelp_userid():
 
 
 def test_trello():
+    """Trello API"""
     info = extract(parse('https://trello.com/1/Members/xFubuki')[0])
 
     assert info.get("id") == "5e78cae55d711a6382e239c1"
@@ -1018,6 +1049,7 @@ def test_trello():
 
 
 @pytest.mark.github_failed
+@pytest.mark.requires_cookies
 def test_weibo():
     headers = {"cookie": "SUB=_2AkMXyuc_f8NxqwJRmP8SyWPrbo13zAvEieKhlhbkJRMxHRl-123", "cache-control": "no-cache"}
     info = extract(parse('https://weibo.com/clairekuo?is_all=1', headers=headers, timeout=10)[0])
@@ -1059,7 +1091,7 @@ def test_tinder():
     assert 'https://images-ssl.gotinder.com/5f4b5bc57f87b00100caa6f9/original_42294ebf-cbcc-42a4-9f6b-71ba9234c237.jpeg' in images_list
 
 
-def test_ifunny():
+def test_ifunny_co():
     info = extract(parse('https://ifunny.co/user/CuddleKinnz')[0])
 
     assert info.get("id") == "5ab1fd49a2cf59ac948b456e"
@@ -1076,7 +1108,7 @@ def test_ifunny():
     assert info.get("is_verified") == "False"
 
 
-def test_wattpad():
+def test_wattpad_api():
     # https://wattpad.com/user/JeniferBalanzar
     info = extract(parse('https://www.wattpad.com/api/v3/users/JeniferBalanzar')[0])
     
@@ -1101,7 +1133,7 @@ def test_kik():
     assert info.get("image") == "http://profilepics.cf.kik.com/QUwticPE8XU7qm7qrTXbWgCfSu4/orig.jpg"
   
     
-def test_dockerub():
+def test_docker_hub_api():
     # https://hub.docker.com/u/adastra2ankudinov
     info = extract(parse('https://hub.docker.com/v2/users/adastra2ankudinov/')[0])
     
@@ -1111,7 +1143,7 @@ def test_dockerub():
     assert info.get("image") == "https://secure.gravatar.com/avatar/410bf05a8e85652a6b174d627dce4e3d.jpg?s=80&r=g&d=mm"  
     
     
-def test_mixcloud():
+def test_mixcloud_api():
     # https://www.mixcloud.com/savath69/
     info = extract(parse('https://api.mixcloud.com/savath69/')[0])
 
@@ -1130,7 +1162,7 @@ def test_mixcloud():
     assert info.get("is_premium") == "False"    
    
     
-def test_binarysearch():
+def test_binarysearch_api():
     info = extract(parse('https://binarysearch.com/api/users/LarryNY/profile')[0])
 
     assert int(info.get("uid")) >= 10435
@@ -1146,7 +1178,7 @@ def test_binarysearch():
     assert info.get("InviteOnly") == "False" 
     
 
-def test_pr0gramm():
+def test_pr0gramm_api():
     # https://pr0gramm.com/user/TheBorderCrash
     info = extract(parse('https://pr0gramm.com/api/profile/info?name=TheBorderCrash')[0])
 
@@ -1159,6 +1191,7 @@ def test_pr0gramm():
 
 
 def test_vk_foaf():
+    """VK user profile foaf page"""
     info = extract(parse('https://vk.com/foaf.php?id=1')[0])
 
     assert info.get("is_private") == "True"
@@ -1170,3 +1203,18 @@ def test_vk_foaf():
     assert info.get("created_at") == "2006-09-23 20:27:12+03:00"
     assert info.get("updated_at") == "2018-01-30 01:51:19+03:00"
     assert info.get("website") == "http://t.me/durov"
+
+
+def test_aparat_api():
+    info = extract(parse('https://www.aparat.com/api/fa/v1/user/user/information/username/BoHBiG')[0])
+
+    assert info.get("uid") == "3935310"
+    assert info.get("username") == "BoHBiG"
+    assert info.get("fullname") == "عمو بیگ"
+    assert info.get("image") == "https://static.cdn.asset.aparat.com/profile-photo/3935310-182645-b.jpg"
+    assert 'follower_count' in info
+    assert 'following_count' in info
+    assert info.get("is_banned") == "False"
+    assert info.get("links") == "['https://sibmo.ir/bigmj', 'http://www.telegram.me/amobig', 'http://www.instagram.com/amobigstream']"
+    assert 'video_count' in info
+    assert info.get("bio") == "چنل تلگرام:\r\nhttps://t.me/amobig"
