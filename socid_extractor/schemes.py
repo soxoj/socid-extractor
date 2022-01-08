@@ -105,7 +105,7 @@ schemes = {
         }
     },
     'Gitlab API': {
-        'flags': ['"web_url":"https://gitlab.com/'],
+        'flags': ['{"status":{"code":0,"name":"OK"}'],
         'regex': r'^([{[\S\s]+?}])$',
         'extract_json': True,
         'url_mutations': [
@@ -1054,13 +1054,19 @@ schemes = {
         }
     },
     'Keybase API': {
-        'flags': ['{"status":{"code":0,"name":"OK"},"them":'],
+        'flags': ['{"status":{"code":0,"name":"OK"},"them"'],
         'regex': r'^(.+?"them":\[{.+?}\]})$',
+        'url_mutations': [
+            {
+                'from': r'https?://keybase.io/(?P<username>[^/]+)/?',
+                'to': 'https://keybase.io/_/api/1.0/user/lookup.json?usernames={username}',
+            }
+        ],
         'extract_json': True,
         'fields': {
             'uid': lambda x: x['them'][0]['id'],
             'username': lambda x: x['them'][0]['basics']['username'],
-            'name': lambda x: x['them'][0].get('profile', {}).get('full_name'),
+            'fullname': lambda x: x['them'][0].get('profile', {}).get('full_name'),
             'location': lambda x: x['them'][0].get('profile', {}).get('location'),
             'bio': lambda x: x['them'][0].get('profile', {}).get('bio'),
             'twitter_username': lambda x: x['them'][0]['proofs_summary']['by_presentation_group'].get('twitter', [{}])[
@@ -1071,6 +1077,7 @@ schemes = {
                 0].get('nametag'),
             'hackernews_username': lambda x:
             x['them'][0]['proofs_summary']['by_presentation_group'].get('hackernews', [{}])[0].get('nametag'),
+            'image': lambda x: x['them'][0]['pictures']['primary']['url'],
         }
     },
     'Wikimapia': {
@@ -1541,7 +1548,7 @@ schemes = {
         ],
         'fields': {
             'id': lambda x: x['id'],
-            'imgur_username': lambda x: x['username'],
+            'username': lambda x: x['username'],
             'bio': lambda x: x['bio'],
             'reputation_count': lambda x: x['reputation_count'],
             'reputation_name': lambda x: x['reputation_name'],
@@ -1617,7 +1624,7 @@ schemes = {
         }
     },
     'Wattpad API': {
-        'flags': ['{"username":"'],
+        'flags': ['"deeplink":"https:\/\/www.wattpad.com\/'],
         'regex': r'^({"username":"(.+)})$',
         'extract_json': True,
         'url_mutations': [

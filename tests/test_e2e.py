@@ -495,6 +495,14 @@ def test_gitlab_cookies():
 
     assert info.get('uid') == '419655'
 
+def test_gitlab_api():
+    info = extract(parse('https://gitlab.com/markglenfletcher')[0])
+
+    assert info.get('uid') == '9267274'
+    assert info.get('fullname') == 'Oliver Heimlich'
+    assert info.get('username') == 'oheim'
+    assert info.get('state') == 'active'
+    assert info.get('image') == 'https://secure.gravatar.com/avatar/ce28fcc9a7b38097e6453f832ccdafea?s=80&d=identicon'
 
 @pytest.mark.skip(reason='Failed in GitHub CI')
 def test_blogger():
@@ -723,6 +731,21 @@ def test_yandex_collections_api():
     assert info.get('is_km') == 'False'
     assert info.get('is_business') == 'False'
 
+def test_yandex_collections():
+    info = extract(parse('https://yandex.com/collections/user/n4951prqtb0j5k7g9g8g1dzy24')[0])
+
+    assert info.get('id') == '58e522fab47883ceee7e801b'
+    assert info.get('yandex_public_id') == 'n4951prqtb0j5k7g9g8g1dzy24'
+    assert info.get('fullname') == 'Марина И.'
+    assert info.get('image') == 'https://avatars.mds.yandex.net/get-yapic/32838/Gn9RuSqL6fKIGxSGwUSVlkkk-1/islands-200'
+    assert info.get('gender') == 'f'
+    assert info.get('cards') == '10'
+    assert info.get('boards') == '1'
+    assert info.get('is_passport') == 'True'
+    assert info.get('is_restricted') == 'False'
+    assert info.get('is_forbid') == 'False'
+    assert info.get('is_km') == 'False'
+    assert info.get('is_business') == 'False' 
 
 @pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_yandex_market():
@@ -1218,3 +1241,34 @@ def test_aparat_api():
     assert info.get("links") == "['https://sibmo.ir/bigmj', 'http://www.telegram.me/amobig', 'http://www.instagram.com/amobigstream']"
     assert 'video_count' in info
     assert info.get("bio") == "چنل تلگرام:\r\nhttps://t.me/amobig"
+
+def test_keybase_api():
+    info = extract(parse('https://keybase.io/indero')[0])
+
+    assert info.get("uid") == "158544cb9b0ceca3aeb24cc48ca23b19"
+    assert info.get("username") == "indero"
+    assert info.get("fullname") == "Daniel Steudler"
+    assert info.get("location") == "Zürich"
+    assert info.get("twitter_username") == "indero"
+    assert info.get("github_username") == "indero"
+    assert info.get("image") == "https://s3.amazonaws.com/keybase_processed_uploads/2e7c265715904d24a14959ccef893e05_360_360.jpg"
+
+def test_imgur_api():
+    info = extract(parse('https://imgur.com/user/Helloitsmeme')[0])
+
+    assert info.get("id") == "16485831"
+    assert info.get("reputation_count") == "188461"
+    assert info.get("reputation_name") == "Glorious"
+    assert info.get("image") == "https://i.imgur.com/4OWU33a_d.png?maxwidth=290&fidelity=grand"
+    assert info.get("created_at") == "2014-12-09T19:12:06Z"
+
+def test_paypal():
+    info = extract(parse('https://www.paypal.com/paypalme/sergionG')[0])
+
+    assert info.get("fullname") == "Red Mutuca Studios"
+    assert info.get("alternative_fullname") == "Red Mutuca Studios"
+    assert info.get("username") == "sergiong"
+    assert info.get("payerId") == "3D6VCAZC2YYCC"
+    assert info.get("isProfileStatusActive") == "True"
+    assert info.get("primaryCurrencyCode") == "USD"
+    assert info.get("image") == "https://pics.paypal.com/00/s/MTI4MFgxMjgwWFBORw/p/YWUwMWE1MWUtYTZhZC00ZGE3LTk2YmQtZjE4NzkyMmE5N2Mz/image_58.jpg"
