@@ -27,8 +27,8 @@
 22 | Yandex messenger profile API |  |  |
 23 | Yandex Bugbounty user profile |  |  |
 24 | Yandex O | [yandex_o_user_profile](https://github.com/soxoj/socid-extractor/search?q=test_yandex_o_user_profile) |  |
-25 | VK user profile foaf page | [vk_foaf](https://github.com/soxoj/socid-extractor/search?q=test_vk_foaf), [vk_user_profile_no_username](https://github.com/soxoj/socid-extractor/search?q=test_vk_user_profile_no_username) | ,  |
-26 | VK user profile | [vk_blocked_user_profile](https://github.com/soxoj/socid-extractor/search?q=test_vk_blocked_user_profile), [vk_closed_user_profile](https://github.com/soxoj/socid-extractor/search?q=test_vk_closed_user_profile), [vk_user_profile_full](https://github.com/soxoj/socid-extractor/search?q=test_vk_user_profile_full), [vk_user_profile_no_username](https://github.com/soxoj/socid-extractor/search?q=test_vk_user_profile_no_username) | , , ,  |
+25 | VK user profile foaf page | [vk_foaf](https://github.com/soxoj/socid-extractor/search?q=test_vk_foaf), [vk_user_profile_no_username](https://github.com/soxoj/socid-extractor/search?q=test_vk_user_profile_no_username) |  |
+26 | VK user profile | [vk_blocked_user_profile](https://github.com/soxoj/socid-extractor/search?q=test_vk_blocked_user_profile), [vk_closed_user_profile](https://github.com/soxoj/socid-extractor/search?q=test_vk_closed_user_profile), [vk_user_profile_full](https://github.com/soxoj/socid-extractor/search?q=test_vk_user_profile_full), [vk_user_profile_no_username](https://github.com/soxoj/socid-extractor/search?q=test_vk_user_profile_no_username) |  |
 27 | VK closed user profile |  |  |
 28 | VK blocked user profile |  |  |
 29 | Gravatar | [gravatar](https://github.com/soxoj/socid-extractor/search?q=test_gravatar) |  |
@@ -44,7 +44,7 @@
 39 | My Mail.ru |  |  |
 40 | Behance | [behance](https://github.com/soxoj/socid-extractor/search?q=test_behance) |  |
 41 | Blogger | [blogger](https://github.com/soxoj/socid-extractor/search?q=test_blogger) | Failed in GitHub CI |
-42 | D3.ru |  |  |
+42 | D3.ru | [d3](https://github.com/soxoj/socid-extractor/search?q=test_d3) |  |
 43 | Gitlab |  |  |
 44 | 500px GraphQL API | [500px](https://github.com/soxoj/socid-extractor/search?q=test_500px) | non-actual, 500px requires POST requests for now |
 45 | Google Document API | [google_documents](https://github.com/soxoj/socid-extractor/search?q=test_google_documents) |  |
@@ -87,7 +87,7 @@
 82 | uID.me |  |  |
 83 | tapd | [tapd](https://github.com/soxoj/socid-extractor/search?q=test_tapd) |  |
 84 | freelancer.com |  |  |
-85 | Yelp | [yelp_userid](https://github.com/soxoj/socid-extractor/search?q=test_yelp_userid), [yelp_username](https://github.com/soxoj/socid-extractor/search?q=test_yelp_username) | ,  |
+85 | Yelp | [yelp_userid](https://github.com/soxoj/socid-extractor/search?q=test_yelp_userid), [yelp_username](https://github.com/soxoj/socid-extractor/search?q=test_yelp_username) |  |
 86 | Trello API | [trello](https://github.com/soxoj/socid-extractor/search?q=test_trello) |  |
 87 | Weibo | [weibo](https://github.com/soxoj/socid-extractor/search?q=test_weibo) | cookies are required to get content, requests from GitHub Actions CI servers are blocked |
 88 | ICQ | [icq](https://github.com/soxoj/socid-extractor/search?q=test_icq) |  |
@@ -105,4 +105,4 @@
 100 | pr0gramm API | [pr0gramm_api](https://github.com/soxoj/socid-extractor/search?q=test_pr0gramm_api) |  |
 101 | Aparat API | [aparat_api](https://github.com/soxoj/socid-extractor/search?q=test_aparat_api) |  |
 
-The table was updated at 2022-01-06 17:00:56.328459 UTC
+The table has been updated at 2022-05-02 16:48:12.900875 UTC

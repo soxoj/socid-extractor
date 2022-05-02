@@ -110,8 +110,10 @@ def test_medium():
     assert info.get('medium_id') == '4894fec6b289'
     assert info.get('medium_username') == 'lys1n'
     assert info.get('fullname') == 'Марк Лясин'
-    assert info.get('twitter_username') == 'lys1n'
+    # assert info.get('twitter_username') == 'lys1n'
     assert info.get('is_suspended') == 'False'
+    assert 'follower_count' in info
+    assert 'following_count' in info
 
 
 def test_odnoklassniki():
@@ -505,9 +507,10 @@ def test_blogger():
 
 
 def test_d3():
-    info = extract(parse('https://d3.ru/user/deer00hunter')[0])
+    """D3.ru"""
+    info = extract(parse('https://d3.ru/user/nomad62')[0])
 
-    assert info.get('uid') == '75504'
+    assert info.get('uid') == '126836'
 
 
 @pytest.mark.skip(reason="broken")
@@ -1043,9 +1046,9 @@ def test_trello():
     assert info.get("id") == "5e78cae55d711a6382e239c1"
     assert info.get("username") == "xfubuki"
     assert info.get("fullname") == "xFubuki"
-    assert info.get("image") == "https://trello-members.s3.amazonaws.com/5e78cae55d711a6382e239c1/d9c5264e657de6175f14a9067126873f/170.png"
     assert info.get("type") == "normal"
     assert info.get("is_verified") == "True"
+    assert 'image' in info
 
 
 @pytest.mark.github_failed
@@ -1077,18 +1080,17 @@ def test_pastebin():
 
 
 def test_tinder():
-    info = extract(parse('https://tinder.com/@john_mclean')[0])
+    info = extract(parse('https://tinder.com/@john')[0])
 
-    assert info.get("tinder_username") == "john_mclean"
-    assert info.get("birth_date").startswith("19")
-    assert info.get("id") == "5f4b5bc57f87b00100caa6f9"
-    assert info.get("badges_list") == "['selfie_verified']"
-    assert info.get("position_held") == "Something something consultant"
-    assert info.get("fullname") == "John"
-    assert info.get("image") == "https://images-ssl.gotinder.com/5f4b5bc57f87b00100caa6f9/original_819f94bd-b1d8-4946-a9bf-ab9a3ced1ff0.jpeg"
+    assert info.get("tinder_username") == "john"
+    assert info.get("birth_date").startswith("2000")
+    assert info.get("id") == "60c40ff58fb9ce01006d74ce"
+    assert info.get("fullname") == "Mamk"
+    assert eval(info.get("education"))[0] == "Mokpo National Maritime University"
+    assert info.get("image") == "https://images-ssl.gotinder.com/60c40ff58fb9ce01006d74ce/original_30e5c835-c34f-447b-b346-8b539e7a7e07.jpeg"
 
     images_list = eval(info.get("images"))
-    assert 'https://images-ssl.gotinder.com/5f4b5bc57f87b00100caa6f9/original_42294ebf-cbcc-42a4-9f6b-71ba9234c237.jpeg' in images_list
+    assert 'https://images-ssl.gotinder.com/60c40ff58fb9ce01006d74ce/original_30e5c835-c34f-447b-b346-8b539e7a7e07.jpeg' in images_list
 
 
 def test_ifunny_co():
