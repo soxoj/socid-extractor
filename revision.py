@@ -92,13 +92,13 @@ def revision():
 				f'[{t["test"]}]({test_url_search.format(t["test"])})'
 				for t in tests
 			]
-			notes = [", ".join(t['notes']) for t in tests]
+			notes = [", ".join(t['notes']) for t in tests if t['notes']]
 			if not tests:
 				methods_without_tests.append(m)
 
 			f.write(f'{i} | {m} | {", ".join(tests_links)} | {", ".join(notes)} |\n')
 
-		f.write(f'\nThe table was updated at {datetime.utcnow()} UTC\n')
+		f.write(f'\nThe table has been updated at {datetime.utcnow()} UTC\n')
 
 	print(f'Total {len(m)} methods, {len(methods_without_tests)} without tests: ')
 	print(methods_without_tests)
