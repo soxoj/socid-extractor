@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.0.24] - 2023-07-07
+* Added aparat.com, added list of methods by @soxoj in https://github.com/soxoj/socid-extractor/pull/116
+* Bump pytest from 6.2.5 to 7.1.2 by @dependabot in https://github.com/soxoj/socid-extractor/pull/126
+* Update beautifulsoup4 requirement from ~=4.10.0 to ~=4.11.1 by @dependabot in https://github.com/soxoj/socid-extractor/pull/125
+* Some tests and TikTok parsing fixed by @soxoj in https://github.com/soxoj/socid-extractor/pull/127
+* Added UnstoppableDomains parser for Maigret by @soxoj in https://github.com/soxoj/socid-extractor/pull/154
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.23...v0.0.24
+
 ## [0.0.23] - 2022-01-02
 * Accelerated module import time by @soxoj in https://github.com/soxoj/socid-extractor/pull/104
 * Reddit, Twitch and Last.fm fixes by @soxoj in https://github.com/soxoj/socid-extractor/pull/105
