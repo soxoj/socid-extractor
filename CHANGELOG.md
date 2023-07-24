@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.0.24] - 2023-07-24
+* Added memory.lol by @soxoj in https://github.com/soxoj/socid-extractor/pull/156
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.24...v0.0.25
+
 ## [0.0.24] - 2023-07-07
 * Added aparat.com, added list of methods by @soxoj in https://github.com/soxoj/socid-extractor/pull/116
 * Bump pytest from 6.2.5 to 7.1.2 by @dependabot in https://github.com/soxoj/socid-extractor/pull/126
