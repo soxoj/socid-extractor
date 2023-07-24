@@ -1220,3 +1220,10 @@ def test_aparat_api():
     assert info.get("links") == "['https://sibmo.ir/bigmj', 'http://www.telegram.me/amobig', 'http://www.instagram.com/amobigstream']"
     assert 'video_count' in info
     assert info.get("bio") == "چنل تلگرام:\r\nhttps://t.me/amobig"
+
+
+def test_memory_lol():
+    info = extract(parse('https://api.memory.lol/v1/tw/libsoftiktok')[0])
+
+    assert info.get("id") == "1326229737551912960"
+    assert info.get("known_usernames") == "['shaya69830552', 'shaya_ray', 'chayaraichik', 'chayathepatriot', 'cuomomustgo', 'houseplantpotus', 'libsoftiktok']"
