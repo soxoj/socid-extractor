@@ -1799,5 +1799,24 @@ schemes = {
             'bio': lambda x: x['data']['attributes']['description'],
             'created_at': lambda x: parse_datetime(x['data']['attributes']['start_date']),
         }
+    },
+    'UnstoppableDomains': {
+        'flags': ['reservedForUserId', 'DomainProduct'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x['searchQuery'],
+            'registered_domains': lambda x: [i["productCode"] for i in x["exact"] if i["status"] == "registered"],
+            'protected_domains': lambda x: [i["productCode"] for i in x["exact"] if i["status"] == "protected"],
+        }
+    },
+    'memory.lol': {
+        'flags': ['{"accounts":[{'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'fields': {
+            'id': lambda x: x['accounts'][0]['id'],
+            'known_usernames': lambda x: [i for i in x['accounts'][0]['screen_names']],
+        }
     }
 }
