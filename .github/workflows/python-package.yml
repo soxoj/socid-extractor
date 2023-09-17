@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v2
@@ -33,6 +33,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pip install pytest==6.0.1 pytest-rerunfailures
+        pip install pytest==6.2.5 pytest-rerunfailures
         # do not run tests required auth with secrets
         pytest -k 'not cookies' -m 'not github_failed and not rate_limited' --reruns 3 --reruns-delay 30
