@@ -1,0 +1,6 @@
+# Netscape HTTP Cookie File
+# http://curl.haxx.se/rfc/cookie_spec.html
+# This is a generated file!  Do not edit.
+
+gitlab.com	FALSE	/	TRUE	1696973087	_gitlab_session	848e02114726c0f83a81b87b75f1bebf
+.gitlab.com	TRUE	/	TRUE	0	_cfuvid	5JXGXtPNNj9PCnfvziOCPtPVZYGnVTk6VwM4CL294Fc-1696965773700-0-604800000
