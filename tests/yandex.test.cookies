@@ -1,0 +1,20 @@
+# Netscape HTTP Cookie File
+# http://curl.haxx.se/rfc/cookie_spec.html
+# This is a generated file!  Do not edit.
+
+.realty.ya.ru	TRUE	/	FALSE	1699543115	spravka	dD0xNjY1NDE1MTE1O2k9OTUuMTY0LjM3LjIwODtEPUFGNDUwOEI1NDA3NkZEMDlFNURGMzQ3MjVGMjlCREY3MjU1NTMyN0Q4NkQ3NEM5RkY1Q0I3MEEwNTFEOTM0MEIxQzQwOEEyOEFGQTg1RTlFO3U9MTY2NTQxNTExNTk5ODI4MjgxNDtoPTdjOTAwZDc4M2I2ZmNiZjg4Mzc3ZjYwYjY3ODQ1NTI2
+.realty.ya.ru	TRUE	/	FALSE	1712517975	suid	5b05a628cc525cacdb36312b0bc84af1.509f94840a3e860ae229557344732554
+.realty.ya.ru	TRUE	/	FALSE	0	_csrf_token	7742de7d55563e0af7b307df5400ab6e46cbf680488a289f
+.ya.ru	TRUE	/	FALSE	1712517975	yandexuid	6838380891696965977
+.ya.ru	TRUE	/	FALSE	0	Cookie_check	checked
+realty.ya.ru	FALSE	/	FALSE	0	from	
+realty.ya.ru	FALSE	/	FALSE	1712517975	exp_uid	966b2ec4-5106-426d-bf6b-292927923423
+realty.ya.ru	FALSE	/	FALSE	1696966308	prev_uaas_data	%7B%22uaasUid%22%3A%226838380891696965977%22%2C%22uaasExpNames%22%3A%5B%22REALTYFRONT-16375_cashback_from_yandex_plus_in_card%22%2C%22REALTYFRONT-16113_bring_tenant_banner%22%2C%22REALTYFRONT-16792_show_arenda_chat_button%22%2C%22REALTYFRONT-17599_new_owner_target%22%2C%22REALTYFRONT-16960-mortgage-calc-on-cards%22%2C%22REALTYFRONT-18136_disable-all-popups%22%2C%22REALTYFRONT-18038_tenant_search_bar%22%2C%22REALTYFRONT-17031_site_rating%22%2C%22REALTYBACK-9999_disable_paid_only%22%2C%22REALTYFRONT-18560_realty_hidden_flat_number%22%2C%22REALTYFRONT-18965_fast_link_random_position%22%2C%22REALTYFRONT-18922_proposals_site_banner%22%5D%7D
+.realty.ya.ru	TRUE	/	TRUE	1712517975	_yasc	cLMGbRyR1ZOY31xH9wuK3U6DReZAMKJHcv4Sg4BDZ0OzfXqXIfXHPqQyEyuDiK+kCJhL
+realty.ya.ru	FALSE	/	FALSE	1697570778	font_loaded	YSv1
+realty.ya.ru	FALSE	/	FALSE	1696966308	prev_uaas_expcrypted	o3Ff-gDb4c-iXDdQxUiLBwfuLiUqtgRQMKunw7tyDPkvi3JIYSIXELoZmpajU4O8d8POkbX6OIwDK6VYjl5PUc-NTwApjLjC62RFIG_g5RRPytbErtoKvll6pjL4NLKNxt5wfgJFmFqqnn3ux-LRsmVzaAZaNGKbGwU7AMaUT-fhDdPy0ilDdr_ENunEIhtk
+realty.ya.ru	FALSE	/	FALSE	1697570790	link_to_global_tooltip_shown	YES
+.ya.ru	TRUE	/	TRUE	1697570791	KIykI	1
+.realty.ya.ru	TRUE	/	FALSE	1712517991	geo_id	213
+.realty.ya.ru	TRUE	/	FALSE	1712517991	region_id	1
+realty.ya.ru	FALSE	/	FALSE	0	from_lifetime	1696966010744

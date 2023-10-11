@@ -71,13 +71,15 @@ You can also check [tests file](https://github.com/soxoj/socid-extractor/blob/ma
 
 ## Tools using socid_extractor
 
-[Maigret](https://github.com/soxoj/maigret) - powerful namechecker, generate a report with all available info from accounts found.
+- [Maigret](https://github.com/soxoj/maigret) - powerful namechecker, generate a report with all available info from accounts found.
 
-[TheScrapper](https://github.com/champmq/TheScrapper) - scrape emails, phone numbers and social media accounts from a website.
+- [TheScrapper](https://github.com/champmq/TheScrapper) - scrape emails, phone numbers and social media accounts from a website.
 
-[YaSeeker](https://github.com/HowToFind-bot/YaSeeker) - tool to gather all available information about Yandex account by login/email.
+- [InfoHunter](https://github.com/sweetnight19/InfoHunter) - An open source OSINT tool that allows you to search, collect and analyze information online to get a complete picture of the person or company you are interested in.
 
-[Marple](https://github.com/soxoj/marple) - scrape search engines results for a given username.
+- [YaSeeker](https://github.com/HowToFind-bot/YaSeeker) - tool to gather all available information about Yandex account by login/email.
+
+- [Marple](https://github.com/soxoj/marple) - scrape search engines results for a given username.
 
 ## Testing
 
