@@ -172,7 +172,7 @@ schemes = {
     },
     'Yandex Disk photoalbum': {
         'flags': ["project:'disk-public',page:'album'"],
-        'regex': r'"display_name":"(?P<name>.*?)","uid":"(?P<uid>\d+)","locale":"\w+","login":"(?P<username>.*?)"',
+        'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<name>.+?)"',
     },
     'Yandex Music AJAX request': {
         'flags': ['{"success":true,"verified'],

@@ -263,7 +263,6 @@ def test_github_api():
 
 def test_yandex_disk_photos():  # Occasional captcha
     info = extract(parse('https://yadi.sk/a/oiySK_wg3Vv5p4')[0])
-    print(parse('https://yadi.sk/a/oiySK_wg3Vv5p4')[0])
     assert info.get('yandex_uid') == '38569641'
     assert info.get('name') == 'Вербочка'
 
@@ -335,7 +334,7 @@ def test_yandex_zen_user_profile():
 def test_yandex_o_user_profile():  # The page parsed redirects to realty.ya.ru. Service is dead for now.
     """Yandex O"""
     info = extract(parse('https://o.yandex.ru/profile/9q4zmvn5437umdqqyge3tp3vpr/')[0])
-    print(parse('https://o.yandex.ru/profile/9q4zmvn5437umdqqyge3tp3vpr/')[0])
+
     assert info.get('yandex_public_id') == '9q4zmvn5437umdqqyge3tp3vpr'
     assert info.get('fullname') == 'ТВОЙ-СЕЙФ'
     assert info.get(
@@ -514,7 +513,7 @@ def test_gitlab_cookies():
     url, add_headers = mutated_url[0]
 
     info = extract(parse(url, headers=add_headers)[0])
-    print(parse(url, headers=add_headers)[0])
+
     assert info.get('uid') == '419655'
     assert info.get('fullname') == 'Mark Fletcher'
     assert info.get('username') == 'markglenfletcher'
@@ -609,7 +608,7 @@ def test_google_maps():
 
 def test_deviantart():
     info = extract(parse('https://www.deviantart.com/muse1908')[0])
-
+    
     assert info.get('country') == 'France'
     # assert info.get('gender') == 'female' #  No longer specified within the test page
     assert info.get('website') == 'www.purelymuse.com'
@@ -1106,7 +1105,7 @@ def test_weibo():  # Broken. Parser not handling redirect
         "cookie": "SUB=_2AkMSeduUf8NxqwFRmfoVzWrmao9wzQzEieKkJSpPJRMxHRl-yT9yqmYJtRB6Ofn1e89SjWihZwr-gsarV1BP4jfFgysA",
         "cache-control": "no-cache"}
     info = extract(parse('https://weibo.com/clairekuo?is_all=1', headers=headers, timeout=10)[0])
-    print(parse('https://weibo.com/clairekuo?is_all=1', headers=headers, timeout=10)[0])
+
     assert info.get("weibo_id") == "1733299783"
     assert info.get("fullname") == "郭靜Claire"
 
