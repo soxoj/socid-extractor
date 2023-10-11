@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-## [0.0.24] - 2023-07-24
+## [0.0.26] - 2023-10-11
+* Update python-package.yml by @soxoj in https://github.com/soxoj/socid-extractor/pull/160
+* Update README.md by @soxoj in https://github.com/soxoj/socid-extractor/pull/161
+* Repairing most of the tests, updating schemes.py accordingly by @MeowyPouncer in https://github.com/soxoj/socid-extractor/pull/162
+* Bump pytest-xdist from 2.5.0 to 3.3.1 by @dependabot in https://github.com/soxoj/socid-extractor/pull/164
+* Bump pytest-rerunfailures from 10.2 to 12.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/163
+* Bump pytest from 7.1.2 to 7.3.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/151
+* Update beautifulsoup4 requirement from ~=4.11.1 to ~=4.12.2 by @dependabot in https://github.com/soxoj/socid-extractor/pull/150
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.25...v0.0.26
+
+## [0.0.25] - 2023-07-24
 * Added memory.lol by @soxoj in https://github.com/soxoj/socid-extractor/pull/156
 
 **Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.24...v0.0.25

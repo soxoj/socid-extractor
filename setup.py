@@ -8,7 +8,7 @@ with open('README.md') as fh:
     long_description = fh.read()
 
 setup(name='socid-extractor',
-      version='0.0.25',
+      version='0.0.26',
       description='Extract accounts\' identifiers from personal pages on various platforms',
       long_description=long_description,
       long_description_content_type="text/markdown",
