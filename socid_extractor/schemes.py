@@ -1,7 +1,8 @@
-from dateutil.parser import parse as parse_datetime_str
 import html
-import json
 import itertools
+import json
+
+from dateutil.parser import parse as parse_datetime_str
 
 from .utils import *
 
@@ -24,10 +25,14 @@ schemes = {
             'is_suspended': lambda x: x['profile'].get('suspended'),
             'is_protected': lambda x: x['profile'].get('protected'),
             'has_ban': lambda x: x.get('tests', {}).get('ghost', {}).get('ban'),
-            'has_banned_in_search_suggestions': lambda x: not x['tests']['typeahead'] if x.get('tests', {}).get('typeahead') else None,
+            'has_banned_in_search_suggestions': lambda x: not x['tests']['typeahead'] if x.get('tests', {}).get(
+                'typeahead') else None,
             'has_search_ban': lambda x: not x['tests']['search'] if x.get('tests', {}).get('search') else None,
-            'has_never_replies': lambda x: not x['tests']['more_replies']['tweet'] if x.get('tests', {}).get('more_replies', {}).get('tweet') else None,
-            'is_deboosted': lambda x: x['tests']['more_replies']['ban'] if x.get('tests', {}).get('more_replies', {}).get('ban') else None,
+            'has_never_replies': lambda x: not x['tests']['more_replies']['tweet'] if x.get('tests', {}).get(
+                'more_replies', {}).get('tweet') else None,
+            'is_deboosted': lambda x: x['tests']['more_replies']['ban'] if x.get('tests', {}).get('more_replies',
+                                                                                                  {}).get(
+                'ban') else None,
         }
     },
     'Twitter GraphQL API': {
@@ -52,7 +57,8 @@ schemes = {
             'following_count': lambda x: x.get('legacy', {}).get('friends_count'),
             'location': lambda x: x.get('legacy', {}).get('location'),
             'favourites_count': lambda x: x.get('legacy', {}).get('favourites_count'),
-            'links': lambda x: [y.get('expanded_url') for y in x.get('legacy', {}).get('entities', {}).get('url', {}).get('urls', [])],
+            'links': lambda x: [y.get('expanded_url') for y in
+                                x.get('legacy', {}).get('entities', {}).get('url', {}).get('urls', [])],
         }
     },
     'Facebook user profile': {
@@ -204,7 +210,8 @@ schemes = {
         'transforms': [
             html.unescape,
             json.loads,
-            lambda x: x['store']['entities'].get('user', {'':{}})[x['store']['page'].get('userStats', {}).get('id', '')],
+            lambda x: x['store']['entities'].get('user', {'': {}})[
+                x['store']['page'].get('userStats', {}).get('id', '')],
             json.dumps,
         ],
         'fields': {
@@ -1204,7 +1211,7 @@ schemes = {
             'is_email_verified': lambda x: x.get('account', {}).get('owner', {}).get('isEmailVerified'),
             'bio': lambda x: x.get('description'),
             'tier': lambda x: x.get('account', {}).get('tier'),
-            'social_links': lambda x: {(s['type'].lower() if not s['type'].startswith('EMAIL') else 'email'): s['url']
+            'social_links': lambda x: {('email' if s['type'].startswith('EMAIL') else s['type'].lower()): s['url']
                                        for s in x.get('socialLinks', [])},
             'links': lambda x: [y.get('url') for y in x.get('account', {}).get('links', [])],
         }
@@ -1845,4 +1852,3 @@ schemes = {
         }
     }
 }
-

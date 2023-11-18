@@ -1,8 +1,5 @@
-import logging
-from http.cookies import SimpleCookie
-
-from .schemes import *
 from .postprocessor import POSTPROCESSORS
+from .schemes import *
 from .utils import parse_cookies
 
 HEADERS = {
@@ -13,10 +10,12 @@ HEADERS = {
 PROCESS_ERRORS = (AttributeError, KeyError, IndexError, TypeError)
 
 
-def parse(url, cookies_str='', timeout=3, headers={}):
+def parse(url, cookies_str='', timeout=3, headers=None):
+    if headers is None:
+        headers = {}
     cookies = parse_cookies(cookies_str)
     req_headers = dict(HEADERS)
-    req_headers.update(headers)
+    req_headers |= headers
     logging.debug(req_headers)
 
     import requests
@@ -46,8 +45,7 @@ def mutate_url(url):
 
 
 def transform(scheme_data, extracted_data):
-    transforms = scheme_data.get('transforms', [])
-    if transforms:
+    if transforms := scheme_data.get('transforms', []):
         for t in transforms:
             logging.debug(t)
             try:
@@ -73,15 +71,14 @@ def map_fields(scheme_data, transformed_data):
 def extract(page):
     for scheme_name, scheme_data in schemes.items():
         flags = scheme_data['flags']
-        found = all([flag in page for flag in flags])
+        found = all(flag in page for flag in flags)
 
-        if found:
-            logging.info('%s has been detected' % scheme_name)
-            if 'message' in scheme_data:
-                logging.info(scheme_data['message'])
-        else:
+        if not found:
             continue
 
+        logging.info(f'{scheme_name} has been detected')
+        if 'message' in scheme_data:
+            logging.info(scheme_data['message'])
         use_regexp_group = 'regex' in scheme_data
         use_html_parser = 'bs' in scheme_data
         bs_parser_type = scheme_data.get('parser_type', 'html.parser')
@@ -117,16 +114,14 @@ def extract(page):
                         f.write(loaded_json_str)
 
                 values = map_fields(scheme_data, json_data)
+            elif groupdict := regexp_group.groupdict():
+                values = groupdict
             else:
-                groupdict = regexp_group.groupdict()
-                if groupdict:
-                    values = groupdict
-                else:
-                    extracted = regexp_group.group(1)
-                    logging.debug('Extracted: %s', extracted)
+                extracted = regexp_group.group(1)
+                logging.debug('Extracted: %s', extracted)
 
-                    transformed_data = transform(scheme_data, extracted)
-                    values = map_fields(scheme_data, transformed_data)
+                transformed_data = transform(scheme_data, extracted)
+                values = map_fields(scheme_data, transformed_data)
 
         if use_html_parser:
             from bs4 import BeautifulSoup as bs

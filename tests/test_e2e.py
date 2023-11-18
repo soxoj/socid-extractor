@@ -213,8 +213,8 @@ def test_reddit():  # Broken. Site move onto new version. Finding the right cook
     assert info.get('has_user_profile') == 'True'
     assert info.get('created_at').startswith('2018-01-06')
     assert info.get('hide_from_robots') == 'True'
-    assert int(info.get('total_karma')) > int(30000)
-    assert int(info.get('post_karma')) > int(7000)
+    assert int(info.get('total_karma')) > 30000
+    assert int(info.get('post_karma')) > 7000
 
 
 @pytest.mark.skip(reason="needs deeper rework")
@@ -259,6 +259,7 @@ def test_github_api():
     assert 'public_repos_count' in info
     assert info.get('bio') == 'Head of OSINT Center of Excellence'
     assert info.get('blog_url') == 'soxoj.com'
+
 
 @pytest.mark.skip(reason="it works but is skipped for the sake of successful tests")
 def test_yandex_disk_photos():  # Occasional captcha
@@ -604,6 +605,7 @@ def test_google_maps():
     # assert info.get('contribution_level').startswith('Level 3 Local Guide')
     assert info.get('name') == 'Art NI'
     assert int(info.get('contributions_count')) >= 73
+
 
 @pytest.mark.skip(reason="it works but is skipped for the sake of successful tests")
 def test_deviantart():

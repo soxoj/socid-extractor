@@ -3,21 +3,17 @@ import re
 
 class Gravatar:
     def __init__(self, data):
-        if not 'image' in data:
+        if 'image' not in data:
             self.username = None
             return
 
         self.url = data['image']
         self.email_hash = self.extract_email_hash()
-        if self.email_hash:
-            self.username = self.get_username()
-        else:
-            self.username = None
+        self.username = self.get_username() if self.email_hash else None
 
     def extract_email_hash(self):
-        gravatar_re = re.search(r'gravatar\.com/avatar/(\w{32})', self.url)
-        if gravatar_re:
-            return gravatar_re.group(1)
+        if gravatar_re := re.search(r'gravatar\.com/avatar/(\w{32})', self.url):
+            return gravatar_re[1]
         return ''
 
     def make_main_url(self):
@@ -36,16 +32,15 @@ class Gravatar:
         return username
 
     def process(self):
-        output = {}
-
-        if self.username:
-            output = {
+        return (
+            {
                 'gravatar_url': self.make_main_url(),
                 'gravatar_username': self.username,
                 'gravatar_email_md5_hash': self.email_hash,
             }
-
-        return output
+            if self.username
+            else {}
+        )
 
 
 class EmailToUsername:
@@ -59,7 +54,7 @@ class EmailToUsername:
             if v and v[0] in "'[{\"":
                 continue
             if 'email' in k and '@' in v:
-                new_k = k + '_username'
+                new_k = f'{k}_username'
                 supposed_username = v.split('@')[0]
                 output[new_k] = supposed_username
 
@@ -74,10 +69,9 @@ class YandexUsernameToEmail:
         output = {}
         email = None
 
-        if 'yandex_uid' in self.data or 'yandex_public_id' in self.data:
-            if 'username' in self.data and self.data['username']:
-                email = self.data['username'] + '@yandex.ru'
-                output['email'] = email
+        if ('yandex_uid' in self.data or 'yandex_public_id' in self.data) and ('username' in self.data and self.data['username']):
+            email = self.data['username'] + '@yandex.ru'
+            output['email'] = email
 
         return output
 

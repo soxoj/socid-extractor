@@ -1,12 +1,10 @@
+import pathlib
 from setuptools import (
     setup,
     find_packages,
 )
 
-
-with open('README.md') as fh:
-    long_description = fh.read()
-
+long_description = pathlib.Path('README.md').read_text()
 setup(name='socid-extractor',
       version='0.0.26',
       description='Extract accounts\' identifiers from personal pages on various platforms',

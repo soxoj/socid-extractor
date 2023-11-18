@@ -4,6 +4,7 @@ import re
 from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 
+
 def import_cookiejar(filename):
     from http.cookiejar import MozillaCookieJar
     cookies_obj = MozillaCookieJar(filename)
@@ -32,9 +33,8 @@ def check_empty_object(res):
 
 
 def extract_facebook_uid(link):
-    avatar_re = re.search(r'graph.facebook.com/(\w+)/picture', link)
-    if avatar_re:
-        return avatar_re.group(1)
+    if avatar_re := re.search(r'graph.facebook.com/(\w+)/picture', link):
+        return avatar_re[1]
     return None
 
 
@@ -45,17 +45,18 @@ def get_yandex_profile_pic(default_avatar_id):
         url = f'https://avatars.mds.yandex.net/get-yapic/{default_avatar_id}/islands-200'
     return url
 
+
 def decode_ya_str(val):
     try:
         return val.encode('iso-8859-1').decode('utf-8')
-    except:
+    except Exception:
         return val
 
 
 def enrich_link(html_url):
     fixed_url = html_url.lstrip('/')
     if fixed_url and not fixed_url.startswith('http'):
-        fixed_url = 'https://' + fixed_url
+        fixed_url = f'https://{fixed_url}'
     return fixed_url
 
 
@@ -65,35 +66,31 @@ def parse_datetime(t):
     if not t:
         return ''
     elif len(str(t)) < 10:
-        t = math.floor(datetime.today().timestamp()) - t
+        t = math.floor(datetime.now().timestamp()) - t
 
-    if len(str(t)) == 10 and not '-' in str(t):
+    if len(str(t)) == 10 and '-' not in str(t):
         return datetime.fromtimestamp(int(t), tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')
-    elif len(str(t)) == 10 and '-' in str(t):
+    elif len(str(t)) == 10:
         return datetime.strptime(t, '%Y-%m-%d').strftime('%Y-%m-%d %H:%M:%S %Z')
     elif len(str(t)) == 13:
-        return datetime.fromtimestamp(float(t)/ 1000.0, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S.{} %Z'.format(str(t)[-3:]))
-    
+        return datetime.fromtimestamp(
+            float(t) / 1000.0, tz=timezone.utc
+        ).strftime(f'%Y-%m-%d %H:%M:%S.{str(t)[-3:]} %Z')
+
     return t
-  
+
 
 def extract_digits(text):
-    digits_re = re.search(r'\d+', text)
-    if digits_re:
-        return digits_re[0]
-    return ''
+    return digits_re[0] if (digits_re := re.search(r'\d+', text)) else ''
 
 
 def get_ucoz_email(text):
-    if text != 'Адрес скрыт':
-        return text
-    return ''
+    return text if text != 'Адрес скрыт' else ''
 
 
 def get_ucoz_userlink(user_dom_node):
     prompt = user_dom_node.next_sibling.next_sibling.get('onclick')
-    user_link = prompt.split("'")[-2]
-    return user_link
+    return prompt.split("'")[-2]
 
 
 def get_ucoz_domain(user_dom_node):
@@ -111,12 +108,14 @@ def get_ucoz_image(dom):
 def get_ucoz_uid_node(dom):
     return dom.find('b', string='uID профиль') or dom.find('b', string='uNet профиль')
 
+
 def extract_periscope_uid(text):
     userId = re.search(r'"userId":"([\w\d]*)"}', text)
-    return userId.group(1)
-    
+    return userId[1]
+
+
 def get_mymail_uid(username):
     # TODO: move to external function
     import requests
-    req = requests.get('http://appsmail.ru/platform/mail/' + username)
+    req = requests.get(f'http://appsmail.ru/platform/mail/{username}')
     return req.json()['uid']
