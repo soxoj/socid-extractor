@@ -7,12 +7,13 @@ class Gravatar:
             self.username = None
             return
 
+        self.username = data.get('username')
         self.url = data['image']
         self.email_hash = self.extract_email_hash()
-        if self.email_hash:
-            self.username = self.get_username()
-        else:
-            self.username = None
+
+        # old workaround
+        if self.email_hash and self.username == self.email_hash:
+            self.username = self.get_username_from_url()
 
     def extract_email_hash(self):
         gravatar_re = re.search(r'gravatar\.com/avatar/(\w{32})', self.url)
@@ -26,7 +27,7 @@ class Gravatar:
     def make_en_url(self):
         return f'https://en.gravatar.com/{self.email_hash}'
 
-    def get_username(self):
+    def get_username_from_url(self):
         import requests
         gravatar_account_location = requests.head(self.make_en_url())
         username = gravatar_account_location.headers.get('location', '').strip('/')
