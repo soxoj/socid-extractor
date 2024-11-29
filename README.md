@@ -67,7 +67,14 @@ You can also check [tests file](https://github.com/soxoj/socid-extractor/blob/ma
   - DB leaks of forums and platforms in SQL format
   - Indexed links that contain target profile ID
 - Searching for tracking data by comparison with other IDs - [how it works](https://www.eff.org/wp/behind-the-one-way-mirror), [how can it be used](https://www.nytimes.com/interactive/2019/12/19/opinion/location-tracking-cell-phone.html).
-- Law enforcement online requests
+- Law enforcement investigations
+
+## SOWEL classification
+
+This tool uses the following OSINT techniques:
+- [SOTL-1.4. Analyze Internal Identifiers](https://sowel.soxoj.com/internal-identifiers)
+- [SOTL-11.1. Check Outdated And Unused Functionality](https://sowel.soxoj.com/outdated-unused-functionality)
+
 
 ## Tools using socid_extractor
 
