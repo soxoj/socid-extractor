@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [0.0.27] - 2024-12-12
+* Fixed extraction of Gravatar username by @soxoj in https://github.com/soxoj/socid-extractor/pull/178
+* Added SOWEL techniques by @soxoj in https://github.com/soxoj/socid-extractor/pull/176
+* Bump pytest from 7.3.0 to 7.4.2 by @dependabot in https://github.com/soxoj/socid-extractor/pull/167
+* Update beautifulsoup4 requirement from ~=4.12.2 to ~=4.12.3 by @dependabot in https://github.com/soxoj/socid-extractor/pull/175
+* Bump pytest-xdist from 3.3.1 to 3.5.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/172
+* Bump pytest from 7.4.2 to 7.4.4 by @dependabot in https://github.com/soxoj/socid-extractor/pull/174
+* Bump pytest-rerunfailures from 12.0 to 13.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/173
+* Bump pytest from 7.4.4 to 8.3.4 by @dependabot in https://github.com/soxoj/socid-extractor/pull/182
+* Bump pytest-xdist from 3.5.0 to 3.6.1 by @dependabot in https://github.com/soxoj/socid-extractor/pull/181
+* Bump pytest-rerunfailures from 13.0 to 15.0 by @dependabot in https://github.com/soxoj/socid-extractor/pull/180
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.26...v0.0.27
+
 ## [0.0.26] - 2023-10-11
 * Update python-package.yml by @soxoj in https://github.com/soxoj/socid-extractor/pull/160
 * Update README.md by @soxoj in https://github.com/soxoj/socid-extractor/pull/161
