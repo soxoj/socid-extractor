@@ -1843,6 +1843,29 @@ schemes = {
             'id': lambda x: x['accounts'][0]['id'],
             'known_usernames': lambda x: [i for i in x['accounts'][0]['screen_names']],
         }
+    },
+    'Duolingo API': {
+        'flags': ['"users":[{', 'learningLanguage', 'duolingo.com'],
+        'regex': r'^({[\S\s]+?})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'(?i)https?://(?:www\.)?duolingo\.com/profile/(?P<username>[^/?#]+)',
+                'to': 'https://www.duolingo.com/2017-06-30/users?username={username}',
+            }
+        ],
+        'fields': {
+            'uid': lambda x: x['users'][0]['id'],
+            'username': lambda x: x['users'][0]['username'],
+            'fullname': lambda x: x['users'][0]['name'],
+            'image': lambda x: enrich_link(x['users'][0].get('picture')) if x['users'][0].get('picture') else None,
+            'created_at': lambda x: parse_datetime(x['users'][0].get('creationDate')),
+            'url': lambda x: f"https://www.duolingo.com/profile/{x['users'][0]['username']}",
+            'location': lambda x: x['users'][0].get('profileCountry'),
+            'streak': lambda x: x['users'][0].get('streak'),
+            'totalXp': lambda x: x['users'][0].get('totalXp'),
+            'learningLanguage': lambda x: x['users'][0].get('learningLanguage'),
+            'fromLanguage': lambda x: x['users'][0].get('fromLanguage')
+        }
     }
 }
-
