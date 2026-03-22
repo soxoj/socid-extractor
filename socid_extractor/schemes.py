@@ -31,7 +31,8 @@ schemes = {
         }
     },
     'Twitter GraphQL API': {
-        'flags': ['{"data":{"', 'user":{"id":'],
+        # X API may emit fields before "id" inside user{...}; keep flags aligned with live JSON
+        'flags': ['{"data":{"user"', '"legacy":'],
         'regex': r'^{"data":{"user":({.+})}}$',
         'extract_json': True,
         'url_mutations': [
@@ -995,6 +996,33 @@ schemes = {
         }
     },
     'TikTok': {
+        # Modern web: __UNIVERSAL_DATA_FOR_REHYDRATION__ (SIGI_STATE is absent on current pages)
+        'flags': ['__UNIVERSAL_DATA_FOR_REHYDRATION__', '"secUid"'],
+        'regex': r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([\s\S]*?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['__DEFAULT_SCOPE__']['webapp.user-detail']['userInfo'],
+            lambda x: {**x['user'], **x['stats']},
+            json.dumps,
+        ],
+        'fields': {
+            'tiktok_id': lambda x: x['id'],
+            'tiktok_username': lambda x: x['uniqueId'],
+            'fullname': lambda x: x['nickname'],
+            'bio': lambda x: x['signature'],
+            'image': lambda x: x.get('avatarMedium') or x.get('avatarLarger'),
+            'is_verified': lambda x: x['verified'],
+            'is_secret': lambda x: x['secret'],
+            'sec_uid': lambda x: x['secUid'],
+            'following_count': lambda x: x['followingCount'],
+            'follower_count': lambda x: x['followerCount'],
+            'heart_count': lambda x: x.get('heartCount', x.get('heart')),
+            'video_count': lambda x: x['videoCount'],
+            'digg_count': lambda x: x['diggCount'],
+        }
+    },
+    'TikTok (legacy SIGI_STATE)': {
         'flags': ['tiktokcdn.com', 'SIGI_STATE'],
         'regex': r'<script id="SIGI_STATE"[^>]+>(.+?)</script>',
         'extract_json': True,
@@ -1018,6 +1046,29 @@ schemes = {
             'heart_count': lambda x: x['heartCount'],
             'video_count': lambda x: x['videoCount'],
             'digg_count': lambda x: x['diggCount'],
+        }
+    },
+    'Picsart API': {
+        'flags': ['"status": "success"', '"remix_score"'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(?:www\.)?picsart\.com/u/(?P<username>[^/]+)/?',
+                'to': 'https://api.picsart.com/users/show/{username}.json',
+            }
+        ],
+        'fields': {
+            'picsart_id': lambda x: x.get('id'),
+            'picsart_username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name'),
+            'image': lambda x: x.get('photo'),
+            'bio': lambda x: x.get('status_message'),
+            'follower_count': lambda x: x.get('followers_count'),
+            'following_count': lambda x: x.get('following_count'),
+            'likes_count': lambda x: x.get('likes_count'),
+            'photos_count': lambda x: x.get('photos_count'),
+            'is_verified': lambda x: x.get('is_verified'),
         }
     },
     'VC.ru': {
@@ -1572,6 +1623,8 @@ schemes = {
             'reputation_count': lambda x: x['reputation_count'],
             'reputation_name': lambda x: x['reputation_name'],
             'image': lambda x: x['avatar_url'],
+            # Stable direct avatar URL (GET returns image/png); complements CDN avatar_url from API
+            'imgur_profile_avatar_url': lambda x: imgur_profile_avatar_url(x.get('username')),
             'created_at': lambda x: x['created_at'],
         }
     },
@@ -1619,7 +1672,7 @@ schemes = {
         }
     },
     'ifunny.co': {
-        'flags': ["gtag('config', 'G-5FQ9GH4QMZ');"],
+        'flags': ['window.__INITIAL_STATE__', '"nick":'],
         'regex': r'window.__INITIAL_STATE__=(.+?);',
         'extract_json': True,
         'transforms': [
