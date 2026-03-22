@@ -1,5 +1,22 @@
 import re
 
+from .utils import is_bare_gravatar_root_url, is_valid_gravatar_email_hash
+
+
+class StripInvalidGravatarUrls:
+    """Remove bare https://gravatar.com homepage values mistaken for avatars (see Maigret improvement log)."""
+
+    def __init__(self, data):
+        self.data = data
+
+    def process(self):
+        out = {}
+        for k in ('gravatar_url', 'image'):
+            v = self.data.get(k)
+            if isinstance(v, str) and is_bare_gravatar_root_url(v):
+                out[k] = ''
+        return out
+
 
 class Gravatar:
     def __init__(self, data):
@@ -39,7 +56,7 @@ class Gravatar:
     def process(self):
         output = {}
 
-        if self.username:
+        if self.username and is_valid_gravatar_email_hash(self.email_hash):
             output = {
                 'gravatar_url': self.make_main_url(),
                 'gravatar_username': self.username,
@@ -83,4 +100,4 @@ class YandexUsernameToEmail:
         return output
 
 
-POSTPROCESSORS = [Gravatar, EmailToUsername, YandexUsernameToEmail]
+POSTPROCESSORS = [StripInvalidGravatarUrls, Gravatar, EmailToUsername, YandexUsernameToEmail]

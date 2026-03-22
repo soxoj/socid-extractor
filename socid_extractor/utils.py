@@ -120,3 +120,46 @@ def get_mymail_uid(username):
     import requests
     req = requests.get('http://appsmail.ru/platform/mail/' + username)
     return req.json()['uid']
+
+
+_GRAVATAR_BARE_ROOT_RE = re.compile(
+    r'^https?://(www\.)?gravatar\.com/?$',
+    re.IGNORECASE,
+)
+
+
+def is_bare_gravatar_root_url(url):
+    """True if url is only the Gravatar marketing homepage, not an /avatar/{hash} URL."""
+    if not url or not isinstance(url, str):
+        return False
+    return bool(_GRAVATAR_BARE_ROOT_RE.match(url.strip()))
+
+
+def is_valid_gravatar_email_hash(value):
+    if not value or not isinstance(value, str):
+        return False
+    v = value.lower()
+    return len(v) == 32 and all(c in '0123456789abcdef' for c in v)
+
+
+def imgur_profile_avatar_url(username):
+    """Stable Imgur profile avatar URL (image/png when fetched)."""
+    if not username:
+        return ''
+    return f'https://imgur.com/user/{username}/avatar'
+
+
+def lnk_bio_next_props(next_data):
+    """Pick link-in-bio profile dict from Next.js __NEXT_DATA__ (structure varies by deploy)."""
+    if not isinstance(next_data, dict):
+        return {}
+    pp = next_data.get('props', {}).get('pageProps', {})
+    if not isinstance(pp, dict):
+        return {}
+    for key in ('profile', 'user', 'account', 'data'):
+        v = pp.get(key)
+        if isinstance(v, dict) and any(
+            v.get(k) for k in ('username', 'displayName', 'name', 'links', 'bio')
+        ):
+            return v
+    return pp

@@ -11,4 +11,6 @@ It will be better to make test in the same commit. You can do it the following w
 3. Add new test function to `tests/test_e2e.py`, paste your output there and save file.
 4. Run `cd tests && reformat.sh` to prepare assertions, and check that the test is running successfully.
 
+**End-to-end coverage:** each scheme (site/method) in `schemes.py` should have **at least one** e2e test in `tests/test_e2e.py` against a real URL or API response. Put the scheme name(s) in the test docstring (one per line) for `revision.py`. If the site is unreliable from CI, use `@pytest.mark.github_failed` or `rate_limited` (see [`docs/testing-and-ci.md`](docs/testing-and-ci.md)).
+
 And don't forget to update the table with methods by the script `./revision.py`!
