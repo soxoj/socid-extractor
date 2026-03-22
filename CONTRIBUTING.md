@@ -6,7 +6,7 @@ Take a look at [wiki page with instructions](https://github.com/soxoj/socid-extr
 and study [naming convention for fields](https://github.com/soxoj/socid-extractor/wiki/List-of-main-fields).
 
 It will be better to make test in the same commit. You can do it the following way:
-1. Add extraction rule to `socid_extractor/schemes.py`.
+1. Add extraction rule to `socid_extractor/schemes.py`. For sites whose domain does not appear in the scheme name, add optional `url_hints` (tuple of substrings) so CLI users can use `--skip-fetch-if-no-url-hint` without missing your method.
 2. Run `./run.py --url URL` and copy output (lines of format `fields: value`).
 3. Add new test function to `tests/test_e2e.py`, paste your output there and save file.
 4. Run `cd tests && reformat.sh` to prepare assertions, and check that the test is running successfully.

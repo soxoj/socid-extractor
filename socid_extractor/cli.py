@@ -6,6 +6,7 @@ from functools import reduce
 from .activation import *
 from .main import parse, extract, mutate_url
 from .schemes import schemes
+from .url_relevance import check_url_relevance
 from .utils import parse_cookies, import_cookiejar, join_cookies
 
 
@@ -34,6 +35,11 @@ def run():
     parser.add_argument('-d', '--debug', action='store_true', help='display debug information')
     parser.add_argument('--file', help='file to parse')
     parser.add_argument('--activation', type=str, help='use certain type of request activation')
+    parser.add_argument(
+        '--skip-fetch-if-no-url-hint',
+        action='store_true',
+        help='skip HTTP request when the URL does not match any supported site hint (substring check; may skip generic engines)',
+    )
 
     args = parser.parse_args()
 
@@ -78,6 +84,10 @@ def run():
             print(f'Analyzing URL {url}...')
             url_headers = dict(headers)
             url_headers.update(add_headers)
+
+            if args.skip_fetch_if_no_url_hint and not check_url_relevance(url):
+                print('Skipping fetch: URL did not match any supported site hint.', file=sys.stderr)
+                continue
 
             page = get_site_response(url, cookies_str, url_headers)
             info = extract(page)

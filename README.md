@@ -21,6 +21,12 @@ Without installing:
 $ ./run.py --url https://www.deviantart.com/muse1908
 ```
 
+To skip the HTTP request when the URL string does not match any known site hint (faster batch runs; optional, may skip generic engines such as forum templates):
+
+```
+$ socid_extractor --url https://example.com/foo --skip-fetch-if-no-url-hint
+```
+
 As a Python library:
 ```
 >>> import socid_extractor, requests

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* CLI: optional `--skip-fetch-if-no-url-hint` to avoid HTTP when the URL does not match substring hints from schemes (`url_hints` field and name tokens); see `socid_extractor/url_relevance.py` and docs.
+* Expanded `url_hints` on many `schemes` entries (major domains and special cases such as Yandex Disk `yadi.sk`, Twitter/X).
+
 ## [0.0.27] - 2024-12-12
 * Fixed extraction of Gravatar username by @soxoj in https://github.com/soxoj/socid-extractor/pull/178
 * Added SOWEL techniques by @soxoj in https://github.com/soxoj/socid-extractor/pull/176
