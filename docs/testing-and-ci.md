@@ -4,6 +4,17 @@
 
 [`tests/test_e2e.py`](../tests/test_e2e.py) is the main test suite. Tests typically call `parse(url, ...)` to fetch a live page, then `extract(text)` and assert on keys in the returned dict. Some tests pass custom `headers` or cookies.
 
+### Policy: one e2e test per site / scheme
+
+Every **extraction method** (each named entry in `schemes` in [`schemes.py`](../socid_extractor/schemes.py)) should have **at least one** end-to-end test in `tests/test_e2e.py` that exercises a real URL (or the public JSON endpoint Maigret uses) and asserts on extracted fields.
+
+- Add the test in the **same commit** as a new or changed scheme when possible (see [CONTRIBUTING.md](../CONTRIBUTING.md)).
+- Name the test function `test_<something>_e2e` or follow the existing `test_<site>` pattern.
+- In the **docstring**, put the **exact scheme name(s)** from `schemes.py` (one per line) so [`revision.py`](../revision.py) can link tests to methods in [`METHODS.md`](../METHODS.md).
+- If a site blocks GitHub Actions (captchas, geo, bot walls), mark the test `@pytest.mark.github_failed` or `@pytest.mark.rate_limited` and document why — the test still counts for local runs and for coverage intent; CI uses `-m 'not github_failed and not rate_limited'`.
+
+Where a live call is too flaky, add a **fast offline check** in a small module test (e.g. [`tests/test_socid_improvements.py`](../tests/test_socid_improvements.py) with a saved HTML/JSON snippet) *in addition* to the e2e policy above, not as a full substitute.
+
 Cookie-based scenarios may use files under [`tests/`](../tests/) (e.g. `*.cookies`); the default CI run **excludes** tests whose names match `cookies` (see below).
 
 ## Pytest markers

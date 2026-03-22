@@ -76,7 +76,7 @@ def test_picsart_api_json_maps_profile_fields():
     stringified like other fields.
     """
     body = {
-        'status': 'success',
+        'status': 'success',  # not used as a flag; matching uses remix_score + dashboard_visibility
         'id': 184924161000102,
         'name': 'Adam',
         'username': 'adam',

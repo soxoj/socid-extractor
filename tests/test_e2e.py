@@ -807,6 +807,51 @@ def test_tiktok():
     assert info.get('digg_count') == '0'
 
 
+@pytest.mark.github_failed
+def test_tiktok_hydration_e2e():
+    """
+    TikTok
+    TikTok (legacy SIGI_STATE)
+    Live check for the current web profile (hydration JSON, not SIGI_STATE).
+    Assertions are structural: ids and CDN avatar URL, not follower counts (those drift).
+    """
+    info = extract(parse('https://www.tiktok.com/@tiktok', timeout=20)[0])
+
+    assert info.get('tiktok_username') == 'tiktok'
+    assert len(str(info.get('tiktok_id', ''))) > 5
+    assert str(info.get('sec_uid', '')).startswith('MS4wLjAB')
+    assert 'tiktokcdn' in (info.get('image') or '')
+    assert info.get('is_verified') in ('True', 'False')
+    assert 'follower_count' in info
+    assert 'fullname' in info
+
+
+def test_picsart_api_e2e():
+    """
+    Picsart API
+    """
+    info = extract(parse('https://api.picsart.com/users/show/adam.json', timeout=15)[0])
+
+    assert info.get('picsart_username') == 'adam'
+    assert info.get('fullname') == 'Adam'
+    assert info.get('picsart_id') == '184924161000102'
+    assert info.get('is_verified') == 'False'
+    assert int(info.get('follower_count')) >= 0
+
+
+def test_imgur_api_e2e():
+    """
+    Imgur API
+    """
+    url = 'https://api.imgur.com/account/v1/accounts/imgur?client_id=546c25a59c58ad7'
+    info = extract(parse(url, timeout=15)[0])
+
+    assert info.get('imgur_username') == 'imgur'
+    assert info.get('imgur_profile_avatar_url') == 'https://imgur.com/user/imgur/avatar'
+    assert info.get('reputation_name') == 'Glorious'
+    assert float(info.get('reputation_count', 0)) > 1000
+
+
 @pytest.mark.skip(reason="failed from github CI infra IPs")
 def test_flickr():
     info = extract(parse('https://www.flickr.com/photos/alexaimephotography2020/')[0])
