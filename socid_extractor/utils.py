@@ -147,3 +147,19 @@ def imgur_profile_avatar_url(username):
     if not username:
         return ''
     return f'https://imgur.com/user/{username}/avatar'
+
+
+def lnk_bio_next_props(next_data):
+    """Pick link-in-bio profile dict from Next.js __NEXT_DATA__ (structure varies by deploy)."""
+    if not isinstance(next_data, dict):
+        return {}
+    pp = next_data.get('props', {}).get('pageProps', {})
+    if not isinstance(pp, dict):
+        return {}
+    for key in ('profile', 'user', 'account', 'data'):
+        v = pp.get(key)
+        if isinstance(v, dict) and any(
+            v.get(k) for k in ('username', 'displayName', 'name', 'links', 'bio')
+        ):
+            return v
+    return pp
