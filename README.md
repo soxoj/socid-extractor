@@ -94,6 +94,8 @@ This tool uses the following OSINT techniques:
 python3 -m pytest tests/test_e2e.py -n 10  -k 'not cookies' -m 'not github_failed and not rate_limited'
 ```
 
+Developer documentation (architecture, modules, CI): [docs/](docs/).
+
 ## Contributing
 
 Check [separate page](https://github.com/soxoj/socid-extractor/blob/master/CONTRIBUTING.md) if you want to add a new methods of fix anything.
