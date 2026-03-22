@@ -162,3 +162,111 @@ def test_gravatar_postprocessor_requires_md5_hash():
 
     bad = Gravatar({'username': 'me', 'image': 'https://gravatar.com'}).process()
     assert bad == {}
+
+
+def test_twitchtracker_embedded_channel_script():
+    """TwitchTracker: `window.channel` JS literal with id, login, created_at."""
+    html = """<!DOCTYPE html><html><head>
+<meta property="og:site_name" content="TwitchTracker">
+</head><body>
+<script>\n\t\twindow.channel = {\n\t\t\tid: 37402112,\n\t\t\tname: 'shroud',\n\t\t\tcreated_at: '2012-11-03'\n\t\t}\n\t</script>
+</body></html>"""
+    info = extract(html)
+    assert info.get('twitchtracker_channel_id') == '37402112'
+    assert info.get('twitchtracker_username') == 'shroud'
+    assert info.get('twitchtracker_created_at') == '2012-11-03'
+
+
+def test_chess_com_pub_api_json():
+    """Chess.com API: public `/pub/player/{user}` JSON (optional mutate from /member/)."""
+    body = (
+        '{"avatar":"https://images.chesscomfiles.com/uploads/v1/user/15448422.x.png",'
+        '"player_id":15448422,"username":"hikaru","name":"Hikaru Nakamura","title":"GM",'
+        '"followers":100,"country":"https://api.chess.com/pub/country/US",'
+        '"location":"Florida","last_online":1774140579,"joined":1389043258,'
+        '"status":"premium","is_streamer":true,"verified":false,"twitch_url":"https://twitch.tv/gmhikaru"}'
+    )
+    info = extract(body)
+    assert info.get('chess_user_id') == '15448422'
+    assert info.get('username') == 'hikaru'
+    assert info.get('fullname') == 'Hikaru Nakamura'
+    assert info.get('country_code') == 'US'
+    assert info.get('follower_count') == '100'
+
+
+def test_roblox_user_api_json():
+    """Roblox GET /v1/users/{id} envelope."""
+    body = (
+        '{"description":"x","created":"2006-02-27T21:06:40.3Z","isBanned":false,'
+        '"externalAppDisplayName":null,"hasVerifiedBadge":true,"id":1,'
+        '"name":"Roblox","displayName":"Roblox"}'
+    )
+    info = extract(body)
+    assert info.get('roblox_user_id') == '1'
+    assert info.get('username') == 'Roblox'
+    assert info.get('is_verified') == 'True'
+
+
+def test_roblox_username_lookup_api_json():
+    """Roblox POST /v1/usernames/users first user object."""
+    body = (
+        '{"data":[{"requestedUsername":"Roblox","hasVerifiedBadge":true,"id":1,'
+        '"name":"Roblox","displayName":"Roblox"}]}'
+    )
+    info = extract(body)
+    assert info.get('roblox_user_id') == '1'
+    assert info.get('username') == 'Roblox'
+
+
+def test_myanimelist_profile_regex():
+    """MAL profile: numeric uid from analytics param + username from og:url."""
+    html = """<!DOCTYPE html><html><head>
+<meta property="og:url" content="https://myanimelist.net/profile/Xinil">
+</head><body>
+<div class="user-profile">
+<a href="#" data-ga-click-param="uid:1" title="msg"><i></i></a>
+</div></body></html>"""
+    info = extract(html)
+    assert info.get('mal_username') == 'Xinil'
+    assert info.get('mal_uid') == '1'
+
+
+def test_xvideos_profile_id_user_regex():
+    """XVideos profile page JSON fragment with id_user + username."""
+    html = (
+        '<html lang="en" class="xv-responsive"><body>'
+        '<a href="https://www.xvideos.com/profiles/xvideos">p</a>'
+        '"id_user":1356961,"username":"xvideos","display":"Xvideos"'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('xvideos_user_id') == '1356961'
+    assert info.get('xvideos_username') == 'xvideos'
+
+
+def test_lnk_bio_next_data_fixture():
+    """lnk.bio-style __NEXT_DATA__ with pageProps.profile (fixture; live HTML may differ)."""
+    next_data = {
+        'props': {
+            'pageProps': {
+                'profile': {
+                    'username': 'fixture',
+                    'displayName': 'Fixture User',
+                    'bio': 'Hello',
+                    'avatar': 'https://example.com/a.png',
+                    'links': [{'title': 'Site', 'url': 'https://example.org'}],
+                }
+            }
+        }
+    }
+    html = (
+        '<!DOCTYPE html><html><head><title>lnk.bio</title></head><body>'
+        '<link rel="canonical" href="https://lnk.bio/fixture" />'
+        '<script id="__NEXT_DATA__" type="application/json">'
+        + json.dumps(next_data)
+        + '</script>mention lnk.bio in body for flags</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'fixture'
+    assert info.get('fullname') == 'Fixture User'
+    assert 'example.org' in info.get('links', '')

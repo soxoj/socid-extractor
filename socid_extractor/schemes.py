@@ -1921,5 +1921,106 @@ schemes = {
             'learningLanguage': lambda x: x['users'][0].get('learningLanguage'),
             'fromLanguage': lambda x: x['users'][0].get('fromLanguage')
         }
-    }
+    },
+    'TwitchTracker': {
+        'flags': ['window.channel', 'og:site_name" content="TwitchTracker"'],
+        # Inline script assigns a JS object literal (not JSON); capture fields by regex.
+        'regex': (
+            r'window\.channel\s*=\s*\{[\s\S]*?id:\s*(?P<twitchtracker_channel_id>\d+)[\s\S]*?'
+            r"name:\s*'(?P<twitchtracker_username>[^']+)'[\s\S]*?"
+            r"created_at:\s*'(?P<twitchtracker_created_at>[^']+)'"
+        ),
+    },
+    'Chess.com API': {
+        'flags': ['"player_id"', 'images.chesscomfiles.com/uploads/v1/user/', '"username"'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www\.)?chess\.com/member/(?P<username>[^/]+)/?.*',
+                'to': 'https://api.chess.com/pub/player/{username}',
+            },
+        ],
+        'fields': {
+            'chess_user_id': lambda x: x.get('player_id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name'),
+            'title': lambda x: x.get('title'),
+            'image': lambda x: x.get('avatar'),
+            'country_code': lambda x: (x.get('country') or '').rsplit('/', 1)[-1] if x.get('country') else '',
+            'location': lambda x: x.get('location'),
+            'follower_count': lambda x: x.get('followers'),
+            'status': lambda x: x.get('status'),
+            'is_streamer': lambda x: x.get('is_streamer'),
+            'verified': lambda x: x.get('verified'),
+            'twitch_url': lambda x: x.get('twitch_url'),
+            'joined': lambda x: parse_datetime(x.get('joined')) if x.get('joined') else '',
+            'last_online': lambda x: parse_datetime(x.get('last_online')) if x.get('last_online') else '',
+        },
+    },
+    'Roblox user API': {
+        'flags': ['"externalAppDisplayName"', '"hasVerifiedBadge"', '"isBanned"'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www\.)?roblox\.com/users/(?P<id>\d+)/profile/?.*',
+                'to': 'https://users.roblox.com/v1/users/{id}',
+            },
+        ],
+        'fields': {
+            'roblox_user_id': lambda x: x.get('id'),
+            'username': lambda x: x.get('name'),
+            'fullname': lambda x: x.get('displayName'),
+            'created_at': lambda x: x.get('created'),
+            'is_banned': lambda x: x.get('isBanned'),
+            'is_verified': lambda x: x.get('hasVerifiedBadge'),
+            'bio': lambda x: x.get('description'),
+        },
+    },
+    'Roblox username lookup API': {
+        'flags': ['"requestedUsername"', '"hasVerifiedBadge"', '"data":[{'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('data') or [{}])[0],
+            json.dumps,
+        ],
+        'fields': {
+            'roblox_user_id': lambda x: x.get('id'),
+            'username': lambda x: x.get('name'),
+            'fullname': lambda x: x.get('displayName'),
+            'is_verified': lambda x: x.get('hasVerifiedBadge'),
+        },
+    },
+    'MyAnimeList profile': {
+        'flags': ['myanimelist.net/profile', 'class="user-profile"', 'data-ga-click-param="uid:'],
+        'regex': (
+            r'property="og:url" content="https://myanimelist\.net/profile/(?P<mal_username>[^"]+)"[\s\S]*?'
+            r'data-ga-click-param="uid:(?P<mal_uid>\d+)"'
+        ),
+    },
+    'XVideos profile': {
+        'flags': ['xvideos.com/profiles', 'id_user', 'xv-responsive'],
+        'regex': r'"id_user":(?P<xvideos_user_id>\d+),"username":"(?P<xvideos_username>[^"]+)"',
+    },
+    'lnk.bio': {
+        'flags': ['__NEXT_DATA__', 'lnk.bio'],
+        'regex': r'<script id="__NEXT_DATA__" type="application/json">([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lnk_bio_next_props,
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('username') or x.get('slug'),
+            'fullname': lambda x: x.get('displayName') or x.get('name') or x.get('title'),
+            'bio': lambda x: x.get('bio') or x.get('description'),
+            'image': lambda x: x.get('avatar') or x.get('image') or x.get('profileImage'),
+            'links': lambda x: x.get('links') or x.get('socialLinks'),
+        },
+    },
 }
+
