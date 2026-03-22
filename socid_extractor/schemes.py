@@ -1049,7 +1049,8 @@ schemes = {
         }
     },
     'Picsart API': {
-        'flags': ['"status": "success"', '"remix_score"'],
+        # API may serialize JSON with or without spaces; these keys appear in success payloads
+        'flags': ['remix_score', 'dashboard_visibility'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
         'url_mutations': [

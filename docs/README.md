@@ -10,4 +10,4 @@ For installation and CLI usage, see the [root README](../README.md). For the lis
 | -------- | ----------- |
 | [architecture.md](architecture.md) | Request flow: `parse`, `mutate_url`, `extract`, schemes, and post-processors. |
 | [modules.md](modules.md) | Package layout and responsibility of each module. |
-| [testing-and-ci.md](testing-and-ci.md) | End-to-end tests, pytest markers, local commands, GitHub Actions, and `revision.py`. |
+| [testing-and-ci.md](testing-and-ci.md) | End-to-end tests (including the **one e2e per scheme** policy), pytest markers, CI, and `revision.py`. |
