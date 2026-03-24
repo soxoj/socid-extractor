@@ -1113,6 +1113,73 @@ def test_tapd():  # Broken. Site not responding.
         'links') == "['https://www.twitter.com/Betsyalvarezz', 'https://www.instagram.com/Betsyalvarezz', 'https://cash.app/$Betsyalvarezz', 'https://www.tiktok.com/@Betsyalvarezz', 'https://www.instagram.com/Brb.thelabel', 'https://www.youtube.com/c/BetsyAlvarezz', 'https://www.amazon.com/hz/wishlist/ls/2GNHXWNBBCIP0?ref_=wl_share', 'https://onlyfans.com/Betsyalvarezz']"
 
 
+def test_buzzfeed_diagnostic():
+    """Diagnostic test to understand current BuzzFeed page structure."""
+    import re, json
+    page_text = parse('https://www.buzzfeed.com/lisa')[0]
+
+    print(f"\n=== BUZZFEED DIAGNOSTIC ===")
+    print(f"Page length: {len(page_text)}")
+    print(f"Has 'window.BZFD': {'window.BZFD' in page_text}")
+    print(f"Has '__NEXT_DATA__': {'__NEXT_DATA__' in page_text}")
+    print(f"Has 'buzzfeed': {'buzzfeed' in page_text.lower()}")
+
+    # Print first 2000 chars
+    print(f"\n=== FIRST 2000 CHARS ===")
+    print(page_text[:2000])
+
+    # Check for __NEXT_DATA__
+    m = re.search(r'id="__NEXT_DATA__"[^>]*>(.+?)</script>', page_text)
+    if m:
+        print(f"\n=== __NEXT_DATA__ found (first 3000 chars) ===")
+        nd = m.group(1)[:3000]
+        print(nd)
+        try:
+            full_nd = json.loads(m.group(1))
+            pp = full_nd.get('props', {}).get('pageProps', {})
+            print(f"\n=== pageProps keys: {list(pp.keys())[:30]} ===")
+            if 'user' in pp:
+                print(f"=== user keys: {list(pp['user'].keys())[:30]} ===")
+                print(f"=== user data (first 2000 chars): {json.dumps(pp['user'])[:2000]} ===")
+            if 'user_uuid' in pp:
+                print(f"=== user_uuid: {pp['user_uuid']} ===")
+            if 'buzz_count' in pp:
+                print(f"=== buzz_count: {pp['buzz_count']} ===")
+        except Exception as e:
+            print(f"JSON parse error: {e}")
+    else:
+        print(f"\n=== NO __NEXT_DATA__ found ===")
+
+    # Check for other script tags with JSON
+    scripts = re.findall(r'<script[^>]*type=["\']application/json["\'][^>]*>(.+?)</script>', page_text)
+    print(f"\n=== Found {len(scripts)} application/json script tags ===")
+    for i, s in enumerate(scripts[:5]):
+        print(f"--- Script {i} (first 1000 chars): {s[:1000]}")
+
+    # Check for JSON-LD structured data
+    ld = re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.+?)</script>', page_text)
+    print(f"\n=== Found {len(ld)} LD+JSON tags ===")
+    for i, s in enumerate(ld[:3]):
+        print(f"--- LD+JSON {i}: {s[:1000]}")
+
+    # Look for common patterns
+    patterns = [
+        'window.BZFD', '__NEXT_DATA__', 'window.__NEXT_DATA__',
+        'user_uuid', 'displayName', 'memberSince', 'isCommunityUser',
+        'buzz_count', 'buzzfeed-static', 'window.__remixContext',
+        'window.__NUXT__', 'window.__APP_DATA__', 'data-page=',
+    ]
+    print(f"\n=== Pattern checks ===")
+    for p in patterns:
+        print(f"  {p}: {p in page_text}")
+
+    # Print last 2000 chars
+    print(f"\n=== LAST 2000 CHARS ===")
+    print(page_text[-2000:])
+
+    assert False, "Diagnostic test - check output for page structure"
+
+
 @pytest.mark.github_failed
 def test_buzzfeed():
     info = extract(parse('https://www.buzzfeed.com/lisa')[0])
