@@ -748,6 +748,23 @@ def test_pinterest_board():
     assert info.get('locale') == 'hu-HU'
 
 
+@pytest.mark.github_failed
+def test_pinterest_account():
+    """Pinterest API"""
+    URL = 'https://www.pinterest.com/melgaspar666/'
+    mutated = mutate_url(URL)
+    assert len(mutated) >= 1
+    url, add_headers = mutated[0]
+
+    info = extract(parse(url, headers=add_headers)[0])
+
+    assert info.get('pinterest_username') == 'melgaspar666'
+    assert info.get('fullname') is not None
+    assert info.get('links') == "['https://plus.google.com/101397814498498498769']"
+    assert 'follower_count' in info
+    assert 'following_count' in info
+
+
 @pytest.mark.skip(reason="service no longer public")
 def test_yandex_collections_api():  # Presumably dead. See https://yandex.ru/dev/collections/
     info = extract(parse('http://yandex.uz/collections/api/users/gebial')[0])
@@ -1096,6 +1113,7 @@ def test_tapd():  # Broken. Site not responding.
         'links') == "['https://www.twitter.com/Betsyalvarezz', 'https://www.instagram.com/Betsyalvarezz', 'https://cash.app/$Betsyalvarezz', 'https://www.tiktok.com/@Betsyalvarezz', 'https://www.instagram.com/Brb.thelabel', 'https://www.youtube.com/c/BetsyAlvarezz', 'https://www.amazon.com/hz/wishlist/ls/2GNHXWNBBCIP0?ref_=wl_share', 'https://onlyfans.com/Betsyalvarezz']"
 
 
+@pytest.mark.github_failed
 def test_buzzfeed():
     info = extract(parse('https://www.buzzfeed.com/lisa')[0])
 

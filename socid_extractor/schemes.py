@@ -894,6 +894,12 @@ schemes = {
         'flags': ['{"resource_response":{', 'video_pin_count'],
         'regex': r'^(.+)$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(www\.)?pinterest\.\w+/(?P<username>[^/]+)/?$',
+                'to': 'https://www.pinterest.com/resource/UserResource/get/?source_url=%2F{username}%2F&data=%7B%22options%22%3A%7B%22isPrefetch%22%3Afalse%2C%22field_set_key%22%3A%22profile%22%2C%22username%22%3A%22{username}%22%2C%22no_fetch_context_on_resource%22%3Afalse%7D%2C%22context%22%3A%7B%7D%7D',
+            }
+        ],
         'transforms': [
             json.loads,
             lambda x: x['resource_response']['data'],
@@ -916,6 +922,7 @@ schemes = {
             'last_pin_save_datetime': lambda x: x.get('last_pin_save_time'),
             'is_website_verified': lambda x: x.get('domain_verified'),
             'website': lambda x: x.get('website_url'),
+            'links': lambda x: [x['website_url']] if x.get('website_url') else [],
             'has_board': lambda x: x.get('has_board'),
             'has_catalog': lambda x: x.get('has_catalog'),
             'is_indexed': lambda x: x.get('indexed'),
@@ -952,6 +959,7 @@ schemes = {
             'following_count': lambda x: x.get('following_count'),
             'is_website_verified': lambda x: x.get('domain_verified'),
             'website': lambda x: x.get('domain_url'),
+            'links': lambda x: [x['domain_url']] if x.get('domain_url') else [],
             'is_indexed': lambda x: x.get('indexed'),
             'is_partner': lambda x: x.get('is_partner'),
             'is_tastemaker': lambda x: x.get('is_tastemaker'),
