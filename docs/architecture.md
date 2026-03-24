@@ -25,6 +25,7 @@ Each scheme entry is a Python dict. Typical keys:
 | `fields` | Dict mapping output field names to callables. For JSON path: `lambda obj: ...`. For BeautifulSoup: `lambda soup: ...`. |
 | `bs` | If present with `fields`, BeautifulSoup is used (`parser_type` defaults to `html.parser`). |
 | `url_mutations` | Not used inside `extract`; only consumed by `mutate_url`. |
+| `url_hints` | Optional tuple of substrings for CLI-only URL pre-check (`check_url_relevance` in [`url_relevance.py`](../socid_extractor/url_relevance.py)); ignored by `extract`. Use when the site’s domain is not obvious from the scheme name. |
 | `message` | Optional log line when the scheme is detected. |
 
 **Regexp branch**
@@ -47,6 +48,7 @@ The final return value drops entries whose values are “empty” unless the val
 ## CLI ([`cli.py`](../socid_extractor/cli.py))
 
 - **`--url`** — Fetches with `parse` (timeout 10 in CLI), optionally after `mutate_url`.
+- **`--skip-fetch-if-no-url-hint`** — If set, runs a cheap substring check ([`url_relevance.check_url_relevance`](../socid_extractor/url_relevance.py)) against each request URL before HTTP. If nothing matches, that request is skipped (message on stderr). Generic schemes whose URLs do not contain recognizable tokens may be skipped incorrectly; default is off (backward compatible).
 - **`--cookies` / `--cookie-jar`** — Merged into a cookie string for `parse`.
 - **`--file`** — Reads a local file and passes its contents to `extract` only (no HTTP).
 - **`--activation`** — Calls a named function from [`activation.py`](../socid_extractor/activation.py) (e.g. guest token flows) to adjust cookies/headers before the request.

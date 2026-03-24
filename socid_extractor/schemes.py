@@ -8,12 +8,14 @@ from .utils import *
 schemes = {
     # unactual
     'Twitter HTML': {
+        'url_hints': ('twitter.com', 'x.com', 'twimg.com'),
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
     },
     # https://shadowban.eu/.api/user
     # https://gist.github.com/superboum/ab31bc4c85c731b9e89ebda5eaed9a3a
     'Twitter Shadowban': {
+        'url_hints': ('twitter.com', 'x.com', 'shadowban.eu'),
         'flags': ['"timestamp"', '"profile": {', 'has_tweets'],
         'regex': r'^({.+?})$',
         'extract_json': True,
@@ -32,6 +34,7 @@ schemes = {
     },
     'Twitter GraphQL API': {
         # X API may emit fields before "id" inside user{...}; keep flags aligned with live JSON
+        'url_hints': ('twitter.com', 'x.com', 'twimg.com'),
         'flags': ['{"data":{"user"', '"legacy":'],
         'regex': r'^{"data":{"user":({.+})}}$',
         'extract_json': True,
@@ -57,6 +60,7 @@ schemes = {
         }
     },
     'Facebook user profile': {
+        'url_hints': ('facebook.com', 'fb.com', 'm.facebook.com'),
         'flags': ['<html id="facebook"', '<title>Facebook</title>'],
         'regex': r'({"__bbox":{"complete".+"sequence_number":0}})',
         'extract_json': True,
@@ -75,15 +79,18 @@ schemes = {
         }
     },
     'Facebook group': {
+        'url_hints': ('facebook.com', 'fb.com'),
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
         'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
     },
     'GitHub HTML': {
+        'url_hints': ('github.com',),
         'flags': ['github.githubassets.com'],
         'regex': r'data-hydro-click.+?profile_user_id&quot;:(?P<uid>\d+).+?originating_url&quot;:&quot;https:\/\/github\.com\/(?P<username>[^&]+)'
     },
     # https://api.github.com/users/torvalds
     'GitHub API': {
+        'url_hints': ('api.github.com', 'github.com'),
         'flags': ['gists_url', 'received_events_url'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -106,6 +113,7 @@ schemes = {
         }
     },
     'Gitlab API': {
+        'url_hints': ('gitlab.com',),
         'flags': ['avatar_url', 'https://gitlab.com'],
         'regex': r'^\[({[\S\s]+?})\]$',
         'extract_json': True,
@@ -124,6 +132,7 @@ schemes = {
         }
     },
     'Patreon': {
+        'url_hints': ('patreon.com',),
         'flags': ['www.patreon.com/api', 'pledge_url'],
         'regex': r'Object.assign\(window.patreon.bootstrap, ([\s\S]*)\);[\s\S]*Object.assign\(window.patreon.campaignFeatures, {}\);',
         'extract_json': True,
@@ -141,6 +150,7 @@ schemes = {
         }
     },
     'Flickr': {
+        'url_hints': ('flickr.com',),
         'flags': ['api.flickr.com', 'photostream-models', 'person-profile-models'],
         'regex': r'modelExport:(.*),[\s\S]*auth',
         'extract_json': True,
@@ -168,10 +178,12 @@ schemes = {
         }
     },
     'Yandex Disk file': {
+        'url_hints': ('yadi.sk', 'disk.yandex', 'yandex.ru'),
         'flags': ["project:'disk-public',page:'icon'", '@yandexdisk', 'yastatic.net'],
         'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<name>.+?)"',
     },
     'Yandex Disk photoalbum': {
+        'url_hints': ('yadi.sk', 'disk.yandex', 'yandex.ru'),
         'flags': ["project:'disk-public',page:'album'"],
         'regex': r'"users":{.*?"uid":"(?P<yandex_uid>\d+)","displayName":"(?P<name>.+?)"',
     },
@@ -460,6 +472,7 @@ schemes = {
         }
     },
     'VK user profile foaf page': {
+        'url_hints': ('vk.com',),
         'flags': ['<foaf:Person>', '<ya:publicAccess>'],
         'bs': True,
         'fields': {
@@ -480,6 +493,7 @@ schemes = {
         },
     },
     'VK user profile': {
+        'url_hints': ('vk.com',),
         'flags': ['<span class="ui_tab_content_new">', '"ownerId":'],
         'url_mutations': [
             {
@@ -490,14 +504,17 @@ schemes = {
         'regex': r'"ownerId":(?P<vk_id>\d+),"wall".*?"loc":"(?P<vk_username>.*?)","back":"(?P<fullname>.*?)"'
     },
     'VK closed user profile': {
+        'url_hints': ('vk.com',),
         'flags': ['error_msg":"This profile is private', 'first_name_nom', 'last_name_gen'],
         'regex': r'<title>(?P<fullname>.*?)<\/title>'
     },
     'VK blocked user profile': {
+        'url_hints': ('vk.com',),
         'flags': ['window.vk = {', 'User was deleted or banned'],
         'regex': r'<title>(?P<fullname>.*?)<\/title>'
     },
     'Gravatar': {
+        'url_hints': ('gravatar.com', 'en.gravatar.com'),
         'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
         'url_mutations': [
             {
@@ -521,6 +538,7 @@ schemes = {
         }
     },
     'Instagram': {
+        'url_hints': ('instagram.com', 'cdninstagram.com'),
         'flags': ['instagram://user?username'],
         'regex': r'<script type="application/json" .*?>(.*?)</script>',
         'extract_json': True,
@@ -547,6 +565,7 @@ schemes = {
         }
     },
     'Instagram API': {
+        'url_hints': ('instagram.com', 'cdninstagram.com'),
         'flags': ['{"user":{"pk"', 'profile_pic_url'],
         'regex': r'^(.+?)$',
         'extract_json': True,
@@ -557,6 +576,7 @@ schemes = {
         }
     },
     'Instagram page JSON': {
+        'url_hints': ('instagram.com', 'cdninstagram.com'),
         'flags': ['"logging_page_id":"profilePage', 'profile_pic_url'],
         'regex': r'^(.+?)$',
         'extract_json': True,
@@ -583,6 +603,7 @@ schemes = {
         }
     },
     'Spotify API': {
+        'url_hints': ('spotify.com', 'open.spotify.com'),
         'flags': ['"uri": "spotify:user:'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -594,6 +615,7 @@ schemes = {
         }
     },
     'EyeEm': {
+        'url_hints': ('eyeem.com',),
         'flags': ['window.__APOLLO_STATE__', 'cdn.eyeem.com/thumb'],
         'regex': r'__APOLLO_STATE__ = ({.+?});\n',
         'extract_json': True,
@@ -615,6 +637,7 @@ schemes = {
         }
     },
     'Medium': {
+        'url_hints': ('medium.com',),
         'flags': ['https://medium.com', 'com.medium.reader'],
         'regex': r'__APOLLO_STATE__ = ({.+})',
         'extract_json': True,
@@ -639,10 +662,12 @@ schemes = {
         }
     },
     'Odnoklassniki': {
+        'url_hints': ('ok.ru',),
         'flags': ['OK.startupData'],
         'regex': r'path:"/(profile/)?(?P<ok_user_name_id>.+?)",state:".+?friendId=(?P<ok_id>\d+?)"',
     },
     'Habrahabr HTML (old)': {
+        'url_hints': ('habr.com', 'habracdn'),
         'flags': ['habracdn.net'],
         'bs': True,
         'fields': {
@@ -652,6 +677,7 @@ schemes = {
         },
     },
     'Habrahabr JSON': {
+        'url_hints': ('habr.com', 'habrastorage'),
         'flags': ['habrastorage.org'],
         'regex': r'({"authorRefs":{.+?}),"viewport',
         'extract_json': True,
@@ -676,6 +702,7 @@ schemes = {
         }
     },
     'My Mail.ru': {
+        'url_hints': ('my.mail.ru', 'mail.ru'),
         'flags': ['my.mail.ru', 'models/user/journal">'],
         'regex': r'journal">\s+({\s+"name":[\s\S]+?})',
         'extract_json': True,
@@ -693,6 +720,7 @@ schemes = {
         }
     },
     'Behance': {
+        'url_hints': ('behance.net',),
         'flags': ['behance.net', 'beconfig-store_state'],
         'regex': r'<script type="application/json" id="beconfig-store_state">({.+?})</script>',
         'extract_json': True,
@@ -737,18 +765,22 @@ schemes = {
         }
     },
     'Blogger': {
+        'url_hints': ('blogspot.com', 'blogger.com'),
         'flags': ['www.blogger.com/static', 'blogspot.com/feeds/posts'],
         'regex': r'www.blogger.com\/feeds\/(?P<blog_id>\d+)\/posts\/default" \/>\n<link rel="me" href="https:\/\/www.blogger.com\/profile/(?P<uid>\d+)" \/>',
     },
     'D3.ru': {
+        'url_hints': ('d3.ru',),
         'flags': ['feedSettingsHandler.subscribe(this', 'd3.ru/static'],
         'regex': r"feedSettingsHandler.subscribe\(this, 'users', '(?P<uid>\d+)'",
     },
     'Gitlab': {
+        'url_hints': ('gitlab.com',),
         'flags': ['gitlab-static.net'],
         'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
     },
     '500px GraphQL API': {
+        'url_hints': ('500px.com', 'api.500px.com'),
         'flags': ['{"data":{"profile":{"id"'],
         'url_mutations': [
             {
@@ -786,6 +818,7 @@ schemes = {
         }
     },
     'Google Document API': {
+        'url_hints': ('docs.google.com', 'drive.google.com', 'googleapis.com'),
         'flags': ['alternateLink', 'copyRequiresWriterPermission'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
@@ -807,6 +840,7 @@ schemes = {
         }
     },
     'Google Document': {
+        'url_hints': ('docs.google.com', 'drive.google.com'),
         'flags': ['_docs_flag_initialData'],
         'regex': r'({"docs-ails":"docs_\w+".+?});',
         'extract_json': True,
@@ -822,14 +856,17 @@ schemes = {
         }
     },
     'Google Maps contributions': {
+        'url_hints': ('google.com/maps', 'maps.google.com'),
         'flags': ['/maps/preview/opensearch.xml', '<meta content="Contributions by'],
         'regex': r'"Contributions by (?P<name>.+?)",("(?P<contributions_count>\d+) Contribution|"(?P<contribution_level>.+?)")',
     },
     'Youtube Channel': {
+        'url_hints': ('youtube.com', 'youtu.be'),
         'flags': ['<span itemprop="author" itemscope itemtype="http://schema.org/Person">'],
         'regex': r'itemtype="http:\/\/schema\.org\/Person"[\s\S]+?https:\/\/plus\.google\.com\/(?P<gaia_id>\d+)">[\s\S]+?itemprop="name" content="(?P<name>.+?)"'
     },
     'Bitbucket': {
+        'url_hints': ('bitbucket.org', 'api.bitbucket.org'),
         'flags': ['https://api.bitbucket.org'],
         'regex': r'({.+?"section": {"profile.+?"repositories":.+?}});',
         'extract_json': True,
@@ -853,6 +890,7 @@ schemes = {
         }
     },
     'Pinterest API': {
+        'url_hints': ('pinterest.com', 'pinimg.com'),
         'flags': ['{"resource_response":{', 'video_pin_count'],
         'regex': r'^(.+)$',
         'extract_json': True,
@@ -889,6 +927,7 @@ schemes = {
         }
     },
     'Pinterest profile/board page': {
+        'url_hints': ('pinterest.com', 'pinimg.com'),
         'flags': ['https://s.pinimg.com/webapp/', 'content="Pinterest"'],
         'regex': r'<script id="initial-state" type="application/json">({.+?})</script>',
         'extract_json': True,
@@ -922,6 +961,7 @@ schemes = {
         }
     },
     'Reddit': {
+        'url_hints': ('reddit.com', 'redditstatic.com'),
         'flags': ['https://www.redditstatic.com/'],
         'regex': r'___r = ({.+?});<\/script><script>',
         'extract_json': True,
@@ -948,6 +988,7 @@ schemes = {
         },
     },
     'Steam': {
+        'url_hints': ('steamcommunity.com', 'steampowered.com'),
         'flags': ['store.steampowered.com', 'profile_header_bg_texture'],
         'regex': r'({"url":".+?});',
         'extract_json': True,
@@ -959,10 +1000,12 @@ schemes = {
     },
     'Steam Addiction': {
         # TODO: добавить отображение предыдущих ников по ссылке /ajaxaliases/, например https://steamcommunity.com/profiles/76561198222448544/ajaxaliases/
+        'url_hints': ('steamcommunity.com',),
         'flags': ['steamcommunity.com'],
         'regex': r'<bdi><span class="filtered_text">(?P<real_name>.+)<\/span><\/bdi>(\s*&nbsp;\s*<img class="profile_flag" src=".*">\s*(?P<country>.*)<\/div>)*',
     },
     'Stack Overflow & similar': {
+        'url_hints': ('stackoverflow.com', 'stackexchange.com', 'askubuntu.com'),
         'flags': ['StackExchange.user.init'],
         'bs': True,
         'fields': {
@@ -973,6 +1016,7 @@ schemes = {
         }
     },
     'SoundCloud': {
+        'url_hints': ('soundcloud.com',),
         'flags': ['eventlogger.soundcloud.com'],
         'regex': r'{"hydratable":"user","data":({.+?)}];',
         'extract_json': True,
@@ -997,6 +1041,7 @@ schemes = {
     },
     'TikTok': {
         # Modern web: __UNIVERSAL_DATA_FOR_REHYDRATION__ (SIGI_STATE is absent on current pages)
+        'url_hints': ('tiktok.com', 'tiktokcdn.com'),
         'flags': ['__UNIVERSAL_DATA_FOR_REHYDRATION__', '"secUid"'],
         'regex': r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([\s\S]*?)</script>',
         'extract_json': True,
@@ -1023,6 +1068,7 @@ schemes = {
         }
     },
     'TikTok (legacy SIGI_STATE)': {
+        'url_hints': ('tiktok.com', 'tiktokcdn.com'),
         'flags': ['tiktokcdn.com', 'SIGI_STATE'],
         'regex': r'<script id="SIGI_STATE"[^>]+>(.+?)</script>',
         'extract_json': True,
@@ -1050,6 +1096,7 @@ schemes = {
     },
     'Picsart API': {
         # API may serialize JSON with or without spaces; these keys appear in success payloads
+        'url_hints': ('picsart.com', 'api.picsart.com'),
         'flags': ['remix_score', 'dashboard_visibility'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
@@ -1073,6 +1120,7 @@ schemes = {
         }
     },
     'VC.ru': {
+        'url_hints': ('vc.ru',),
         'flags': ['property="og:site_name" content="vc.ru"', '"subsite":{"id"'],
         'regex': r'({"module.page":{.+});',
         'extract_json': True,
@@ -1083,6 +1131,7 @@ schemes = {
         }
     },
     'LiveJournal': {
+        'url_hints': ('livejournal.com',),
         'flags': ['Site.journal'],
         'regex': r'Site.journal = ({.+?});',
         'extract_json': True,
@@ -1102,6 +1151,7 @@ schemes = {
         }
     },
     'MySpace': {
+        'url_hints': ('myspace.com',),
         'flags': ['myspacecdn.com'],
         'regex': r'context = ({.+?});',
         'extract_json': True,
@@ -1111,6 +1161,7 @@ schemes = {
         }
     },
     'Keybase API': {
+        'url_hints': ('keybase.io',),
         'flags': ['{"status":{"code":0,"name":"OK"},"them":'],
         'regex': r'^(.+?"them":\[{.+?}\]})$',
         'extract_json': True,
@@ -1131,11 +1182,13 @@ schemes = {
         }
     },
     'Wikimapia': {
+        'url_hints': ('wikimapia.org',),
         'flags': ['src="/js/linkrouter.js', 'container-fluid inner-page'],
         'regex': r'<tr class="current">[\s\S]{10,100}a href="\/user\/(?P<wikimapia_uid>\d+)">\n\s+.{10,}\n\s+<strong>(?P<username>.+?)<\/strong>[\s\S]{50,200}<\/tr>',
     },
     # unactual
     'Vimeo HTML': {
+        'url_hints': ('vimeo.com', 'vimeocdn.com'),
         'flags': ['https://i.vimeocdn.com/favicon/main-touch'],
         'regex': r'"app_config":({"user":.+?})},\"coach_notes',
         'extract_json': True,
@@ -1151,6 +1204,7 @@ schemes = {
         }
     },
     'Vimeo GraphQL API': {
+        'url_hints': ('vimeo.com', 'api.vimeo.com'),
         'flags': ['{\n    "uri": "/users/'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
@@ -1170,6 +1224,7 @@ schemes = {
         }
     },
     'DeviantArt': {
+        'url_hints': ('deviantart.com',),
         'flags': ['window.deviantART = '],
         'regex': r'({\\"username\\":\\".+?\",\\"country.+?legacyTextEditUrl.+?})',
         'extract_json': True,
@@ -1193,6 +1248,7 @@ schemes = {
         }
     },
     'mssg.me': {
+        'url_hints': ('mssg.me',),
         'flags': ['content="https://mssg.me/'],
         'regex': r'window.INITIAL_DATA = (.*);[\s\S]*window.LOCALES',
         'extract_json': True,
@@ -1204,6 +1260,7 @@ schemes = {
         }
     },
     'Telegram': {
+        'url_hints': ('t.me',),
         'flags': ['tgme_page_title'],
         'bs': True,
         'fields': {
@@ -1213,6 +1270,7 @@ schemes = {
         }
     },
     'BuzzFeed': {
+        'url_hints': ('buzzfeed.com',),
         'flags': ['window.BZFD = window.BZFD'],
         'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
         'extract_json': True,
@@ -1237,6 +1295,7 @@ schemes = {
         }
     },
     'Linktree': {
+        'url_hints': ('linktr.ee',),
         'flags': ['content="Linktree. Make your link do more."'],
         'regex': r'id="__NEXT_DATA__" type="application\/json" crossorigin="anonymous">(.+?)<\/script>',
         'extract_json': True,
@@ -1262,6 +1321,7 @@ schemes = {
         }
     },
     'Twitch': {
+        'url_hints': ('twitch.tv', 'twitchcdn.net'),
         'flags': ['crossorigin="anonymous" href="https://gql.twitch.tv/gql"'],
         'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
         'extract_json': True,
@@ -1293,6 +1353,7 @@ schemes = {
         }
     },
     'Tumblr (default theme)': {
+        'url_hints': ('tumblr.com',),
         'flags': ['https://assets.tumblr.com'],
         'bs': True,
         'fields': {
@@ -1307,6 +1368,7 @@ schemes = {
         }
     },
     '1x.com': {
+        'url_hints': ('1x.com',),
         'flags': ['content="https://www.1x.com/'],
         'bs': True,
         'fields': {
@@ -1316,6 +1378,7 @@ schemes = {
         }
     },
     'Last.fm': {
+        'url_hints': ('last.fm',),
         'flags': ['Music Profile | Last.fm</title>'],
         'bs': True,
         'fields': {
@@ -1326,6 +1389,7 @@ schemes = {
         }
     },
     'Ask.fm': {
+        'url_hints': ('ask.fm',),
         'flags': [' | ASKfm</title>'],
         'bs': True,
         'fields': {
@@ -1340,6 +1404,7 @@ schemes = {
         }
     },
     'Launchpad': {
+        'url_hints': ('launchpad.net',),
         'flags': ['in Launchpad</title>'],
         'bs': True,
         'fields': {
@@ -1354,6 +1419,7 @@ schemes = {
         }
     },
     'Xakep.ru': {
+        'url_hints': ('xakep.ru',),
         'flags': ['https://xakep.ru/author/'],
         'bs': True,
         'fields': {
@@ -1366,6 +1432,7 @@ schemes = {
         }
     },
     'Tproger.ru': {
+        'url_hints': ('tproger.ru',),
         'flags': ['<meta property="og:url" content="https://tproger.ru/author/'],
         'bs': True,
         'fields': {
@@ -1374,6 +1441,7 @@ schemes = {
         }
     },
     'Jsfiddle.net': {
+        'url_hints': ('jsfiddle.net',),
         'flags': ['<meta name="author" edit="JSFiddle">'],
         'bs': True,
         'fields': {
@@ -1385,6 +1453,7 @@ schemes = {
         }
     },
     'Disqus API': {
+        'url_hints': ('disqus.com',),
         'flags': ['https://disqus.com/api/users/'],
         'regex': r'^([\s\S]+)$',
         'url_mutations': [
@@ -1423,6 +1492,7 @@ schemes = {
         }
     },
     'uCoz-like profile page': {
+        'url_hints': ('ucoz.',),
         'flags': ['UCOZ-JS-DATA'],
         'bs': True,
         'fields': {
@@ -1443,6 +1513,7 @@ schemes = {
         },
     },
     'uID.me': {
+        'url_hints': ('uid.me',),
         'flags': [' - uID.me</title>'],
         'bs': True,
         'fields': {
@@ -1460,6 +1531,7 @@ schemes = {
         },
     },
     'tapd': {
+        'url_hints': ('tapd.co',),
         'flags': ['{"_id"', 'userDetails":{"', '"sid":"'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
@@ -1479,6 +1551,7 @@ schemes = {
         }
     },
     'freelancer.com': {
+        'url_hints': ('freelancer.com',),
         'flags': ['{"status":"success","result":{"users":{'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
@@ -1506,6 +1579,7 @@ schemes = {
         }
     },
     'Yelp': {
+        'url_hints': ('yelp.com',),
         'flags': ['yelp.www.init.user_details'],
         'bs': True,
         'fields': {
@@ -1524,6 +1598,7 @@ schemes = {
         }
     },
     'Trello API': {
+        'url_hints': ('trello.com',),
         'flags': ['"aaId"', '"trophies":'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
@@ -1541,6 +1616,7 @@ schemes = {
     },
     # TODO
     'Weibo': {
+        'url_hints': ('weibo.com',),
         'flags': ['$CONFIG = {"showAriaEntrance'],
         'regex': r'aria-label',
         'transforms': [
@@ -1558,6 +1634,7 @@ schemes = {
         }
     },
     'ICQ': {
+        'url_hints': ('icq.com',),
         'flags': ['a href="//icq.com/app" class="icq-prompt__banner-link"'],
         'bs': True,
         'fields': {
@@ -1568,6 +1645,7 @@ schemes = {
         }
     },
     'Pastebin': {
+        'url_hints': ('pastebin.com',),
         'flags': ['src="/themes/pastebin/js/'],
         'bs': True,
         'fields': {
@@ -1580,6 +1658,7 @@ schemes = {
         }
     },
     'Periscope': {
+        'url_hints': ('periscope.tv', 'pscp.tv'),
         'flags': ['canonicalPeriscopeUrl', 'pscp://user/', 'property="og:site_name" content="Periscope"/>'],
         'regex': r'data-store="(.*)"><div id="PageView"',
         'extract_json': True,
@@ -1608,6 +1687,7 @@ schemes = {
         }
     },
     'Imgur API': {
+        'url_hints': ('imgur.com', 'api.imgur.com'),
         'flags': ['"reputation_count"', '"reputation_name"'],
         'regex': r'^([\s\S]+)$',
         'extract_json': True,
@@ -1630,6 +1710,7 @@ schemes = {
         }
     },
     'PayPal': {
+        'url_hints': ('paypal.com', 'paypal.me'),
         'flags': ["indexOf('qa.paypal.com')", 'PayPalSansSmall-Regular'],
         'regex': r'application/json" id="client-data">(.*)</script><script type="application/json" id="l10n-content">',
         'extract_json': True,
@@ -1650,6 +1731,7 @@ schemes = {
         }
     },
     'Tinder': {
+        'url_hints': ('tinder.com',),
         'flags': ['<html id="Tinder"', 'content="tinder:'],
         'regex': r'window.__data=(.*);</script><script>window.__intlData=JSON.parse',
         'extract_json': True,
@@ -1673,6 +1755,7 @@ schemes = {
         }
     },
     'ifunny.co': {
+        'url_hints': ('ifunny.co',),
         'flags': ['window.__INITIAL_STATE__', '"nick":'],
         'regex': r'window.__INITIAL_STATE__=(.+?);',
         'extract_json': True,
@@ -1697,6 +1780,7 @@ schemes = {
         }
     },
     'Wattpad API': {
+        'url_hints': ('wattpad.com',),
         'flags': ['{"username":"'],
         'regex': r'^({"username":"(.+)})$',
         'extract_json': True,
@@ -1735,6 +1819,7 @@ schemes = {
         }
     },
     'Kik': {
+        'url_hints': ('kik.me', 'kik.com'),
         'flags': ['{"firstName":"'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1751,6 +1836,7 @@ schemes = {
         }
     },
     'Docker Hub API': {
+        'url_hints': ('hub.docker.com',),
         'flags': ['{"id":"', '"type":"User"}'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1772,6 +1858,7 @@ schemes = {
         }
     },
     'Mixcloud API': {
+        'url_hints': ('mixcloud.com', 'api.mixcloud.com'),
         'flags': ['"key": "'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1800,6 +1887,7 @@ schemes = {
         }
     },
     'binarysearch API': {
+        'url_hints': ('binarysearch.com',),
         'flags': [',"preferredSubmissionPrivacy":'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1832,6 +1920,7 @@ schemes = {
         }
     },
     'pr0gramm API': {
+        'url_hints': ('pr0gramm.com',),
         'flags': [',"likesArePublic":'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1852,6 +1941,7 @@ schemes = {
         }
     },
     'Aparat API': {
+        'url_hints': ('aparat.com',),
         'flags': ['ProfileMore', 'aparat.com'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1880,6 +1970,7 @@ schemes = {
         }
     },
     'UnstoppableDomains': {
+        'url_hints': ('unstoppabledomains.com',),
         'flags': ['reservedForUserId', 'DomainProduct'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1890,6 +1981,7 @@ schemes = {
         }
     },
     'memory.lol': {
+        'url_hints': ('memory.lol',),
         'flags': ['{"accounts":[{'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1899,6 +1991,7 @@ schemes = {
         }
     },
     'Duolingo API': {
+        'url_hints': ('duolingo.com',),
         'flags': ['"users":[{', 'learningLanguage', 'duolingo.com'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
@@ -1923,6 +2016,7 @@ schemes = {
         }
     },
     'TwitchTracker': {
+        'url_hints': ('twitchtracker.com',),
         'flags': ['window.channel', 'og:site_name" content="TwitchTracker"'],
         # Inline script assigns a JS object literal (not JSON); capture fields by regex.
         'regex': (
@@ -1932,6 +2026,7 @@ schemes = {
         ),
     },
     'Chess.com API': {
+        'url_hints': ('chess.com', 'api.chess.com'),
         'flags': ['"player_id"', 'images.chesscomfiles.com/uploads/v1/user/', '"username"'],
         'regex': r'^({[\S\s]+})$',
         'extract_json': True,
@@ -1959,6 +2054,7 @@ schemes = {
         },
     },
     'Roblox user API': {
+        'url_hints': ('roblox.com', 'users.roblox.com'),
         'flags': ['"externalAppDisplayName"', '"hasVerifiedBadge"', '"isBanned"'],
         'regex': r'^({[\S\s]+})$',
         'extract_json': True,
@@ -1979,6 +2075,7 @@ schemes = {
         },
     },
     'Roblox username lookup API': {
+        'url_hints': ('roblox.com', 'users.roblox.com'),
         'flags': ['"requestedUsername"', '"hasVerifiedBadge"', '"data":[{'],
         'regex': r'^({[\S\s]+})$',
         'extract_json': True,
@@ -1995,6 +2092,7 @@ schemes = {
         },
     },
     'MyAnimeList profile': {
+        'url_hints': ('myanimelist.net',),
         'flags': ['myanimelist.net/profile', 'class="user-profile"', 'data-ga-click-param="uid:'],
         'regex': (
             r'property="og:url" content="https://myanimelist\.net/profile/(?P<mal_username>[^"]+)"[\s\S]*?'
@@ -2002,10 +2100,12 @@ schemes = {
         ),
     },
     'XVideos profile': {
+        'url_hints': ('xvideos.com',),
         'flags': ['xvideos.com/profiles', 'id_user', 'xv-responsive'],
         'regex': r'"id_user":(?P<xvideos_user_id>\d+),"username":"(?P<xvideos_username>[^"]+)"',
     },
     'lnk.bio': {
+        'url_hints': ('lnk.bio',),
         'flags': ['__NEXT_DATA__', 'lnk.bio'],
         'regex': r'<script id="__NEXT_DATA__" type="application/json">([\s\S]+?)</script>',
         'extract_json': True,
