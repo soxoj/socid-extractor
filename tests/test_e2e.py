@@ -748,6 +748,23 @@ def test_pinterest_board():
     assert info.get('locale') == 'hu-HU'
 
 
+@pytest.mark.github_failed
+def test_pinterest_account():
+    """Pinterest API"""
+    URL = 'https://www.pinterest.com/melgaspar666/'
+    mutated = mutate_url(URL)
+    assert len(mutated) >= 1
+    url, add_headers = mutated[0]
+
+    info = extract(parse(url, headers=add_headers)[0])
+
+    assert info.get('pinterest_username') == 'melgaspar666'
+    assert info.get('fullname') is not None
+    assert 'links' in info
+    assert 'follower_count' in info
+    assert 'following_count' in info
+
+
 @pytest.mark.skip(reason="service no longer public")
 def test_yandex_collections_api():  # Presumably dead. See https://yandex.ru/dev/collections/
     info = extract(parse('http://yandex.uz/collections/api/users/gebial')[0])
