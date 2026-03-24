@@ -760,7 +760,7 @@ def test_pinterest_account():
 
     assert info.get('pinterest_username') == 'melgaspar666'
     assert info.get('fullname') is not None
-    assert 'links' in info
+    assert info.get('links') == "['https://plus.google.com/101397814498498498769']"
     assert 'follower_count' in info
     assert 'following_count' in info
 
