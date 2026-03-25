@@ -60,6 +60,17 @@ The latest development version can be installed directly from GitHub:
 - Tumblr
 - TikTok
 - GitHub
+- Chess.com
+- Roblox
+- MyAnimeList
+- Substack
+- Hashnode
+- Fandom wikis (MediaWiki API)
+- Rarible
+- CSSBattle
+- Max (max.ru)
+- TwitchTracker
+- lnk.bio
 
 ...and many others.
 

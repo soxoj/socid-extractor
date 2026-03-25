@@ -270,3 +270,142 @@ def test_lnk_bio_next_data_fixture():
     assert info.get('username') == 'fixture'
     assert info.get('fullname') == 'Fixture User'
     assert 'example.org' in info.get('links', '')
+
+
+def test_fandom_mediawiki_api_json():
+    """Fandom MediaWiki API: extract userid and canonical username from user query response."""
+    body = json.dumps({
+        "batchcomplete": "",
+        "query": {
+            "users": [
+                {"userid": 22693, "name": "Red"}
+            ]
+        }
+    })
+    info = extract(body)
+    assert info.get('uid') == '22693'
+    assert info.get('username') == 'Red'
+
+
+def test_fandom_mediawiki_api_missing_user():
+    """Fandom MediaWiki API: missing user has no userid — scheme should still match but yield empty uid."""
+    body = json.dumps({
+        "batchcomplete": "",
+        "query": {
+            "users": [
+                {"name": "NonexistentUser12345", "missing": ""}
+            ]
+        }
+    })
+    info = extract(body)
+    # missing user has no userid → uid should be absent or empty
+    assert info.get('username') == 'NonexistentUser12345'
+    assert not info.get('uid')
+
+
+def test_substack_public_profile_api_json():
+    """Substack public profile API: extract user fields from JSON response."""
+    body = json.dumps({
+        "id": 188506911,
+        "name": "Philip",
+        "handle": "user23",
+        "photo_url": "https://substack-post-media.s3.amazonaws.com/photo.jpg",
+        "bio": "Been Internettin' since 1997",
+        "profile_set_up_at": "2023-12-11T03:04:51.141Z",
+    })
+    info = extract(body)
+    assert info.get('uid') == '188506911'
+    assert info.get('username') == 'user23'
+    assert info.get('fullname') == 'Philip'
+    assert info.get('bio') == "Been Internettin' since 1997"
+    assert 'substack-post-media' in info.get('image', '')
+
+
+def test_hashnode_graphql_api_json():
+    """hashnode GraphQL API: extract username and fullname from GraphQL response."""
+    body = json.dumps({
+        "data": {
+            "user": {
+                "name": "Melwin D'Almeida",
+                "username": "melwinalm"
+            }
+        }
+    })
+    info = extract(body)
+    assert info.get('username') == 'melwinalm'
+    assert info.get('fullname') == "Melwin D'Almeida"
+
+
+def test_hashnode_graphql_api_null_user():
+    """hashnode GraphQL API: null user (unclaimed) should yield empty result."""
+    body = json.dumps({
+        "data": {
+            "user": None
+        }
+    })
+    info = extract(body)
+    assert not info.get('username')
+    assert not info.get('fullname')
+
+
+def test_rarible_api_json():
+    """Rarible API: extract user ownership info from marketplace API response."""
+    body = json.dumps({
+        "createDate": "2020-07-21T15:18:51.758+00:00",
+        "id": "blue",
+        "owner": "0x0000000000000000000000000000000000000000",
+        "ref": "0x65d472172e4933aa4ddb995cf4ca8bef72a46576",
+        "type": "USER",
+        "version": 0,
+    })
+    info = extract(body)
+    assert info.get('rarible_id') == 'blue'
+    assert info.get('rarible_owner') == '0x0000000000000000000000000000000000000000'
+    assert info.get('rarible_ref') == '0x65d472172e4933aa4ddb995cf4ca8bef72a46576'
+    assert info.get('rarible_type') == 'USER'
+    assert info.get('created_at') == '2020-07-21T15:18:51.758+00:00'
+
+
+def test_cssbattle_next_data_fixture():
+    """CSSBattle: extract player stats from __NEXT_DATA__ embedded JSON."""
+    next_data = {
+        "props": {
+            "pageProps": {
+                "player": {
+                    "id": "8wBrf63WLOOv8JuCeknfYk7t94B3",
+                    "username": "beo",
+                    "gamesPlayed": 55,
+                    "score": 1234.56,
+                }
+            }
+        }
+    }
+    html = (
+        '<!DOCTYPE html><html><head><title>CSSBattle</title></head><body>'
+        '<link rel="canonical" href="https://cssbattle.dev/player/beo" />'
+        '<script id="__NEXT_DATA__" type="application/json">'
+        + json.dumps(next_data)
+        + '</script>cssbattle.dev footer</body></html>'
+    )
+    info = extract(html)
+    assert info.get('cssbattle_id') == '8wBrf63WLOOv8JuCeknfYk7t94B3'
+    assert info.get('cssbattle_username') == 'beo'
+    assert info.get('cssbattle_games_played') == '55'
+    assert info.get('cssbattle_score') == '1234.56'
+
+
+def test_max_ru_sveltekit_profile():
+    """Max (max.ru): extract channel info from SvelteKit hydration JS object."""
+    html = (
+        '<!DOCTYPE html><html><head></head><body>'
+        '<script>__sveltekit_start({data:[null,{type:"data",data:'
+        '{channel:{title:"Ирина Волк",description:"Канал генерал-лейтенанта",'
+        'icon:"https://i.oneme.ru/i?r=abc123",participantsCount:15599}}'
+        ',uses:{url:1}},null]})</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('max_title') == 'Ирина Волк'
+    assert info.get('max_description') == 'Канал генерал-лейтенанта'
+    assert 'oneme.ru' in info.get('max_icon', '')
+    assert info.get('max_participants_count') == '15599'

@@ -2130,5 +2130,84 @@ schemes = {
             'links': lambda x: x.get('links') or x.get('socialLinks'),
         },
     },
+    'Fandom MediaWiki API': {
+        'url_hints': ('fandom.com',),
+        'flags': ['"batchcomplete"', '"query"', '"users"'],
+        'regex': r'^(\{[\s\S]*\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('query', {}).get('users', [{}])[0].get('userid'),
+            'username': lambda x: x.get('query', {}).get('users', [{}])[0].get('name'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?P<wiki>[^/]+)\.fandom\.com/wiki/User:(?P<username>[^/?#]+)',
+            'to': 'https://{wiki}.fandom.com/api.php?action=query&list=users&ususers={username}&format=json',
+        }],
+    },
+    'Substack public profile API': {
+        'url_hints': ('substack.com',),
+        'flags': ['"handle"', '"profile_set_up_at"'],
+        'regex': r'^(\{[\s\S]*\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('handle'),
+            'fullname': lambda x: x.get('name'),
+            'bio': lambda x: x.get('bio'),
+            'image': lambda x: x.get('photo_url'),
+        },
+        'url_mutations': [{
+            'from': r'https?://substack\.com/@(?P<username>[^/?#]+)',
+            'to': 'https://substack.com/api/v1/user/{username}/public_profile',
+        }],
+    },
+    'hashnode GraphQL API': {
+        'url_hints': ('hashnode.com', 'gql.hashnode.com'),
+        'flags': ['"data"', '"user"'],
+        'regex': r'^(\{[\s\S]*\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('data', {}).get('user', {}).get('username') if x.get('data', {}).get('user') else None,
+            'fullname': lambda x: x.get('data', {}).get('user', {}).get('name') if x.get('data', {}).get('user') else None,
+        },
+        'url_mutations': [{
+            'from': r'https?://hashnode\.com/@(?P<username>[^/?#]+)',
+            'to': 'https://gql.hashnode.com?query=%7Buser(username%3A%20%22{username}%22)%20%7B%20name%20username%20%7D%7D',
+        }],
+    },
+    'Rarible API': {
+        'url_hints': ('rarible.com',),
+        'flags': ['"createDate"', '"owner"', '"ref"'],
+        'regex': r'^(\{[\s\S]*\})$',
+        'extract_json': True,
+        'fields': {
+            'rarible_id': lambda x: x.get('id'),
+            'rarible_owner': lambda x: x.get('owner'),
+            'rarible_ref': lambda x: x.get('ref'),
+            'rarible_type': lambda x: x.get('type'),
+            'created_at': lambda x: x.get('createDate'),
+        },
+        'url_mutations': [{
+            'from': r'https?://rarible\.com/(?P<username>[^/?#]+)$',
+            'to': 'https://rarible.com/marketplace/api/v4/urls/{username}',
+        }],
+    },
+    'CSSBattle': {
+        'url_hints': ('cssbattle.dev',),
+        'flags': ['__NEXT_DATA__', 'cssbattle.dev'],
+        'regex': r'<script id="__NEXT_DATA__" type="application/json">([\s\S]+?)</script>',
+        'extract_json': True,
+        'fields': {
+            'cssbattle_id': lambda x: x.get('props', {}).get('pageProps', {}).get('player', {}).get('id'),
+            'cssbattle_username': lambda x: x.get('props', {}).get('pageProps', {}).get('player', {}).get('username'),
+            'cssbattle_games_played': lambda x: x.get('props', {}).get('pageProps', {}).get('player', {}).get('gamesPlayed'),
+            'cssbattle_score': lambda x: x.get('props', {}).get('pageProps', {}).get('player', {}).get('score'),
+        },
+    },
+    'Max (max.ru) profile': {
+        'url_hints': ('max.ru',),
+        'flags': ['channel:{title:"'],
+        'regex': r'channel:\{title:"(?P<max_title>[^"]*)",description:"(?P<max_description>[^"]*)",icon:"(?P<max_icon>[^"]*)",participantsCount:(?P<max_participants_count>\d+)\}',
+    },
 }
 
