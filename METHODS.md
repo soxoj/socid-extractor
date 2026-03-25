@@ -107,5 +107,21 @@
 102 | UnstoppableDomains |  |  |
 103 | memory.lol | [memory_lol](https://github.com/soxoj/socid-extractor/search?q=test_memory_lol) |  |
 104 | Duolingo API | [duolingo_api](https://github.com/soxoj/socid-extractor/search?q=test_duolingo_api) |  |
+105 | TikTok | [tiktok_hydration](https://github.com/soxoj/socid-extractor/search?q=test_tiktok_hydration) |  |
+106 | TikTok (legacy SIGI_STATE) |  |  |
+107 | Picsart API | [picsart_api](https://github.com/soxoj/socid-extractor/search?q=test_picsart_api) |  |
+108 | TwitchTracker | [twitchtracker](https://github.com/soxoj/socid-extractor/search?q=test_twitchtracker) |  |
+109 | Chess.com API | [chess_com](https://github.com/soxoj/socid-extractor/search?q=test_chess_com) |  |
+110 | Roblox user API | [roblox_user_api](https://github.com/soxoj/socid-extractor/search?q=test_roblox_user_api) |  |
+111 | Roblox username lookup API | [roblox_username_lookup](https://github.com/soxoj/socid-extractor/search?q=test_roblox_username_lookup) |  |
+112 | MyAnimeList profile | [myanimelist](https://github.com/soxoj/socid-extractor/search?q=test_myanimelist) |  |
+113 | XVideos profile | [xvideos](https://github.com/soxoj/socid-extractor/search?q=test_xvideos) |  |
+114 | lnk.bio | [lnk_bio](https://github.com/soxoj/socid-extractor/search?q=test_lnk_bio) |  |
+115 | Fandom MediaWiki API | [fandom_mediawiki](https://github.com/soxoj/socid-extractor/search?q=test_fandom_mediawiki) |  |
+116 | Substack public profile API | [substack](https://github.com/soxoj/socid-extractor/search?q=test_substack) |  |
+117 | hashnode GraphQL API | [hashnode](https://github.com/soxoj/socid-extractor/search?q=test_hashnode) |  |
+118 | Rarible API | [rarible](https://github.com/soxoj/socid-extractor/search?q=test_rarible) |  |
+119 | CSSBattle | [cssbattle](https://github.com/soxoj/socid-extractor/search?q=test_cssbattle) |  |
+120 | Max (max.ru) profile | [max_ru](https://github.com/soxoj/socid-extractor/search?q=test_max_ru) |  |
 
-The table has been updated at 2025-11-02 15:04:53.659694 UTC
+The table has been updated at 2026-03-25
