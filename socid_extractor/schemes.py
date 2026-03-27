@@ -6,6 +6,12 @@ import itertools
 from .utils import *
 
 schemes = {
+    # IMPORTANT: extract() returns the FIRST matching scheme.
+    # More specific schemes (more/stricter flags) must come BEFORE
+    # generic ones to avoid shadowing. Example: 'Wikipedia user API'
+    # (flags: "batchcomplete" + "editcount") before 'Fandom MediaWiki API'
+    # (flags: "batchcomplete" + "query" + "users").
+
     # unactual
     'Twitter HTML': {
         'url_hints': ('twitter.com', 'x.com', 'twimg.com'),
@@ -860,6 +866,27 @@ schemes = {
         'flags': ['/maps/preview/opensearch.xml', '<meta content="Contributions by'],
         'regex': r'"Contributions by (?P<name>.+?)",("(?P<contributions_count>\d+) Contribution|"(?P<contribution_level>.+?)")',
     },
+    'YouTube ytInitialData': {
+        'url_hints': ('youtube.com', 'youtu.be'),
+        'flags': ['ytInitialData', 'channelMetadataRenderer'],
+        'regex': r'var ytInitialData = ({.+?});</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('metadata', {}).get('channelMetadataRenderer', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'youtube_channel_id': lambda x: x.get('externalId'),
+            'fullname': lambda x: x.get('title'),
+            'bio': lambda x: x.get('description'),
+            'image': lambda x: (x.get('avatar', {}).get('thumbnails', [{}]) or [{}])[0].get('url'),
+            'channel_url': lambda x: x.get('vanityChannelUrl') or x.get('channelUrl'),
+            'keywords': lambda x: x.get('keywords'),
+            'is_family_safe': lambda x: x.get('isFamilySafe'),
+            'facebook_id': lambda x: x.get('facebookProfileId') or None,
+        },
+    },
     'Youtube Channel': {
         'url_hints': ('youtube.com', 'youtu.be'),
         'flags': ['<span itemprop="author" itemscope itemtype="http://schema.org/Person">'],
@@ -1015,13 +1042,7 @@ schemes = {
     'Stack Overflow & similar': {
         'url_hints': ('stackoverflow.com', 'stackexchange.com', 'askubuntu.com'),
         'flags': ['StackExchange.user.init'],
-        'bs': True,
-        'fields': {
-            'uid': lambda x: x.find('div', {'class': 'avatar'}).find('a').get('href').split('/')[-2],
-            'image': lambda x: x.find('div', {'class': 'avatar'}).find('img').get('src'),
-            'stack_exchange_uid': lambda x:
-            x.find('div', {'id': 'mainbar-full'}).find('a', {'class': 'grid--cell'}).get('href').split('/')[-2],
-        }
+        'regex': r'StackExchange\.user\.init\(\{\s*userId:\s*(?P<uid>\d+),\s*accountId:\s*(?P<stack_exchange_uid>\d+)\s*\}\)',
     },
     'SoundCloud': {
         'url_hints': ('soundcloud.com',),
@@ -1304,8 +1325,8 @@ schemes = {
     },
     'Linktree': {
         'url_hints': ('linktr.ee',),
-        'flags': ['content="Linktree. Make your link do more."'],
-        'regex': r'id="__NEXT_DATA__" type="application\/json" crossorigin="anonymous">(.+?)<\/script>',
+        'flags': ['linktr.ee', '__NEXT_DATA__'],
+        'regex': r'id="__NEXT_DATA__" type="application\/json"[^>]*>(.+?)<\/script>',
         'extract_json': True,
         'transforms': [
             json.loads,
@@ -2131,6 +2152,23 @@ schemes = {
             'links': lambda x: x.get('links') or x.get('socialLinks'),
         },
     },
+    'Wikipedia user API': {
+        'url_hints': ('wikipedia.org',),
+        'flags': ['"batchcomplete"', '"editcount"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'url_mutations': [{
+            'from': r'https?://(?P<lang>\w+)\.wikipedia\.org/wiki/User:(?P<username>[^/?#]+)',
+            'to': 'https://{lang}.wikipedia.org/w/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|gender&format=json',
+        }],
+        'fields': {
+            'uid': lambda x: x.get('query', {}).get('users', [{}])[0].get('userid'),
+            'username': lambda x: x.get('query', {}).get('users', [{}])[0].get('name'),
+            'edit_count': lambda x: x.get('query', {}).get('users', [{}])[0].get('editcount'),
+            'created_at': lambda x: x.get('query', {}).get('users', [{}])[0].get('registration'),
+            'gender': lambda x: x.get('query', {}).get('users', [{}])[0].get('gender') if x.get('query', {}).get('users', [{}])[0].get('gender') != 'unknown' else None,
+        },
+    },
     'Fandom MediaWiki API': {
         'url_hints': ('fandom.com',),
         'flags': ['"batchcomplete"', '"query"', '"users"'],
@@ -2161,6 +2199,24 @@ schemes = {
             'from': r'https?://substack\.com/@(?P<username>[^/?#]+)',
             'to': 'https://substack.com/api/v1/user/{username}/public_profile',
         }],
+    },
+    'Lesswrong GraphQL API': {
+        'url_hints': ('lesswrong.com',),
+        'flags': ['"displayName"', '"slug"', '"karma"', '"createdAt"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('data', {}).get('user', {}).get('result', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'fullname': lambda x: x.get('displayName'),
+            'username': lambda x: x.get('slug'),
+            'karma': lambda x: x.get('karma'),
+            'bio': lambda x: x.get('bio') or None,
+            'created_at': lambda x: x.get('createdAt'),
+        },
     },
     'hashnode GraphQL API': {
         'url_hints': ('hashnode.com', 'gql.hashnode.com'),
@@ -2209,6 +2265,134 @@ schemes = {
         'url_hints': ('max.ru',),
         'flags': ['channel:{title:"'],
         'regex': r'channel:\{title:"(?P<max_title>[^"]*)",description:"(?P<max_description>[^"]*)",icon:"(?P<max_icon>[^"]*)",participantsCount:(?P<max_participants_count>\d+)\}',
+    },
+    'Bluesky API': {
+        'url_hints': ('bsky.app', 'bsky.social', 'api.bsky.app'),
+        'flags': ['"did":', '"handle":', '"followersCount"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'url_mutations': [{
+            'from': r'https?://bsky\.app/profile/(?P<handle>[^/?#]+)',
+            'to': 'https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor={handle}',
+        }],
+        'fields': {
+            'uid': lambda x: x.get('did'),
+            'username': lambda x: x.get('handle', '').removesuffix('.bsky.social') if x.get('handle') else None,
+            'fullname': lambda x: x.get('displayName'),
+            'bio': lambda x: x.get('description'),
+            'image': lambda x: x.get('avatar'),
+            'image_bg': lambda x: x.get('banner'),
+            'created_at': lambda x: x.get('createdAt'),
+            'follower_count': lambda x: x.get('followersCount'),
+            'following_count': lambda x: x.get('followsCount'),
+            'posts_count': lambda x: x.get('postsCount'),
+        },
+    },
+    'Scratch API': {
+        'url_hints': ('scratch.mit.edu',),
+        'flags': ['"scratchteam"', '"history"', '"profile"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'url_mutations': [{
+            'from': r'https?://scratch\.mit\.edu/users/(?P<username>[^/?#]+)',
+            'to': 'https://api.scratch.mit.edu/users/{username}',
+        }],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'bio': lambda x: x.get('profile', {}).get('bio'),
+            'status': lambda x: x.get('profile', {}).get('status'),
+            'country': lambda x: x.get('profile', {}).get('country'),
+            'image': lambda x: x.get('profile', {}).get('images', {}).get('90x90'),
+            'created_at': lambda x: x.get('history', {}).get('joined'),
+            'is_scratchteam': lambda x: x.get('scratchteam'),
+        },
+    },
+    'DailyMotion API': {
+        'url_hints': ('dailymotion.com',),
+        'flags': ['"avatar_720_url"', '"followers_total"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?dailymotion\.com/(?P<username>[^/?#]+)',
+            'to': 'https://api.dailymotion.com/user/{username}?fields=id,username,screenname,description,avatar_720_url,cover_250_url,followers_total,following_total,videos_total,country,created_time,verified,url',
+        }],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('screenname'),
+            'bio': lambda x: x.get('description'),
+            'image': lambda x: x.get('avatar_720_url'),
+            'image_bg': lambda x: x.get('cover_250_url'),
+            'follower_count': lambda x: x.get('followers_total'),
+            'following_count': lambda x: x.get('following_total'),
+            'videos_count': lambda x: x.get('videos_total'),
+            'country': lambda x: x.get('country'),
+            'created_at': lambda x: parse_datetime(x.get('created_time')),
+            'is_verified': lambda x: x.get('verified'),
+        },
+    },
+    'SlideShare': {
+        'url_hints': ('slideshare.net',),
+        'flags': ['slidesharecdn.com', '__NEXT_DATA__'],
+        'regex': r'<script id="__NEXT_DATA__" type="application/json"[^>]*>(.+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            lambda x: next_data_page_props(json.loads(x), 'user'),
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'fullname': lambda x: x.get('name'),
+            'username': lambda x: x.get('login'),
+            'image': lambda x: x.get('photo'),
+            'bio': lambda x: x.get('description'),
+            'slideshow_count': lambda x: x.get('slideshowCount'),
+            'follower_count': lambda x: x.get('followersCount'),
+            'following_count': lambda x: x.get('followingCount'),
+            'city': lambda x: x.get('city') or None,
+            'country': lambda x: x.get('country') or None,
+            'organization': lambda x: x.get('organization'),
+            'occupation': lambda x: x.get('occupation'),
+            'website': lambda x: x.get('url'),
+            'is_suspended': lambda x: x.get('suspended'),
+            'is_organization': lambda x: x.get('isOrganization'),
+        },
+    },
+    'WordPress.org Profile': {
+        'url_hints': ('profiles.wordpress.org',),
+        'flags': ['profiles.wordpress.org', 'user-member-since'],
+        'regex': r'<meta property="og:title" content="(?P<fullname>.+?) \(@(?P<username>[^)]+)\)[^"]*"[\s\S]*?<meta property="og:image" content="(?P<image>[^"]+)"',
+    },
+    'Weebly': {
+        'url_hints': ('weebly.com',),
+        'flags': ['cdn2.editmysite.com', 'com_currentSite', 'com_userID'],
+        'regex': r'com_currentSite\s*=\s*"(?P<weebly_site_id>\d+)";\s*com_userID\s*=\s*"(?P<uid>\d+)"',
+    },
+    'Calendly': {
+        'url_hints': ('calendly.com',),
+        'flags': ['"unavailability_reason"', '"owning_user"', '"organization_uuid"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'fullname': lambda x: x.get('name'),
+            'username': lambda x: x.get('slug'),
+            'bio': lambda x: x.get('description'),
+            'image': lambda x: x.get('avatar_url') or x.get('logo_url'),
+            'owner_uuid': lambda x: x.get('owning_user', {}).get('uuid'),
+            'organization_uuid': lambda x: x.get('organization_uuid'),
+            'timezone': lambda x: x.get('timezone'),
+        },
+    },
+    'Google Play Developer': {
+        'url_hints': ('play.google.com',),
+        'flags': ['play.google.com/store', 'AF_initDataCallback'],
+        'regex': r'<meta property="og:title" content="Android Apps by (?P<developer_name>.+?) on Google Play"',
+    },
+    'Amazon Author': {
+        'url_hints': ('amazon.com', 'amazon.co.uk', 'amazon.de'),
+        'flags': ['stores/author/', 'AuthorSubHeader'],
+        'regex': r'"authorName":"(?P<author_name>[^"]+)"[\s\S]*?"authorId":"(?P<author_id>[^"]+)"[\s\S]*?"storeId":"(?P<store_id>[^"]+)"',
     },
 }
 

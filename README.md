@@ -71,6 +71,16 @@ The latest development version can be installed directly from GitHub:
 - Max (max.ru)
 - TwitchTracker
 - lnk.bio
+- Bluesky
+- Scratch
+- Wikipedia
+- DailyMotion
+- SlideShare
+- WordPress.org
+- Weebly
+- Calendly
+- Google Play
+- Amazon Author
 
 ...and many others.
 

@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 import re
@@ -147,6 +148,53 @@ def imgur_profile_avatar_url(username):
     if not username:
         return ''
     return f'https://imgur.com/user/{username}/avatar'
+
+
+def safe_deep_get(obj, *keys, default=None):
+    """Traverse nested dicts/lists without raising on missing keys.
+
+    >>> safe_deep_get({'a': {'b': [1, 2]}}, 'a', 'b', 0)
+    1
+    >>> safe_deep_get({}, 'a', 'b') is None
+    True
+    """
+    current = obj
+    for key in keys:
+        try:
+            current = current[key]
+        except (KeyError, IndexError, TypeError):
+            return default
+    return current
+
+
+NEXT_DATA_RE = re.compile(
+    r'<script id="__NEXT_DATA__" type="application/json"[^>]*>([\s\S]+?)</script>'
+)
+
+
+def extract_next_data(html):
+    """Extract and parse __NEXT_DATA__ JSON from a Next.js page.
+
+    Returns the parsed dict, or {} if not found / invalid.
+    """
+    m = NEXT_DATA_RE.search(html) if isinstance(html, str) else None
+    if not m:
+        return {}
+    try:
+        return json.loads(m.group(1))
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+
+def next_data_page_props(html, *subkeys):
+    """Shortcut: parse __NEXT_DATA__ and return props.pageProps[subkey1][subkey2]...
+
+    Common pattern for Next.js sites (SlideShare, CSSBattle, Linktree, etc.).
+    Returns the value as a JSON string (for the extract_json pipeline).
+    """
+    data = extract_next_data(html) if isinstance(html, str) else html
+    result = safe_deep_get(data, 'props', 'pageProps', *subkeys, default={})
+    return json.dumps(result) if not isinstance(result, str) else result
 
 
 def lnk_bio_next_props(next_data):

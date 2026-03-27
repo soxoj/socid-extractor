@@ -8,7 +8,11 @@ import json
 
 from socid_extractor.main import extract
 from socid_extractor.postprocessor import Gravatar, StripInvalidGravatarUrls
-from socid_extractor.utils import imgur_profile_avatar_url, is_bare_gravatar_root_url, is_valid_gravatar_email_hash
+from socid_extractor.schemes import schemes
+from socid_extractor.utils import (
+    imgur_profile_avatar_url, is_bare_gravatar_root_url, is_valid_gravatar_email_hash,
+    safe_deep_get, extract_next_data, next_data_page_props,
+)
 
 
 def test_tiktok_hydration_script_extracts_user_and_stats():
@@ -524,3 +528,436 @@ def test_periscope_profile_extraction():
     assert info.get('twitterUserId') == '78901234'
     assert info.get('twitter_screen_name') == 'polina_z'
     assert info.get('created_at') == '2016-04-10T18:22:05.411012300+00:00'
+
+
+def test_bluesky_api_json():
+    """Bluesky API: extract profile fields from public AT Protocol API response."""
+    body = json.dumps({
+        "did": "did:plc:oky5czdrnfjpqslsw2a5iclo",
+        "handle": "jay.bsky.team",
+        "displayName": "Jay",
+        "description": "Building the AT Protocol",
+        "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:oky5czdrnfjpqslsw2a5iclo/photo.jpg",
+        "banner": "https://cdn.bsky.app/img/banner/plain/did:plc:oky5czdrnfjpqslsw2a5iclo/banner.jpg",
+        "followersCount": 50000,
+        "followsCount": 200,
+        "postsCount": 1500,
+        "createdAt": "2022-11-17T06:31:40.296Z",
+        "labels": [],
+    })
+    info = extract(body)
+    assert info.get('uid') == 'did:plc:oky5czdrnfjpqslsw2a5iclo'
+    assert info.get('username') == 'jay.bsky.team'  # custom domain, no .bsky.social suffix
+    assert info.get('fullname') == 'Jay'
+    assert info.get('bio') == 'Building the AT Protocol'
+    assert 'cdn.bsky.app' in info.get('image', '')
+    assert info.get('follower_count') == '50000'
+    assert info.get('following_count') == '200'
+    assert info.get('posts_count') == '1500'
+    assert info.get('created_at') == '2022-11-17T06:31:40.296Z'
+
+
+def test_bluesky_api_strips_bsky_social_suffix():
+    """Bluesky API: .bsky.social suffix is stripped from handle."""
+    body = json.dumps({
+        "did": "did:plc:abc123",
+        "handle": "alice.bsky.social",
+        "displayName": "Alice",
+        "followersCount": 10,
+        "followsCount": 5,
+        "postsCount": 1,
+    })
+    info = extract(body)
+    assert info.get('username') == 'alice'
+
+
+def test_scratch_api_json():
+    """Scratch API: extract user profile from scratch.mit.edu API response."""
+    body = json.dumps({
+        "id": 1882674,
+        "username": "griffpatch",
+        "scratchteam": False,
+        "history": {"joined": "2012-11-20T16:43:15.000Z"},
+        "profile": {
+            "id": None,
+            "images": {"90x90": "https://cdn2.scratch.mit.edu/get_image/user/1882674_90x90.png"},
+            "status": "I make games!",
+            "bio": "Hi, I'm griffpatch. I love coding in Scratch!",
+            "country": "United Kingdom",
+        },
+    })
+    info = extract(body)
+    assert info.get('uid') == '1882674'
+    assert info.get('username') == 'griffpatch'
+    assert info.get('bio') == "Hi, I'm griffpatch. I love coding in Scratch!"
+    assert info.get('status') == 'I make games!'
+    assert info.get('country') == 'United Kingdom'
+    assert 'scratch.mit.edu' in info.get('image', '')
+    assert info.get('created_at') == '2012-11-20T16:43:15.000Z'
+    assert info.get('is_scratchteam') == 'False'
+
+
+def test_wikipedia_user_api_json():
+    """Wikipedia user API: extract user info from MediaWiki user query with editcount."""
+    body = json.dumps({
+        "batchcomplete": "",
+        "query": {
+            "users": [{
+                "userid": 24920566,
+                "name": "Example",
+                "editcount": 42,
+                "registration": "2015-04-24T07:00:51Z",
+                "gender": "male",
+            }]
+        }
+    })
+    info = extract(body)
+    assert info.get('uid') == '24920566'
+    assert info.get('username') == 'Example'
+    assert info.get('edit_count') == '42'
+    assert info.get('created_at') == '2015-04-24T07:00:51Z'
+    assert info.get('gender') == 'male'
+
+
+def test_dailymotion_api_json():
+    """DailyMotion API: extract user profile from API response."""
+    body = json.dumps({
+        "id": "x23k8rz",
+        "username": "cnn",
+        "screenname": "CNN",
+        "description": "CNN breaking news",
+        "avatar_720_url": "https://s2.dmcdn.net/d/5000002HraHpp/720x720",
+        "cover_250_url": "https://s2.dmcdn.net/d/cover/250",
+        "followers_total": 150000,
+        "following_total": 50,
+        "videos_total": 3200,
+        "country": "US",
+        "created_time": 1518206261,
+        "verified": True,
+        "url": "https://www.dailymotion.com/cnn",
+    })
+    info = extract(body)
+    assert info.get('uid') == 'x23k8rz'
+    assert info.get('username') == 'cnn'
+    assert info.get('fullname') == 'CNN'
+    assert info.get('bio') == 'CNN breaking news'
+    assert 'dmcdn.net' in info.get('image', '')
+    assert info.get('follower_count') == '150000'
+    assert info.get('videos_count') == '3200'
+    assert info.get('country') == 'US'
+    assert info.get('is_verified') == 'True'
+
+
+def test_slideshare_next_data_user():
+    """SlideShare: extract user from __NEXT_DATA__ embedded JSON."""
+    next_data = {
+        "props": {
+            "pageProps": {
+                "user": {
+                    "id": 133494799,
+                    "name": "Reed Hastings",
+                    "login": "ReedHastings",
+                    "photo": "https://public.slidesharecdn.com/v2/images/profile-picture.png",
+                    "description": "Co-founder of Netflix",
+                    "slideshowCount": 12,
+                    "followersCount": 500,
+                    "followingCount": 10,
+                    "city": "San Francisco",
+                    "country": "US",
+                    "organization": "Netflix",
+                    "occupation": "CEO",
+                    "url": "https://netflix.com",
+                    "suspended": False,
+                    "isOrganization": False,
+                }
+            }
+        }
+    }
+    html = (
+        '<!DOCTYPE html><html><head></head><body>'
+        '<link rel="stylesheet" href="https://public.slidesharecdn.com/v2/css/main.css">'
+        '<script id="__NEXT_DATA__" type="application/json">'
+        + json.dumps(next_data)
+        + '</script></body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '133494799'
+    assert info.get('fullname') == 'Reed Hastings'
+    assert info.get('username') == 'ReedHastings'
+    assert info.get('bio') == 'Co-founder of Netflix'
+    assert info.get('slideshow_count') == '12'
+    assert info.get('follower_count') == '500'
+    assert info.get('organization') == 'Netflix'
+    assert info.get('website') == 'https://netflix.com'
+    assert info.get('is_suspended') == 'False'
+
+
+def test_wordpress_org_profile():
+    """WordPress.org Profile: extract username and fullname from og:title meta tag."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="WordPress (@wordpress) - WordPress user profile">'
+        '<meta property="og:image" content="https://www.gravatar.com/avatar/834ffe?s=1024">'
+        '<li id="user-member-since"><div>Member Since</div></li>'
+        '<link rel="canonical" href="https://profiles.wordpress.org/wordpress/">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'WordPress'
+    assert info.get('username') == 'wordpress'
+    assert 'gravatar.com' in info.get('image', '')
+
+
+def test_weebly_js_vars():
+    """Weebly: extract user_id and site_id from inline JS variables."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<link rel="stylesheet" href="https://cdn2.editmysite.com/css/main.css">'
+        '</head><body>'
+        '<script>com_currentSite = "183235046254098859"; com_userID = "125320777";</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '125320777'
+    assert info.get('weebly_site_id') == '183235046254098859'
+
+
+def test_calendly_api_json():
+    """Calendly: extract booking profile fields from API JSON response."""
+    body = json.dumps({
+        "id": 7723,
+        "avatar_url": None,
+        "description": "Welcome to my scheduling page.",
+        "is_landing_page": False,
+        "locale": "en",
+        "logo_url": None,
+        "name": "admin google",
+        "organization_uuid": "DFBBGBHGHUHT7RGG",
+        "owner_type": "User",
+        "owning_user": {"id": 8173, "uuid": "27f70b874abf8cd45edcdb092001661b"},
+        "slug": "google",
+        "timezone": "America/New_York",
+        "unavailability_reason": None,
+        "unbranded": False,
+    })
+    info = extract(body)
+    assert info.get('uid') == '7723'
+    assert info.get('fullname') == 'admin google'
+    assert info.get('username') == 'google'
+    assert info.get('bio') == 'Welcome to my scheduling page.'
+    assert info.get('owner_uuid') == '27f70b874abf8cd45edcdb092001661b'
+    assert info.get('organization_uuid') == 'DFBBGBHGHUHT7RGG'
+    assert info.get('timezone') == 'America/New_York'
+
+
+def test_google_play_developer():
+    """Google Play Developer: extract developer name from og:title."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Android Apps by Google LLC on Google Play">'
+        '<script>AF_initDataCallback({key:"ds:3"});</script>'
+        '<link rel="canonical" href="https://play.google.com/store/apps/developer?id=Google+LLC">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('developer_name') == 'Google LLC'
+
+
+def test_amazon_author_page():
+    """Amazon Author: extract author name, id and store id from inline JSON."""
+    html = (
+        '<!DOCTYPE html><html><head></head><body>'
+        '<div data-a-page-id="stores/author/B000AQ3RBI">'
+        '<script>var config = {"widgetType":"AuthorSubHeader","content":{"authorName":"Richard Dawkins"},'
+        '"pageContext":{"authorId":"B000AQ3RBI","storeId":"b55aba37-be09-3e56-80fb-da9cda3c406b"'
+        ',"pageDescription":"Follow Richard Dawkins"'
+        ',"brandLogo":{"image":"https://m.media-amazon.com/images/I/41viH8VtXtL.jpg"}'
+        '}};</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('author_name') == 'Richard Dawkins'
+    assert info.get('author_id') == 'B000AQ3RBI'
+    assert info.get('store_id') == 'b55aba37-be09-3e56-80fb-da9cda3c406b'
+
+
+def test_stack_overflow_user_init():
+    """Stack Overflow: extract userId and accountId from StackExchange.user.init call."""
+    html = (
+        '<!DOCTYPE html><html><head></head><body>'
+        '<script>StackExchange.user.init({ userId: 22656, accountId: 11683 });</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '22656'
+    assert info.get('stack_exchange_uid') == '11683'
+
+
+def test_linktree_updated_flags():
+    """Linktree: verify updated flags work with current page format."""
+    next_data = {
+        "props": {
+            "pageProps": {
+                "account": {
+                    "id": 12345,
+                    "uuid": "6ba1b72b-4009-11eb-85b8-0a26086d88df",
+                    "isActive": True,
+                    "tier": "free",
+                    "links": [{"url": "https://example.com"}],
+                },
+                "username": "testuser",
+                "profilePictureUrl": "https://ugc.production.linktr.ee/pic.jpg",
+                "isProfileVerified": True,
+                "description": "My bio",
+                "socialLinks": [{"type": "TWITTER", "url": "https://twitter.com/test"}],
+            }
+        }
+    }
+    html = (
+        '<!DOCTYPE html><html><head></head><body>'
+        '<link rel="canonical" href="https://linktr.ee/testuser">'
+        '<script id="__NEXT_DATA__" type="application/json">'
+        + json.dumps(next_data)
+        + '</script></body></html>'
+    )
+    info = extract(html)
+    assert info.get('id') == '12345'
+    assert info.get('username') == 'testuser'
+    assert info.get('is_verified') == 'True'
+    assert info.get('bio') == 'My bio'
+
+
+# ---------------------------------------------------------------------------
+# Structural / meta tests
+# ---------------------------------------------------------------------------
+
+def test_no_flag_subset_shadows():
+    """Detect scheme pairs where one's flags are a subset of another's.
+
+    If scheme A's flags ⊂ scheme B's flags and A appears *before* B in the
+    dict, then B can never match because A always wins.  This test ensures
+    every pair where one is a strict subset is ordered correctly (more specific
+    first).
+    """
+    names = list(schemes.keys())
+    for i, name_a in enumerate(names):
+        flags_a = set(schemes[name_a]['flags'])
+        for j, name_b in enumerate(names):
+            if i == j:
+                continue
+            flags_b = set(schemes[name_b]['flags'])
+            if flags_a < flags_b and i > j:
+                # A has strictly fewer flags than B but comes AFTER B
+                # This means the more specific B can never be reached
+                # because less specific A matches first — that's fine.
+                # The problem is the REVERSE: less specific before more specific.
+                pass
+            if flags_b < flags_a and i < j:
+                # A (earlier) has MORE flags (more specific) than B (later) — correct order
+                pass
+            if flags_a < flags_b and i < j:
+                # A (earlier) is LESS specific than B (later) — B is shadowed!
+                raise AssertionError(
+                    f'Scheme "{name_a}" (pos {i}, flags={flags_a}) shadows '
+                    f'"{name_b}" (pos {j}, flags={flags_b}) because its flags '
+                    f'are a strict subset and it appears earlier. '
+                    f'Move "{name_b}" before "{name_a}".'
+                )
+
+
+def test_safe_deep_get():
+    """Verify safe_deep_get traverses nested structures without raising."""
+    data = {'a': {'b': [{'c': 42}]}}
+    assert safe_deep_get(data, 'a', 'b', 0, 'c') == 42
+    assert safe_deep_get(data, 'a', 'x') is None
+    assert safe_deep_get(data, 'a', 'b', 99) is None
+    assert safe_deep_get(None, 'a') is None
+    assert safe_deep_get(data, 'a', 'b', 0, 'c', default='fallback') == 42
+    assert safe_deep_get(data, 'z', default='fallback') == 'fallback'
+
+
+def test_extract_next_data_helper():
+    """Verify extract_next_data parses __NEXT_DATA__ from HTML."""
+    html = '<script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"x":1}}}</script>'
+    result = extract_next_data(html)
+    assert result == {"props": {"pageProps": {"x": 1}}}
+    assert extract_next_data('no script here') == {}
+    assert extract_next_data('') == {}
+
+
+def test_next_data_page_props_helper():
+    """Verify next_data_page_props extracts nested pageProps subkeys."""
+    data = {"props": {"pageProps": {"user": {"name": "Alice"}}}}
+    html = '<script id="__NEXT_DATA__" type="application/json">' + json.dumps(data) + '</script>'
+    result = json.loads(next_data_page_props(html, 'user'))
+    assert result == {"name": "Alice"}
+    # Missing key returns empty dict serialized
+    result2 = json.loads(next_data_page_props(html, 'nonexistent'))
+    assert result2 == {}
+
+
+def test_youtube_ytinitialdata():
+    """YouTube ytInitialData: extract channel metadata from embedded JSON."""
+    yt_data = {
+        "metadata": {
+            "channelMetadataRenderer": {
+                "title": "Google",
+                "externalId": "UCK8sQmJBp8GCxrOtXWBpyEA",
+                "description": "Official Google channel",
+                "vanityChannelUrl": "http://www.youtube.com/@Google",
+                "avatar": {"thumbnails": [{"url": "https://yt3.googleusercontent.com/avatar.jpg"}]},
+                "keywords": "Google Technology",
+                "isFamilySafe": True,
+                "facebookProfileId": "Google",
+            }
+        }
+    }
+    html = (
+        '<!DOCTYPE html><html><head></head><body>'
+        '<script>var ytInitialData = '
+        + json.dumps(yt_data)
+        + ';</script><script>var ytInitialPlayerResponse = {};</script>'
+        '<div>channelMetadataRenderer present</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('youtube_channel_id') == 'UCK8sQmJBp8GCxrOtXWBpyEA'
+    assert info.get('fullname') == 'Google'
+    assert info.get('bio') == 'Official Google channel'
+    assert 'yt3.googleusercontent.com' in info.get('image', '')
+    assert info.get('channel_url') == 'http://www.youtube.com/@Google'
+    assert info.get('keywords') == 'Google Technology'
+    assert info.get('is_family_safe') == 'True'
+    assert info.get('facebook_id') == 'Google'
+
+
+def test_lesswrong_graphql_api():
+    """Lesswrong GraphQL API: extract user profile from GQL response."""
+    body = json.dumps({
+        "data": {
+            "user": {
+                "result": {
+                    "displayName": "Eliezer Yudkowsky",
+                    "slug": "eliezer_yudkowsky",
+                    "karma": 159624,
+                    "createdAt": "2009-02-23T21:58:56.739Z",
+                    "bio": "",
+                }
+            }
+        }
+    })
+    info = extract(body)
+    assert info.get('fullname') == 'Eliezer Yudkowsky'
+    assert info.get('username') == 'eliezer_yudkowsky'
+    assert info.get('karma') == '159624'
+    assert info.get('created_at') == '2009-02-23T21:58:56.739Z'
+
+
+def test_lesswrong_graphql_null_user():
+    """Lesswrong GraphQL API: null user returns empty."""
+    body = json.dumps({
+        "data": {"user": None}
+    })
+    # Should not match — no "slug" or "karma" flags
+    info = extract(body)
+    assert not info.get('fullname')
