@@ -123,5 +123,15 @@
 118 | Rarible API | [rarible](https://github.com/soxoj/socid-extractor/search?q=test_rarible) |  |
 119 | CSSBattle | [cssbattle](https://github.com/soxoj/socid-extractor/search?q=test_cssbattle) |  |
 120 | Max (max.ru) profile | [max_ru](https://github.com/soxoj/socid-extractor/search?q=test_max_ru) |  |
+121 | Bluesky API | [bluesky_api](https://github.com/soxoj/socid-extractor/search?q=test_bluesky_api) |  |
+122 | Scratch API | [scratch_api](https://github.com/soxoj/socid-extractor/search?q=test_scratch_api) |  |
+123 | Wikipedia user API | [wikipedia_user_api](https://github.com/soxoj/socid-extractor/search?q=test_wikipedia_user_api) |  |
+124 | DailyMotion API | [dailymotion_api](https://github.com/soxoj/socid-extractor/search?q=test_dailymotion_api) |  |
+125 | SlideShare | [slideshare](https://github.com/soxoj/socid-extractor/search?q=test_slideshare) |  |
+126 | WordPress.org Profile | [wordpress_org](https://github.com/soxoj/socid-extractor/search?q=test_wordpress_org) |  |
+127 | Weebly | [weebly](https://github.com/soxoj/socid-extractor/search?q=test_weebly) |  |
+128 | Calendly | [calendly](https://github.com/soxoj/socid-extractor/search?q=test_calendly) |  |
+129 | Google Play Developer | [google_play](https://github.com/soxoj/socid-extractor/search?q=test_google_play) |  |
+130 | Amazon Author | [amazon_author](https://github.com/soxoj/socid-extractor/search?q=test_amazon_author) |  |
 
-The table has been updated at 2026-03-25
+The table has been updated at 2026-03-27
