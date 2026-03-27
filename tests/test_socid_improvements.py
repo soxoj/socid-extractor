@@ -409,3 +409,64 @@ def test_max_ru_sveltekit_profile():
     assert info.get('max_description') == 'Канал генерал-лейтенанта'
     assert 'oneme.ru' in info.get('max_icon', '')
     assert info.get('max_participants_count') == '15599'
+
+
+def test_periscope_profile_extraction():
+    """Periscope (pscp.tv): extract user profile fields from data-store JSON."""
+    user_data = {
+        'id': 'abc123XYZ',
+        'created_at': '2016-04-10T18:22:05.411012300+00:00',
+        'username': 'Polina_Zograf',
+        'display_name': '🌸',
+        'description': 'Travel blogger',
+        'n_followers': 1200,
+        'n_following': 85,
+        'n_hearts': 54320,
+        'n_broadcasts': 42,
+        'is_beta_user': False,
+        'is_employee': False,
+        'isVerified': False,
+        'is_twitter_verified': True,
+        'twitterUserId': '78901234',
+        'twitter_screen_name': 'polina_z',
+        'profile_image_urls': [
+            {'url': 'https://pbs.twimg.com/profile_images/123/photo.jpg', 'width': 128, 'height': 128}
+        ],
+    }
+    data_store = {
+        'canonicalPeriscopeUrl': 'https://www.pscp.tv/Polina_Zograf',
+        'UserCache': {
+            'users': {
+                'abc123XYZ': {
+                    'user': user_data
+                }
+            }
+        },
+    }
+    escaped = json.dumps(data_store).replace('"', '&quot;')
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Periscope"/>'
+        '<link rel="alternate" href="pscp://user/abc123XYZ"/>'
+        '</head><body>'
+        '<div data-store="' + escaped + '"><div id="PageView">'
+        '<div>page content</div>'
+        '</div></div></body></html>'
+    )
+    info = extract(html)
+    assert info.get('id') == 'abc123XYZ'
+    assert info.get('periscope_username') == 'Polina_Zograf'
+    assert info.get('fullname') == '🌸'
+    assert info.get('bio') == 'Travel blogger'
+    assert info.get('image') == 'https://pbs.twimg.com/profile_images/123/photo.jpg'
+    assert info.get('follower_count') == '1200'
+    assert info.get('following_count') == '85'
+    assert info.get('hearts_count') == '54320'
+    assert info.get('broadcasts_count') == '42'
+    assert info.get('is_beta_user') == 'False'
+    assert info.get('is_employee') == 'False'
+    assert info.get('isVerified') == 'False'
+    assert info.get('is_twitter_verified') == 'True'
+    assert info.get('twitterUserId') == '78901234'
+    assert info.get('twitter_screen_name') == 'polina_z'
+    assert info.get('created_at') == '2016-04-10T18:22:05.411012300+00:00'
