@@ -1279,7 +1279,7 @@ schemes = {
     },
     'BuzzFeed': {
         'url_hints': ('buzzfeed.com',),
-        'flags': ['window.BZFD = window.BZFD'],
+        'flags': ['buzzfeed.com', '__NEXT_DATA__'],
         'regex': r'id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>',
         'extract_json': True,
         'transforms': [

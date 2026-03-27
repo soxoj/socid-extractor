@@ -272,6 +272,60 @@ def test_lnk_bio_next_data_fixture():
     assert 'example.org' in info.get('links', '')
 
 
+def test_buzzfeed_next_data_extraction():
+    """
+    Verifies the **BuzzFeed** scheme matches pages containing `buzzfeed.com`
+    and `__NEXT_DATA__`, extracts user profile fields from the embedded JSON,
+    and correctly constructs image URLs.
+
+    **Check:** `uuid`, `id`, `fullname`, `username`, `bio`, `posts_count`,
+    `is_community_user`, `is_deleted`, `image`, and `social_links` are present.
+    """
+    next_data = {
+        'props': {
+            'pageProps': {
+                'user_uuid': 'abc-123-def',
+                'user': {
+                    'id': 99999,
+                    'displayName': 'TestUser',
+                    'username': 'testuser',
+                    'bio': 'Hello world',
+                    'memberSince': 1261100829,
+                    'isCommunityUser': True,
+                    'deleted': False,
+                    'social': [{'name': 'twitter', 'url': 'https://twitter.com/test'}],
+                    'image': '/static/user_images/test.jpg',
+                    'headerImage': '/static/enhanced/test_wide.jpg',
+                },
+                'buzz_count': 5,
+            }
+        },
+        'page': '/[username]',
+        'query': {'username': 'testuser'},
+        'buildId': 'fixture123',
+    }
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<link rel="canonical" href="https://www.buzzfeed.com/testuser">'
+        '</head><body>'
+        '<div>Content from buzzfeed.com</div>'
+        '<script id="__NEXT_DATA__" type="application/json">'
+        + json.dumps(next_data)
+        + '</script></body></html>'
+    )
+    info = extract(html)
+    assert info.get('uuid') == 'abc-123-def'
+    assert info.get('id') == '99999'
+    assert info.get('fullname') == 'TestUser'
+    assert info.get('username') == 'testuser'
+    assert info.get('bio') == 'Hello world'
+    assert info.get('posts_count') == '5'
+    assert info.get('is_community_user') == 'True'
+    assert info.get('is_deleted') == 'False'
+    assert 'buzzfeed-static' in info.get('image', '')
+    assert 'twitter.com/test' in info.get('social_links', '')
+
+
 def test_fandom_mediawiki_api_json():
     """Fandom MediaWiki API: extract userid and canonical username from user query response."""
     body = json.dumps({
