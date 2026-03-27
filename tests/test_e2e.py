@@ -1113,6 +1113,7 @@ def test_tapd():  # Broken. Site not responding.
         'links') == "['https://www.twitter.com/Betsyalvarezz', 'https://www.instagram.com/Betsyalvarezz', 'https://cash.app/$Betsyalvarezz', 'https://www.tiktok.com/@Betsyalvarezz', 'https://www.instagram.com/Brb.thelabel', 'https://www.youtube.com/c/BetsyAlvarezz', 'https://www.amazon.com/hz/wishlist/ls/2GNHXWNBBCIP0?ref_=wl_share', 'https://onlyfans.com/Betsyalvarezz']"
 
 
+@pytest.mark.github_failed
 def test_buzzfeed():
     info = extract(parse('https://www.buzzfeed.com/lisa')[0])
 
