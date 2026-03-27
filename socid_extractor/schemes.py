@@ -1685,6 +1685,7 @@ schemes = {
             'follower_count': lambda x: x['n_followers'],
             'following_count': lambda x: x['n_following'],
             'hearts_count': lambda x: x['n_hearts'],
+            'broadcasts_count': lambda x: x.get('n_broadcasts'),
             'is_beta_user': lambda x: x['is_beta_user'],
             'is_employee': lambda x: x['is_employee'],
             'isVerified': lambda x: x['isVerified'],
