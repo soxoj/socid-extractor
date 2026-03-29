@@ -1192,6 +1192,39 @@ def test_weibo():  # Broken. Parser not handling redirect
     assert info.get("fullname") == "郭靜Claire"
 
 
+@pytest.mark.github_failed
+def test_weibo_api():
+    """Weibo API"""
+    URL = 'https://weibo.com/clairekuo'
+    mutated = mutate_url(URL)
+    assert len(mutated) >= 1
+    url, add_headers = mutated[0]
+
+    info = extract(parse(url, headers=add_headers, timeout=10)[0])
+
+    assert info.get('weibo_id') == '1733299783'
+    assert info.get('username') == 'clairekuo'
+    assert info.get('fullname') == '郭靜Claire'
+    assert info.get('gender') == 'f'
+    assert 'follower_count' in info
+    assert 'following_count' in info
+
+
+@pytest.mark.github_failed
+def test_weibo_api_by_id():
+    """Weibo API by user ID"""
+    URL = 'https://weibo.com/u/6215884155'
+    mutated = mutate_url(URL)
+    assert len(mutated) >= 1
+    url, add_headers = mutated[0]
+
+    info = extract(parse(url, headers=add_headers, timeout=10)[0])
+
+    assert info.get('weibo_id') == '6215884155'
+    assert 'fullname' in info
+    assert 'follower_count' in info
+
+
 @pytest.mark.skip(reason="broken forever")
 def test_icq():
     info = extract(parse('https://icq.im/CaZaNoVa163')[0])
