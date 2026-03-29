@@ -1643,6 +1643,36 @@ schemes = {
             'is_verified': lambda x: x['confirmed'],
         }
     },
+    'Weibo API': {
+        'url_hints': ('weibo.com',),
+        'flags': ['"ok":1', '"data":{"user"'],
+        'regex': r'^(.+)$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://weibo.com/(?P<username>[^/u][^/]*)/?$',
+                'to': 'https://weibo.com/ajax/profile/info?custom={username}',
+            },
+            {
+                'from': r'https?://weibo.com/u/(?P<uid>\d+)/?$',
+                'to': 'https://weibo.com/ajax/profile/info?uid={uid}',
+            },
+        ],
+        'fields': {
+            'weibo_id': lambda x: x['data']['user']['idstr'],
+            'username': lambda x: x['data']['user'].get('domain'),
+            'fullname': lambda x: x['data']['user']['screen_name'],
+            'bio': lambda x: x['data']['user'].get('description'),
+            'image': lambda x: x['data']['user'].get('avatar_hd'),
+            'gender': lambda x: x['data']['user'].get('gender'),
+            'location': lambda x: x['data']['user'].get('location'),
+            'verified': lambda x: x['data']['user'].get('verified'),
+            'verified_reason': lambda x: x['data']['user'].get('verified_reason'),
+            'follower_count': lambda x: x['data']['user'].get('followers_count'),
+            'following_count': lambda x: x['data']['user'].get('friends_count'),
+            'statuses_count': lambda x: x['data']['user'].get('statuses_count'),
+        }
+    },
     # TODO
     'Weibo': {
         'url_hints': ('weibo.com',),

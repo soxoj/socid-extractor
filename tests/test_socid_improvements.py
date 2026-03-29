@@ -961,3 +961,59 @@ def test_lesswrong_graphql_null_user():
     # Should not match — no "slug" or "karma" flags
     info = extract(body)
     assert not info.get('fullname')
+
+
+def test_weibo_api_extracts_profile_fields():
+    """Verifies the Weibo API scheme extracts user profile fields from JSON response."""
+    body = json.dumps({
+        "ok": 1,
+        "data": {
+            "user": {
+                "id": 1733299783,
+                "idstr": "1733299783",
+                "screen_name": "郭靜Claire",
+                "profile_image_url": "https://tvax2.sinaimg.cn/crop.0.0.1080.1080.50/67500e47ly8hape352btfj20u00u0mz1.jpg",
+                "profile_url": "/u/1733299783",
+                "verified": True,
+                "verified_type": 0,
+                "domain": "clairekuo",
+                "avatar_large": "https://tvax2.sinaimg.cn/crop.0.0.1080.1080.180/67500e47ly8hape352btfj20u00u0mz1.jpg",
+                "avatar_hd": "https://tvax2.sinaimg.cn/crop.0.0.1080.1080.1024/67500e47ly8hape352btfj20u00u0mz1.jpg",
+                "verified_reason": "台湾女歌手",
+                "description": "歌手郭静",
+                "location": "台湾 台北市",
+                "gender": "f",
+                "followers_count": 3126727,
+                "friends_count": 217,
+                "statuses_count": 2248,
+            }
+        }
+    }, separators=(',', ':'))
+    info = extract(body)
+    assert info.get('weibo_id') == '1733299783'
+    assert info.get('username') == 'clairekuo'
+    assert info.get('fullname') == '郭靜Claire'
+    assert info.get('bio') == '歌手郭静'
+    assert info.get('image') == 'https://tvax2.sinaimg.cn/crop.0.0.1080.1080.1024/67500e47ly8hape352btfj20u00u0mz1.jpg'
+    assert info.get('gender') == 'f'
+    assert info.get('location') == '台湾 台北市'
+    assert info.get('verified') == 'True'
+    assert info.get('verified_reason') == '台湾女歌手'
+    assert info.get('follower_count') == '3126727'
+    assert info.get('following_count') == '217'
+    assert info.get('statuses_count') == '2248'
+
+
+def test_weibo_api_url_mutations():
+    """Verifies Weibo API url_mutations convert profile URLs to API endpoints."""
+    from socid_extractor.main import mutate_url
+
+    # Username URL pattern
+    results = mutate_url('https://weibo.com/clairekuo')
+    urls = [r[0] for r in results]
+    assert 'https://weibo.com/ajax/profile/info?custom=clairekuo' in urls
+
+    # User ID URL pattern
+    results = mutate_url('https://weibo.com/u/6215884155')
+    urls = [r[0] for r in results]
+    assert 'https://weibo.com/ajax/profile/info?uid=6215884155' in urls
