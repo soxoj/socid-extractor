@@ -1385,3 +1385,48 @@ def test_duolingo_api():
     assert info.get('learningLanguage') == 'en'
     assert info.get('fromLanguage') == 'es'
     assert 'bio' not in info
+
+
+def test_chess_com_api_e2e():
+    """Chess.com API: e2e test via pub API endpoint."""
+    info = extract(parse('https://api.chess.com/pub/player/john')[0])
+
+    assert info.get('chess_user_id') == '95037716'
+    assert info.get('username') == 'john'
+    assert info.get('fullname') == 'John'
+    assert info.get('follower_count') == '45'
+    assert info.get('status') == 'basic'
+    assert info.get('country_code') == 'US'
+    assert 'chesscomfiles.com' in info.get('image', '')
+    assert info.get('is_streamer') == 'False'
+    assert info.get('verified') == 'False'
+
+
+def test_chess_com_html_e2e():
+    """Chess.com HTML: e2e test from member page."""
+    info = extract(parse('https://www.chess.com/member/john')[0])
+
+    assert info.get('username') == 'John'
+    assert info.get('fullname') == 'John'
+    assert 'chess.com' in info.get('image', '')
+
+
+def test_roblox_api_e2e():
+    """Roblox API: e2e test via users API."""
+    info = extract(parse('https://users.roblox.com/v1/users/2191')[0])
+
+    assert info.get('roblox_user_id') == '2191'
+    assert info.get('username') == 'john'
+    assert info.get('fullname') == 'john'
+    assert info.get('is_banned') == 'False'
+    assert info.get('is_verified') == 'False'
+    assert info.get('created_at') == '2006-08-24T08:42:25.047Z'
+
+
+def test_roblox_html_e2e():
+    """Roblox HTML: e2e test from profile page (redirect from user.aspx)."""
+    info = extract(parse('https://www.roblox.com/users/2191/profile')[0])
+
+    assert info.get('username') == 'john'
+    assert info.get('uid') == '2191'
+    assert 'rbxcdn.com' in info.get('image', '')
