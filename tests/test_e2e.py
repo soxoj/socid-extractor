@@ -269,6 +269,7 @@ def test_yandex_disk_photos():  # Occasional captcha
     assert info.get('name') == 'Вербочка'
 
 
+@pytest.mark.github_failed
 def test_my_mail_main():
     info = extract(parse('https://my.mail.ru/mail/zubovo/')[0])
 
