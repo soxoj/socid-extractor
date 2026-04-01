@@ -235,17 +235,29 @@ def test_myanimelist_profile_regex():
     assert info.get('mal_uid') == '1'
 
 
-def test_xvideos_profile_id_user_regex():
-    """XVideos profile page JSON fragment with id_user + username."""
+def test_xvideos_profile_full():
+    """XVideos profile: extract user id, username, display name, gender, country, subscribers, signed up."""
     html = (
         '<html lang="en" class="xv-responsive"><body>'
-        '<a href="https://www.xvideos.com/profiles/xvideos">p</a>'
-        '"id_user":1356961,"username":"xvideos","display":"Xvideos"'
-        '</body></html>'
+        '<a href="https://www.xvideos.com/profiles/soxoj">p</a>'
+        '<script>"id_user":613639497,"username":"soxoj","display":"Soxoj","profile_picture_small":"","profile_picture":"","sex":"Man","url":"/profiles/soxoj"</script>'
+        '<div class="col-sm-4 col-xs-12 pfinfo-col" id="pfinfo-col-col1">'
+        '<p id="pinfo-sex"><strong>Gender:</strong> <span>Man</span></p>'
+        '<p id="pinfo-country"><strong>Country:</strong> <span>Honduras</span></p>'
+        '<p id="pinfo-profile-hits"><strong>Profile hits:</strong> <span>1,768</span></p>'
+        '<p id="pinfo-subscribers"><strong>Subscribers:</strong> <span>4</span></p>'
+        '<p id="pinfo-signedup"><strong>Signed up:</strong> <span>July 16, 2022 (1,354 days ago)</span></p>'
+        '</div></body></html>'
     )
     info = extract(html)
-    assert info.get('xvideos_user_id') == '1356961'
-    assert info.get('xvideos_username') == 'xvideos'
+    assert info.get('uid') == '613639497'
+    assert info.get('username') == 'soxoj'
+    assert info.get('fullname') == 'Soxoj'
+    assert info.get('gender') == 'Man'
+    assert info.get('country') == 'Honduras'
+    assert info.get('profile_hits') == '1,768'
+    assert info.get('follower_count') == '4'
+    assert 'July 16, 2022' in info.get('created_at', '')
 
 
 def test_lnk_bio_next_data_fixture():
@@ -827,6 +839,119 @@ def test_linktree_updated_flags():
     assert info.get('bio') == 'My bio'
 
 
+def test_picsart_facebook_uid_from_photo():
+    """Picsart API: extract facebook_uid from graph.facebook.com photo URL."""
+    body = {
+        'id': 100,
+        'name': 'FbUser',
+        'username': 'fbuser',
+        'photo': 'https://graph.facebook.com/999888777/picture',
+        'followers_count': 0,
+        'following_count': 0,
+        'likes_count': 0,
+        'photos_count': 0,
+        'remix_score': 0,
+        'dashboard_visibility': False,
+        'is_verified': False,
+    }
+    info = extract(json.dumps(body))
+    assert info.get('facebook_uid') == '999888777'
+
+
+def test_picsart_no_facebook_uid_when_no_graph_url():
+    """Picsart API: facebook_uid is absent when photo is not a graph.facebook.com URL."""
+    body = {
+        'id': 101,
+        'name': 'NormalUser',
+        'username': 'normaluser',
+        'photo': 'https://example.com/pic.jpg',
+        'followers_count': 0,
+        'following_count': 0,
+        'likes_count': 0,
+        'photos_count': 0,
+        'remix_score': 0,
+        'dashboard_visibility': False,
+        'is_verified': False,
+    }
+    info = extract(json.dumps(body))
+    assert not info.get('facebook_uid')
+
+
+def test_habr_profile_extraction():
+    """Habr: extract fullname, username, and profile URL from og meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Хабр">'
+        '<meta property="og:title" content="Иван Петров aka ipetrov  '
+        '\n- "'
+        '<meta property="og:url" content="https://habr.com/ru/users/ipetrov/">'
+        '</head><body>habr.com/ru/users/ipetrov</body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'Иван Петров'
+    assert info.get('username') == 'ipetrov'
+    assert 'habr.com/ru/users/ipetrov' in info.get('website', '')
+
+
+def test_taplink_profile_extraction():
+    """Taplink: extract image, fullname, and username from og meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Taplink">'
+        '<meta property="og:image" content="https://taplink.st/p/8/a/2/photo.jpg">'
+        '<meta property="og:title" content="John Doe at Taplink">'
+        '<meta property="og:url" content="https://taplink.cc/johndoe">'
+        '</head><body>Welcome at Taplink</body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'John Doe'
+    assert info.get('username') == 'johndoe'
+    assert 'taplink.st' in info.get('image', '')
+
+
+def test_producthunt_profile_extraction():
+    """Product Hunt: extract twitter_username and username from meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Product Hunt">'
+        '<meta property="og:type" content="profile">'
+        '<meta name="twitter:creator" content="@rrhoover">'
+        '<meta property="og:url" content="https://www.producthunt.com/@rrhoover">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('twitter_username') == 'rrhoover'
+    assert info.get('username') == 'rrhoover'
+
+
+def test_threads_profile_extraction():
+    """Threads: extract follower/post counts, uid, username, fullname, image, is_verified from meta + JSON."""
+    # The HTML must contain og meta + "barcelona" flag and "user":{...} block
+    # matching the Threads regex, but must NOT trigger Instagram API flags
+    # (which look for '{"user":{"pk"' + 'profile_pic_url' as raw substrings).
+    # We avoid the Instagram flag by not placing a '{' immediately before "user".
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Threads">'
+        '<meta property="og:description" content="12500 Followers, 340 Threads. Some bio text here.">'
+        '</head><body>'
+        '<script>barcelona_config = true;</script>'
+        '<script type="application/json">'
+        '["user":{"pk":"55443322","profile_pic_url":"https://scontent.cdninstagram.com/v/pic.jpg",'
+        '"username":"zuck","full_name":"Mark Zuckerberg","biography":"CEO","is_verified":true}]'
+        '</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('follower_count') == '12500'
+    assert info.get('posts_count') == '340'
+    assert info.get('uid') == '55443322'
+    assert info.get('username') == 'zuck'
+    assert info.get('fullname') == 'Mark Zuckerberg'
+    assert 'cdninstagram.com' in info.get('image', '')
+    assert info.get('is_verified') == 'true'
+
+
 # ---------------------------------------------------------------------------
 # Structural / meta tests
 # ---------------------------------------------------------------------------
@@ -961,3 +1086,129 @@ def test_lesswrong_graphql_null_user():
     # Should not match — no "slug" or "karma" flags
     info = extract(body)
     assert not info.get('fullname')
+
+
+def test_picsart_facebook_uid_from_image():
+    """Picsart: extract facebook_uid from graph.facebook.com avatar URL."""
+    body = json.dumps({
+        "id": 12345,
+        "username": "testuser",
+        "name": "Test User",
+        "photo": "https://graph.facebook.com/231008367325211/picture?type=normal",
+        "status_message": "Hello",
+        "followers_count": 10,
+        "following_count": 5,
+        "likes_count": 100,
+        "photos_count": 50,
+        "is_verified": False,
+        "remix_score": 0,
+        "dashboard_visibility": True,
+    })
+    info = extract(body)
+    assert info.get('facebook_uid') == '231008367325211'
+    assert info.get('picsart_id') == '12345'
+
+
+def test_picsart_no_facebook_uid_for_regular_avatar():
+    """Picsart: no facebook_uid when avatar is not from graph.facebook.com."""
+    body = json.dumps({
+        "id": 99,
+        "username": "other",
+        "name": "Other",
+        "photo": "https://cdn.picsart.com/avatars/photo.jpg",
+        "remix_score": 0,
+        "dashboard_visibility": True,
+    })
+    info = extract(body)
+    assert not info.get('facebook_uid')
+    assert info.get('picsart_id') == '99'
+
+
+def test_habr_og_profile():
+    """Habr: extract fullname and username from og:title meta tag."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Хабр">'
+        '<meta property="og:title" content="Олег Бунин aka olegbunin\n     - ">'
+        '<meta property="og:url" content="https://habr.com/ru/users/olegbunin/">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'Олег Бунин'
+    assert info.get('username') == 'olegbunin'
+    assert 'habr.com' in info.get('website', '')
+
+
+def test_product_hunt_og_profile():
+    """Product Hunt: extract twitter_username and username from meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Product Hunt">'
+        '<meta property="og:type" content="profile">'
+        '<meta name="twitter:creator" content="@rrhoover">'
+        '<meta property="og:url" content="https://www.producthunt.com/@rrhoover">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('twitter_username') == 'rrhoover'
+    assert info.get('username') == 'rrhoover'
+
+
+def test_taplink_og_profile():
+    """Taplink: extract username, fullname and avatar from og:meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:image" content="https://taplink.st/a/0/5/e/e/c325e9.jpg?1">'
+        '<meta property="og:type" content=website />'
+        '<meta property="og:title" content="Selenagomez at Taplink"/>'
+        '<meta property="og:url" content="https://taplink.cc/selenagomez"/>'
+        '<meta property="og:site_name" content="Taplink"/>'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'Selenagomez'
+    assert info.get('username') == 'selenagomez'
+    assert 'taplink.st' in info.get('image', '')
+
+
+def test_taplink_nonexistent_user_not_matched():
+    """Taplink: homepage (redirect for non-existent user) should NOT match."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Taplink - landing page that drives your sales on Instagram">'
+        '<meta property="og:url" content="https://taplink.at/en/">'
+        '<meta property="og:site_name" content="Taplink">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    # Should not match Taplink scheme — no "at Taplink" in og:title
+    assert not info.get('username')
+
+
+def test_threads_profile():
+    """Threads: extract user id, username, fullname, avatar, verified, followers, threads count."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Threads">'
+        '<meta property="og:title" content="Jessica Brooke Martin (@jessbmart)">'
+        '<meta property="og:description" content="141 Followers &#x2022; 24 Threads. See the latest conversations.">'
+        '</head><body>'
+        '<script>window.__barcelona = true;</script>'
+        '<script type="application/json" data-sjs>'
+        '{"require":[["ScheduledServerJS","handle",null,[{"__bbox":{"require":['
+        '["RelayPrefetchedStreamCache","next",[],['
+        '{"id":"post123","user":{"pk":"75812988992","profile_pic_url":"https:\\/\\/instagram.cdn.net\\/pic.jpg",'
+        '"friendship_status":null,"username":"jessbmart","id":"75812988992",'
+        '"full_name":"Jessica Brooke Martin","is_verified":false,'
+        '"has_onboarded_to_text_post_app":true}}'
+        ']]]}]}]]};</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '75812988992'
+    assert info.get('username') == 'jessbmart'
+    assert info.get('fullname') == 'Jessica Brooke Martin'
+    assert 'instagram' in info.get('image', '')
+    assert info.get('is_verified') == 'false'
+    assert info.get('follower_count') == '141'
+    assert info.get('posts_count') == '24'
