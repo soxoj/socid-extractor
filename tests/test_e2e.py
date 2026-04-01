@@ -941,6 +941,7 @@ def test_ask_fm():
     assert 'image' in info
 
 
+@pytest.mark.github_failed
 def test_launchpad():
     info = extract(parse('https://launchpad.net/~antony')[0])
 
