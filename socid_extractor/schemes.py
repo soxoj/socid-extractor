@@ -1146,6 +1146,7 @@ schemes = {
             'likes_count': lambda x: x.get('likes_count'),
             'photos_count': lambda x: x.get('photos_count'),
             'is_verified': lambda x: x.get('is_verified'),
+            'facebook_uid': lambda x: re.search(r'graph\.facebook\.com/(\d+)/picture', x.get('photo', '')).group(1) if x.get('photo') and 'graph.facebook.com' in x.get('photo', '') else None,
         }
     },
     'VC.ru': {
@@ -2132,7 +2133,11 @@ schemes = {
     'XVideos profile': {
         'url_hints': ('xvideos.com',),
         'flags': ['xvideos.com/profiles', 'id_user', 'xv-responsive'],
-        'regex': r'"id_user":(?P<xvideos_user_id>\d+),"username":"(?P<xvideos_username>[^"]+)"',
+        'regex': r'"id_user":(?P<uid>\d+),"username":"(?P<username>[^"]+)","display":"(?P<fullname>[^"]*)"[\s\S]*?"sex":"(?P<gender>[^"]*)"[\s\S]*?'
+                 r'Country:</strong>\s*<span>(?P<country>[^<]*)</span>[\s\S]*?'
+                 r'Profile hits:</strong>\s*<span>(?P<profile_hits>[^<]*)</span>[\s\S]*?'
+                 r'Subscribers:</strong>\s*<span>(?P<follower_count>[^<]*)</span>[\s\S]*?'
+                 r'Signed up:</strong>\s*<span>(?P<created_at>[^(<]*)',
     },
     'lnk.bio': {
         'url_hints': ('lnk.bio',),
@@ -2393,6 +2398,26 @@ schemes = {
         'url_hints': ('amazon.com', 'amazon.co.uk', 'amazon.de'),
         'flags': ['stores/author/', 'AuthorSubHeader'],
         'regex': r'"authorName":"(?P<author_name>[^"]+)"[\s\S]*?"authorId":"(?P<author_id>[^"]+)"[\s\S]*?"storeId":"(?P<store_id>[^"]+)"',
+    },
+    'Habr': {
+        'url_hints': ('habr.com',),
+        'flags': ['og:site_name" content="Хабр"', 'habr.com/ru/users/'],
+        'regex': r'<meta property="og:title" content="(?P<fullname>.+?) aka (?P<username>\w+)\s*[\n\s]*-?\s*"[\s\S]*?<meta property="og:url" content="(?P<website>[^"]+)"',
+    },
+    'Taplink': {
+        'url_hints': ('taplink.cc',),
+        'flags': ['og:site_name" content="Taplink"', 'at Taplink'],
+        'regex': r'<meta property="og:image" content="(?P<image>[^"]+)"[\s\S]*?<meta property="og:title" content="(?P<fullname>.+?) at Taplink"[\s\S]*?<meta property="og:url" content="https://taplink\.cc/(?P<username>[^"]+)"',
+    },
+    'Product Hunt': {
+        'url_hints': ('producthunt.com',),
+        'flags': ['og:site_name" content="Product Hunt"', 'og:type" content="profile"'],
+        'regex': r'<meta name="twitter:creator" content="@(?P<twitter_username>[^"]+)"[\s\S]*?<meta property="og:url" content="https://www\.producthunt\.com/@(?P<username>[^"]+)"',
+    },
+    'Threads': {
+        'url_hints': ('threads.net', 'threads.com'),
+        'flags': ['og:site_name" content="Threads"', 'barcelona'],
+        'regex': r'og:description" content="(?P<follower_count>\d+) Followers[^"]*?(?P<posts_count>\d+) Threads[\s\S]*?"user":\{"pk":"(?P<uid>\d+)","profile_pic_url":"(?P<image>[^"]*)"[^}]*?"username":"(?P<username>[^"]+)"[^}]*?"full_name":"(?P<fullname>[^"]*)"[^}]*?"is_verified":(?P<is_verified>\w+)',
     },
 }
 

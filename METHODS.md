@@ -134,4 +134,9 @@
 129 | Google Play Developer | [google_play](https://github.com/soxoj/socid-extractor/search?q=test_google_play) |  |
 130 | Amazon Author | [amazon_author](https://github.com/soxoj/socid-extractor/search?q=test_amazon_author) |  |
 
-The table has been updated at 2026-03-27
+131 | Habr | [habr](https://github.com/soxoj/socid-extractor/search?q=test_habr) |  |
+132 | Product Hunt | [product_hunt](https://github.com/soxoj/socid-extractor/search?q=test_product_hunt) |  |
+
+133 | Taplink | [taplink](https://github.com/soxoj/socid-extractor/search?q=test_taplink) |  |
+
+The table has been updated at 2026-03-29
