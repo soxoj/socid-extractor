@@ -283,6 +283,7 @@ def test_my_mail_main():
     assert info.get('is_video_channel') == 'False'
 
 
+@pytest.mark.github_failed
 def test_my_mail_communities():
     # also video, apps, photo
     info = extract(parse('https://my.mail.ru/mail/zubovo/communities/')[0])
