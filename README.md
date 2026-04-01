@@ -1,6 +1,6 @@
 # socid_extractor
 
-Extract information about a user from profile webpages / API responses and save it in machine-readable format.
+Extract information about a user from profile webpages / API responses and save it in machine-readable format. 130+ methods for various sites and platforms.
 
 ## Usage
 
@@ -45,7 +45,7 @@ The latest development version can be installed directly from GitHub:
 
 ## Sites and methods
 
-[More than 100 methods](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md) for different sites and platforms are supported!
+[130+ methods](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md) for different sites and platforms are supported!
 
 - Google (all documents pages, maps contributions), cookies required
 - Yandex (disk, albums, znatoki, music, realty, collections), cookies required to prevent captcha blocks

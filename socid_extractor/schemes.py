@@ -2414,6 +2414,24 @@ schemes = {
         'flags': ['og:site_name" content="Product Hunt"', 'og:type" content="profile"'],
         'regex': r'<meta name="twitter:creator" content="@(?P<twitter_username>[^"]+)"[\s\S]*?<meta property="og:url" content="https://www\.producthunt\.com/@(?P<username>[^"]+)"',
     },
+    'Chess.com HTML': {
+        'url_hints': ('chess.com',),
+        'flags': ['og:site_name" content="Chess.com"', 'Chess Profile'],
+        'regex': r'<meta property="og:title" content="(?P<fullname>[^"]+?) \((?P<username>[^)]+)\) - Chess Profile"[\s\S]*?<meta property="og:image" content="(?P<image>[^"]+)"',
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?chess\.com/member/(?P<username>[^/?#]+)',
+            'to': 'https://api.chess.com/pub/player/{username}',
+        }],
+    },
+    'Roblox HTML': {
+        'url_hints': ('roblox.com',),
+        'flags': ['og:site_name" content="Roblox"', 'og:type" content="profile"'],
+        'regex': r'<meta property="og:title" content="(?P<username>[^&\']+?)(?:&#x27;|\')?s Profile"[\s\S]*?<meta property="og:url" content="https://www\.roblox\.com/users/(?P<uid>\d+)/profile"[\s\S]*?<meta property="og:image" content="(?P<image>[^"]+)"',
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?roblox\.com/users/(?P<id>\d+)/profile',
+            'to': 'https://users.roblox.com/v1/users/{id}',
+        }],
+    },
     'Threads': {
         'url_hints': ('threads.net', 'threads.com'),
         'flags': ['og:site_name" content="Threads"', 'barcelona'],

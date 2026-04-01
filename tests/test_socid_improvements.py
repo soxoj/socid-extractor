@@ -1212,3 +1212,36 @@ def test_threads_profile():
     assert info.get('is_verified') == 'false'
     assert info.get('follower_count') == '141'
     assert info.get('posts_count') == '24'
+
+
+def test_chess_com_html_profile():
+    """Chess.com HTML: extract fullname, username and image from og:meta."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="John (John) - Chess Profile">'
+        '<meta property="og:url" content="https://www.chess.com/member/john">'
+        '<meta property="og:site_name" content="Chess.com">'
+        '<meta property="og:image" content="https://www.chess.com/share/user/john">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'John'
+    assert info.get('username') == 'John'
+    assert info.get('image') == 'https://www.chess.com/share/user/john'
+
+
+def test_roblox_html_profile():
+    """Roblox HTML: extract username, uid and avatar from og:meta after redirect."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Roblox">'
+        '<meta property="og:title" content="john&#x27;s Profile">'
+        '<meta property="og:type" content="profile">'
+        '<meta property="og:url" content="https://www.roblox.com/users/2191/profile">'
+        '<meta property="og:image" content="https://tr.rbxcdn.com/30DAY-Avatar-A852E46C43BF1A5E01BD1FDA883FD398-Png/352/352/Avatar/Png/noFilter">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'john'
+    assert info.get('uid') == '2191'
+    assert 'rbxcdn.com' in info.get('image', '')
