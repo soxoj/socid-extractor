@@ -67,22 +67,22 @@ schemes = {
     },
     'Facebook user profile': {
         'url_hints': ('facebook.com', 'fb.com', 'm.facebook.com'),
-        'flags': ['<html id="facebook"', '<title>Facebook</title>'],
-        'regex': r'({"__bbox":{"complete".+"sequence_number":0}})',
-        'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: x['result']['data']['user'],
-            json.dumps,
-        ],
+        'flags': ['<html id="facebook"', 'property="og:title"'],
+        'bs': True,
         'fields': {
-            'uid': lambda x: x.get('id'),
-            'username': lambda x: x.get('url').split('/')[-1],
-            'fullname': lambda x: x.get('name'),
-            'is_verified': lambda x: x.get('is_verified'),
-            'image': lambda x: x.get('profile_picture_for_sticky_bar', {}).get('uri', ''),
-            'image_bg': lambda x: x.get('cover_photo', {}).get('photo', {}).get('image', {}).get('uri', ''),
-        }
+            'uid': lambda x: x.find('meta', {'property': 'al:android:url'})['content'].replace('fb://profile/', ''),
+            'username': lambda x: x.find('meta', {'property': 'og:url'})['content'].strip('/').split('/')[-1],
+            'fullname': lambda x: x.find('meta', {'property': 'og:title'})['content'],
+            'description': lambda x: x.find('meta', {'property': 'og:description'})['content'],
+            'image': lambda x: x.find('meta', {'property': 'og:image'})['content'],
+        },
+        'url_mutations': [
+            {
+                'from': r'https?://(?:[\w-]+\.)?(?:facebook\.com|fb\.com)/(?P<username>[^/?#]+)',
+                'to': 'https://www.facebook.com/{username}',
+                'headers': {'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'},
+            },
+        ],
     },
     'Facebook group': {
         'url_hints': ('facebook.com', 'fb.com'),

@@ -218,17 +218,16 @@ def test_reddit():  # Broken. Site move onto new version. Finding the right cook
     assert int(info.get('post_karma')) > int(7000)
 
 
-@pytest.mark.skip(reason="needs deeper rework")
+@pytest.mark.skip(reason="requires facebookexternalhit UA; use url_mutations via CLI")
 @pytest.mark.github_failed
-def test_facebook_user_profile():  # Broken. Needs deeper rework
-    info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
+def test_facebook_user_profile():
+    info = extract(parse('https://www.facebook.com/zuck/',
+                         headers={'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'})[0])
 
-    assert info.get('uid') == '1486042157'
-    assert info.get('username') == 'anatolijsharij'
-    assert info.get('fullname') == 'Анатолий Шарий'
-    assert info.get('is_verified') == 'True'
+    assert info.get('uid') == '4'
+    assert info.get('username') == 'zuck'
+    assert info.get('fullname') == 'Mark Zuckerberg'
     assert 'image' in info
-    assert 'image_bg' in info
     assert 'all' not in info
 
 
