@@ -1146,7 +1146,7 @@ schemes = {
             'likes_count': lambda x: x.get('likes_count'),
             'photos_count': lambda x: x.get('photos_count'),
             'is_verified': lambda x: x.get('is_verified'),
-            'facebook_uid': lambda x: re.search(r'graph\.facebook\.com/(\d+)/picture', x.get('photo', '')).group(1) if x.get('photo') and 'graph.facebook.com' in x.get('photo', '') else None,
+            'facebook_uid': lambda x: m.group(1) if x.get('photo') and (m := re.search(r'graph\.facebook\.com/(\d+)/picture', x.get('photo', ''))) else None,
         }
     },
     'VC.ru': {

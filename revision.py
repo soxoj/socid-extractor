@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import tomllib
 from datetime import datetime
 
 from tests import test_e2e
@@ -6,20 +7,11 @@ from socid_extractor.schemes import schemes
 
 def collect_pytest_annotations():
 	annotations = {}
-	with open('pytest.ini') as f:
-		lines = f.read().splitlines()
-		markers = False
-		for line in lines:
-			if line.startswith('markers ='):
-				markers = True
-				continue
-			if not markers:
-				continue
-			if not line.startswith('   '):
-				break
-			name, descr = line.strip().split(': ')
-			annotations[name] = descr
-
+	with open('pyproject.toml', 'rb') as f:
+		data = tomllib.load(f)
+	for marker in data.get('tool', {}).get('pytest', {}).get('ini_options', {}).get('markers', []):
+		name, _, descr = marker.partition(': ')
+		annotations[name.strip()] = descr.strip()
 	return annotations
 
 

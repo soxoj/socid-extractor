@@ -830,8 +830,6 @@ def test_tiktok_hydration_e2e():
     """
     TikTok
     TikTok (legacy SIGI_STATE)
-    Live check for the current web profile (hydration JSON, not SIGI_STATE).
-    Assertions are structural: ids and CDN avatar URL, not follower counts (those drift).
     """
     info = extract(parse('https://www.tiktok.com/@tiktok', timeout=20)[0])
 
@@ -1390,7 +1388,7 @@ def test_duolingo_api():
 
 
 def test_chess_com_api_e2e():
-    """Chess.com API: e2e test via pub API endpoint."""
+    """Chess.com API"""
     info = extract(parse('https://api.chess.com/pub/player/john')[0])
 
     assert info.get('chess_user_id') == '95037716'
@@ -1405,7 +1403,7 @@ def test_chess_com_api_e2e():
 
 
 def test_chess_com_html_e2e():
-    """Chess.com HTML: e2e test from member page."""
+    """Chess.com HTML"""
     info = extract(parse('https://www.chess.com/member/john')[0])
 
     assert info.get('username') == 'John'
@@ -1414,7 +1412,7 @@ def test_chess_com_html_e2e():
 
 
 def test_roblox_api_e2e():
-    """Roblox API: e2e test via users API."""
+    """Roblox user API"""
     info = extract(parse('https://users.roblox.com/v1/users/2191')[0])
 
     assert info.get('roblox_user_id') == '2191'
@@ -1426,7 +1424,7 @@ def test_roblox_api_e2e():
 
 
 def test_roblox_html_e2e():
-    """Roblox HTML: e2e test from profile page (redirect from user.aspx)."""
+    """Roblox HTML"""
     info = extract(parse('https://www.roblox.com/users/2191/profile')[0])
 
     assert info.get('username') == 'john'
