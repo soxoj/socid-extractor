@@ -58,87 +58,90 @@
 53 | Reddit | [reddit](https://github.com/soxoj/socid-extractor/search?q=test_reddit) | broken |
 54 | Steam | [steam](https://github.com/soxoj/socid-extractor/search?q=test_steam) | cloudflare |
 55 | Steam Addiction |  |  |
-56 | Stack Overflow & similar |  |  |
-57 | SoundCloud | [soundcloud](https://github.com/soxoj/socid-extractor/search?q=test_soundcloud) | SoundCloud returns 403 / empty embed for automated clients (2026) |
-58 | TikTok | [tiktok](https://github.com/soxoj/socid-extractor/search?q=test_tiktok), [tiktok_hydration_e2e](https://github.com/soxoj/socid-extractor/search?q=test_tiktok_hydration_e2e) | requests from GitHub Actions CI servers are blocked, requests from GitHub Actions CI servers are blocked |
-59 | TikTok (legacy SIGI_STATE) | [tiktok_hydration_e2e](https://github.com/soxoj/socid-extractor/search?q=test_tiktok_hydration_e2e) | requests from GitHub Actions CI servers are blocked |
-60 | Picsart API | [picsart_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_picsart_api_e2e) |  |
-61 | VC.ru |  |  |
-62 | LiveJournal | [livejournal](https://github.com/soxoj/socid-extractor/search?q=test_livejournal) |  |
-63 | MySpace | [myspace](https://github.com/soxoj/socid-extractor/search?q=test_myspace) | doesnt work without proxy, 503 error |
-64 | Keybase API |  |  |
-65 | Wikimapia |  |  |
-66 | Vimeo HTML |  |  |
-67 | Vimeo GraphQL API |  |  |
-68 | DeviantArt | [deviantart](https://github.com/soxoj/socid-extractor/search?q=test_deviantart) | it works but is skipped for the sake of successful tests |
-69 | mssg.me | [mssg_me](https://github.com/soxoj/socid-extractor/search?q=test_mssg_me) | broken |
-70 | Telegram | [telegram](https://github.com/soxoj/socid-extractor/search?q=test_telegram) |  |
-71 | BuzzFeed | [buzzfeed](https://github.com/soxoj/socid-extractor/search?q=test_buzzfeed) | requests from GitHub Actions CI servers are blocked |
-72 | Linktree | [linktree](https://github.com/soxoj/socid-extractor/search?q=test_linktree) | broken |
-73 | Twitch | [twitch](https://github.com/soxoj/socid-extractor/search?q=test_twitch) | broken |
-74 | vBulletinEngine |  |  |
-75 | Tumblr (default theme) |  |  |
-76 | 1x.com |  |  |
-77 | Last.fm | [last_fm](https://github.com/soxoj/socid-extractor/search?q=test_last_fm) |  |
-78 | Ask.fm | [ask_fm](https://github.com/soxoj/socid-extractor/search?q=test_ask_fm) | broken |
-79 | Launchpad | [launchpad](https://github.com/soxoj/socid-extractor/search?q=test_launchpad) | requests from GitHub Actions CI servers are blocked |
-80 | Xakep.ru |  |  |
-81 | Tproger.ru | [tproger_ru](https://github.com/soxoj/socid-extractor/search?q=test_tproger_ru) | no more author pages for now |
-82 | Jsfiddle.net |  |  |
-83 | Disqus API | [disqus_api](https://github.com/soxoj/socid-extractor/search?q=test_disqus_api) |  |
-84 | uCoz-like profile page |  |  |
-85 | uID.me |  |  |
-86 | tapd | [tapd](https://github.com/soxoj/socid-extractor/search?q=test_tapd) | down |
-87 | freelancer.com |  |  |
-88 | Yelp | [yelp_userid](https://github.com/soxoj/socid-extractor/search?q=test_yelp_userid), [yelp_username](https://github.com/soxoj/socid-extractor/search?q=test_yelp_username) | broken, broken |
-89 | Trello API | [trello](https://github.com/soxoj/socid-extractor/search?q=test_trello) |  |
-90 | Weibo | [weibo](https://github.com/soxoj/socid-extractor/search?q=test_weibo) | needs rework, cookies are required to get content, requests from GitHub Actions CI servers are blocked |
-91 | ICQ | [icq](https://github.com/soxoj/socid-extractor/search?q=test_icq) | broken forever |
-92 | Pastebin | [pastebin](https://github.com/soxoj/socid-extractor/search?q=test_pastebin) |  |
-93 | Periscope |  |  |
-94 | Imgur API | [imgur_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_imgur_api_e2e) |  |
-95 | PayPal |  |  |
-96 | Tinder | [tinder](https://github.com/soxoj/socid-extractor/search?q=test_tinder) | broken |
-97 | ifunny.co | [ifunny_co](https://github.com/soxoj/socid-extractor/search?q=test_ifunny_co) |  |
-98 | Wattpad API | [wattpad_api](https://github.com/soxoj/socid-extractor/search?q=test_wattpad_api) |  |
-99 | Kik | [kik](https://github.com/soxoj/socid-extractor/search?q=test_kik) | broken |
-100 | Docker Hub API | [docker_hub_api](https://github.com/soxoj/socid-extractor/search?q=test_docker_hub_api) |  |
-101 | Mixcloud API | [mixcloud_api](https://github.com/soxoj/socid-extractor/search?q=test_mixcloud_api) |  |
-102 | binarysearch API | [binarysearch_api](https://github.com/soxoj/socid-extractor/search?q=test_binarysearch_api) | down |
-103 | pr0gramm API | [pr0gramm_api](https://github.com/soxoj/socid-extractor/search?q=test_pr0gramm_api) |  |
-104 | Aparat API | [aparat_api](https://github.com/soxoj/socid-extractor/search?q=test_aparat_api) | broken |
-105 | UnstoppableDomains |  |  |
-106 | memory.lol | [memory_lol](https://github.com/soxoj/socid-extractor/search?q=test_memory_lol) |  |
-107 | Duolingo API | [duolingo_api](https://github.com/soxoj/socid-extractor/search?q=test_duolingo_api) |  |
-108 | TwitchTracker |  |  |
-109 | Chess.com API | [chess_com_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_chess_com_api_e2e) |  |
-110 | Roblox user API | [roblox_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_roblox_api_e2e) |  |
-111 | Roblox username lookup API |  |  |
-112 | MyAnimeList profile |  |  |
-113 | XVideos profile |  |  |
-114 | lnk.bio |  |  |
-115 | Wikipedia user API |  |  |
-116 | Fandom MediaWiki API |  |  |
-117 | Substack public profile API |  |  |
-118 | Lesswrong GraphQL API |  |  |
-119 | hashnode GraphQL API |  |  |
-120 | Rarible API |  |  |
-121 | CSSBattle |  |  |
-122 | Max (max.ru) profile |  |  |
-123 | Bluesky API |  |  |
-124 | Scratch API |  |  |
-125 | DailyMotion API |  |  |
-126 | SlideShare |  |  |
-127 | WordPress.org Profile |  |  |
-128 | Weebly |  |  |
-129 | Calendly |  |  |
-130 | Google Play Developer |  |  |
-131 | Amazon Author |  |  |
-132 | Habr |  |  |
-133 | Taplink |  |  |
-134 | Product Hunt |  |  |
-135 | Chess.com HTML | [chess_com_html_e2e](https://github.com/soxoj/socid-extractor/search?q=test_chess_com_html_e2e) |  |
-136 | Roblox HTML | [roblox_html_e2e](https://github.com/soxoj/socid-extractor/search?q=test_roblox_html_e2e) |  |
-137 | Threads |  |  |
+56 | Stack Exchange API | [stack_exchange_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_stack_exchange_api_e2e) | anti-bot / captcha / rate limiting from the site |
+57 | Stack Overflow & similar |  |  |
+58 | SoundCloud | [soundcloud](https://github.com/soxoj/socid-extractor/search?q=test_soundcloud) | SoundCloud returns 403 / empty embed for automated clients (2026) |
+59 | TikTok | [tiktok](https://github.com/soxoj/socid-extractor/search?q=test_tiktok), [tiktok_hydration_e2e](https://github.com/soxoj/socid-extractor/search?q=test_tiktok_hydration_e2e) | requests from GitHub Actions CI servers are blocked, requests from GitHub Actions CI servers are blocked |
+60 | TikTok (legacy SIGI_STATE) | [tiktok_hydration_e2e](https://github.com/soxoj/socid-extractor/search?q=test_tiktok_hydration_e2e) | requests from GitHub Actions CI servers are blocked |
+61 | Picsart API | [picsart_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_picsart_api_e2e) |  |
+62 | VC.ru |  |  |
+63 | LiveJournal | [livejournal](https://github.com/soxoj/socid-extractor/search?q=test_livejournal) |  |
+64 | MySpace | [myspace](https://github.com/soxoj/socid-extractor/search?q=test_myspace) | doesnt work without proxy, 503 error |
+65 | Keybase API |  |  |
+66 | Wikimapia |  |  |
+67 | Vimeo HTML |  |  |
+68 | Vimeo GraphQL API |  |  |
+69 | DeviantArt | [deviantart](https://github.com/soxoj/socid-extractor/search?q=test_deviantart) | it works but is skipped for the sake of successful tests |
+70 | mssg.me | [mssg_me](https://github.com/soxoj/socid-extractor/search?q=test_mssg_me) | broken |
+71 | Telegram | [telegram](https://github.com/soxoj/socid-extractor/search?q=test_telegram) |  |
+72 | BuzzFeed | [buzzfeed](https://github.com/soxoj/socid-extractor/search?q=test_buzzfeed) | requests from GitHub Actions CI servers are blocked |
+73 | Linktree | [linktree](https://github.com/soxoj/socid-extractor/search?q=test_linktree) | broken |
+74 | Twitch | [twitch](https://github.com/soxoj/socid-extractor/search?q=test_twitch) | broken |
+75 | vBulletinEngine |  |  |
+76 | Tumblr (default theme) |  |  |
+77 | 1x.com |  |  |
+78 | Last.fm | [last_fm](https://github.com/soxoj/socid-extractor/search?q=test_last_fm) |  |
+79 | Ask.fm | [ask_fm](https://github.com/soxoj/socid-extractor/search?q=test_ask_fm) | broken |
+80 | Launchpad | [launchpad](https://github.com/soxoj/socid-extractor/search?q=test_launchpad) | requests from GitHub Actions CI servers are blocked |
+81 | Xakep.ru |  |  |
+82 | Tproger.ru | [tproger_ru](https://github.com/soxoj/socid-extractor/search?q=test_tproger_ru) | no more author pages for now |
+83 | Jsfiddle.net |  |  |
+84 | Disqus API | [disqus_api](https://github.com/soxoj/socid-extractor/search?q=test_disqus_api) |  |
+85 | uCoz-like profile page |  |  |
+86 | uID.me |  |  |
+87 | tapd | [tapd](https://github.com/soxoj/socid-extractor/search?q=test_tapd) | down |
+88 | freelancer.com |  |  |
+89 | Yelp | [yelp_userid](https://github.com/soxoj/socid-extractor/search?q=test_yelp_userid), [yelp_username](https://github.com/soxoj/socid-extractor/search?q=test_yelp_username) | broken, broken |
+90 | Trello API | [trello](https://github.com/soxoj/socid-extractor/search?q=test_trello) |  |
+91 | Weibo | [weibo](https://github.com/soxoj/socid-extractor/search?q=test_weibo) | needs rework, cookies are required to get content, requests from GitHub Actions CI servers are blocked |
+92 | ICQ | [icq](https://github.com/soxoj/socid-extractor/search?q=test_icq) | broken forever |
+93 | Pastebin | [pastebin](https://github.com/soxoj/socid-extractor/search?q=test_pastebin) |  |
+94 | Periscope |  |  |
+95 | Imgur API | [imgur_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_imgur_api_e2e) |  |
+96 | PayPal |  |  |
+97 | Tinder | [tinder](https://github.com/soxoj/socid-extractor/search?q=test_tinder) | broken |
+98 | ifunny.co | [ifunny_co](https://github.com/soxoj/socid-extractor/search?q=test_ifunny_co) |  |
+99 | Wattpad API | [wattpad_api](https://github.com/soxoj/socid-extractor/search?q=test_wattpad_api) |  |
+100 | Kik | [kik](https://github.com/soxoj/socid-extractor/search?q=test_kik) | broken |
+101 | Docker Hub API | [docker_hub_api](https://github.com/soxoj/socid-extractor/search?q=test_docker_hub_api) |  |
+102 | Mixcloud API | [mixcloud_api](https://github.com/soxoj/socid-extractor/search?q=test_mixcloud_api) |  |
+103 | binarysearch API | [binarysearch_api](https://github.com/soxoj/socid-extractor/search?q=test_binarysearch_api) | down |
+104 | pr0gramm API | [pr0gramm_api](https://github.com/soxoj/socid-extractor/search?q=test_pr0gramm_api) |  |
+105 | Aparat API | [aparat_api](https://github.com/soxoj/socid-extractor/search?q=test_aparat_api) | broken |
+106 | UnstoppableDomains |  |  |
+107 | memory.lol | [memory_lol](https://github.com/soxoj/socid-extractor/search?q=test_memory_lol) |  |
+108 | Duolingo API | [duolingo_api](https://github.com/soxoj/socid-extractor/search?q=test_duolingo_api) |  |
+109 | TwitchTracker |  |  |
+110 | Chess.com API | [chess_com_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_chess_com_api_e2e) |  |
+111 | Roblox user API | [roblox_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_roblox_api_e2e) |  |
+112 | Roblox username lookup API |  |  |
+113 | MyAnimeList profile |  |  |
+114 | XVideos profile |  |  |
+115 | lnk.bio |  |  |
+116 | Wikipedia user API |  |  |
+117 | Fandom MediaWiki API |  |  |
+118 | Substack public profile API |  |  |
+119 | Lesswrong GraphQL API |  |  |
+120 | hashnode GraphQL API |  |  |
+121 | Rarible API |  |  |
+122 | CSSBattle |  |  |
+123 | Max (max.ru) profile |  |  |
+124 | Bluesky API |  |  |
+125 | Scratch API |  |  |
+126 | DailyMotion API |  |  |
+127 | SlideShare |  |  |
+128 | WordPress.org Profile |  |  |
+129 | Weebly |  |  |
+130 | Calendly |  |  |
+131 | Google Play Developer |  |  |
+132 | Amazon Author |  |  |
+133 | Habr |  |  |
+134 | Taplink |  |  |
+135 | Product Hunt |  |  |
+136 | Chess.com HTML | [chess_com_html_e2e](https://github.com/soxoj/socid-extractor/search?q=test_chess_com_html_e2e) |  |
+137 | Roblox HTML | [roblox_html_e2e](https://github.com/soxoj/socid-extractor/search?q=test_roblox_html_e2e) |  |
+138 | LeetCode GraphQL | [leetcode_graphql_e2e](https://github.com/soxoj/socid-extractor/search?q=test_leetcode_graphql_e2e) | LeetCode GraphQL requires POST request |
+139 | Boosty API | [boosty_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_boosty_api_e2e) |  |
+140 | Threads |  |  |
 
-The table has been updated at 2026-04-02 19:18:27.206205 UTC
+The table has been updated at 2026-04-02 19:24:52.831266 UTC
