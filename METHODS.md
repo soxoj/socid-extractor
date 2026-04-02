@@ -138,5 +138,8 @@
 132 | Product Hunt | [product_hunt](https://github.com/soxoj/socid-extractor/search?q=test_product_hunt) |  |
 
 133 | Taplink | [taplink](https://github.com/soxoj/socid-extractor/search?q=test_taplink) |  |
+134 | Stack Exchange API | [stack_exchange_api](https://github.com/soxoj/socid-extractor/search?q=test_stack_exchange_api) |  |
+135 | LeetCode GraphQL | [leetcode_graphql](https://github.com/soxoj/socid-extractor/search?q=test_leetcode_graphql) |  |
+136 | Boosty API | [boosty_api](https://github.com/soxoj/socid-extractor/search?q=test_boosty_api) |  |
 
-The table has been updated at 2026-03-29
+The table has been updated at 2026-04-02
