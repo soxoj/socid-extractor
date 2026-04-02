@@ -1432,3 +1432,34 @@ def test_roblox_html_e2e():
     assert info.get('username') == 'john'
     assert info.get('uid') == '2191'
     assert 'rbxcdn.com' in info.get('image', '')
+
+
+@pytest.mark.rate_limited
+def test_stack_exchange_api_e2e():
+    """Stack Exchange API: e2e test via /users endpoint."""
+    info = extract(parse('https://api.stackexchange.com/2.3/users?order=desc&sort=name&inname=soxoj&site=stackoverflow')[0])
+
+    assert info.get('username') == 'Soxoj1'
+    assert info.get('uid') == '15880884'
+    assert info.get('account_id') == '21543594'
+    assert info.get('reputation') == '1'
+    assert 'gravatar.com' in info.get('image', '')
+    assert info.get('link') == 'https://stackoverflow.com/users/15880884/soxoj1'
+    assert info.get('created_at') == '1620592473'
+
+
+@pytest.mark.skip(reason='LeetCode GraphQL requires POST request')
+def test_leetcode_graphql_e2e():
+    """LeetCode GraphQL: e2e test (requires POST, skipped by default)."""
+    pass
+
+
+def test_boosty_api_e2e():
+    """Boosty API: e2e test via blog endpoint."""
+    info = extract(parse('https://api.boosty.to/v1/blog/soxoj')[0])
+
+    assert info.get('uid') == '10276482'
+    assert info.get('fullname') == 'OSINT mindset'
+    assert 'boosty.to' in info.get('image', '')
+    assert 'митапы' in info.get('blog_title', '')
+    assert info.get('telegram_username') == 'soxoj'

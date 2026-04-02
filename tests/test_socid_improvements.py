@@ -1247,6 +1247,138 @@ def test_roblox_html_profile():
     assert 'rbxcdn.com' in info.get('image', '')
 
 
+def test_stack_exchange_api_json():
+    """Stack Exchange API: extract user profile from /users?inname= JSON response."""
+    body = json.dumps({
+        "items": [{
+            "account_id": 21543594,
+            "reputation": 1,
+            "user_id": 15880884,
+            "user_type": "registered",
+            "link": "https://stackoverflow.com/users/15880884/soxoj1",
+            "profile_image": "https://www.gravatar.com/avatar/86d899547a5fce05b6a63e540878c69f",
+            "display_name": "Soxoj1",
+            "creation_date": 1620592473,
+        }],
+        "has_more": False,
+    })
+    info = extract(body)
+    assert info.get('uid') == '15880884'
+    assert info.get('account_id') == '21543594'
+    assert info.get('username') == 'Soxoj1'
+    assert 'gravatar.com' in info.get('image', '')
+    assert info.get('reputation') == '1'
+    assert info.get('link') == 'https://stackoverflow.com/users/15880884/soxoj1'
+    assert info.get('created_at') == '1620592473'
+
+
+def test_stack_exchange_api_empty_items():
+    """Stack Exchange API: empty items array should not match."""
+    body = json.dumps({"items": [], "has_more": False})
+    info = extract(body)
+    assert not info.get('uid')
+
+
+def test_leetcode_graphql_api_json():
+    """LeetCode GraphQL: extract user profile from matchedUser response."""
+    body = json.dumps({
+        "data": {
+            "matchedUser": {
+                "username": "soxoj",
+                "profile": {
+                    "realName": "Soxoj",
+                    "aboutMe": "OSINT researcher",
+                    "userAvatar": "https://assets.leetcode.com/users/soxoj/avatar_1561894548.png",
+                    "countryName": "Russia",
+                    "company": "Anthropic",
+                    "school": "MIT",
+                    "ranking": 5000001,
+                },
+            }
+        }
+    })
+    info = extract(body)
+    assert info.get('username') == 'soxoj'
+    assert info.get('fullname') == 'Soxoj'
+    assert info.get('bio') == 'OSINT researcher'
+    assert 'leetcode.com' in info.get('image', '')
+    assert info.get('country') == 'Russia'
+    assert info.get('company') == 'Anthropic'
+    assert info.get('school') == 'MIT'
+    assert info.get('ranking') == '5000001'
+
+
+def test_leetcode_graphql_empty_profile():
+    """LeetCode GraphQL: empty realName/aboutMe should return None, not empty string."""
+    body = json.dumps({
+        "data": {
+            "matchedUser": {
+                "username": "emptyuser",
+                "profile": {
+                    "realName": "",
+                    "aboutMe": "",
+                    "userAvatar": "https://assets.leetcode.com/users/default.png",
+                    "countryName": None,
+                    "company": None,
+                    "school": None,
+                    "ranking": 999999,
+                },
+            }
+        }
+    })
+    info = extract(body)
+    assert info.get('username') == 'emptyuser'
+    assert not info.get('fullname')
+    assert not info.get('bio')
+    assert not info.get('country')
+    assert not info.get('company')
+
+
+def test_boosty_api_json():
+    """Boosty API: extract blog owner profile with telegram crosslink."""
+    body = json.dumps({
+        "id": 123,
+        "title": "Организуем митапы",
+        "description": "Канал про митапы",
+        "owner": {
+            "name": "OSINT mindset",
+            "id": 10276482,
+            "avatarUrl": "https://images.boosty.to/user/10276482/avatar",
+            "externalApps": {
+                "telegram": {"username": "soxoj", "hasAccount": True},
+            },
+        },
+        "signedQuery": "abc123",
+    })
+    info = extract(body)
+    assert info.get('uid') == '10276482'
+    assert info.get('fullname') == 'OSINT mindset'
+    assert 'boosty.to' in info.get('image', '')
+    assert info.get('blog_title') == 'Организуем митапы'
+    assert info.get('blog_description') == 'Канал про митапы'
+    assert info.get('telegram_username') == 'soxoj'
+
+
+def test_boosty_api_no_telegram():
+    """Boosty API: missing telegram should return None, not crash."""
+    body = json.dumps({
+        "id": 456,
+        "title": "Some Blog",
+        "description": "",
+        "owner": {
+            "name": "Author",
+            "id": 999,
+            "avatarUrl": "https://images.boosty.to/user/999/avatar",
+            "externalApps": {},
+        },
+        "signedQuery": "xyz",
+    })
+    info = extract(body)
+    assert info.get('uid') == '999'
+    assert info.get('fullname') == 'Author'
+    assert not info.get('telegram_username')
+
+
 def test_facebook_user_profile_meta_tags():
     """
     Verifies the **Facebook user profile** scheme extracts data from OG and app-link
