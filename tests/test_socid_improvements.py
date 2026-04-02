@@ -1245,3 +1245,47 @@ def test_roblox_html_profile():
     assert info.get('username') == 'john'
     assert info.get('uid') == '2191'
     assert 'rbxcdn.com' in info.get('image', '')
+
+
+def test_facebook_user_profile_meta_tags():
+    """
+    Verifies the **Facebook user profile** scheme extracts data from OG and app-link
+    meta tags (the format served to crawlers by Facebook).
+
+    **Check:** `uid`, `username`, `fullname`, `description`, and `image` are extracted
+    from the meta tags in the HTML fixture.
+    """
+    html = (
+        '<!DOCTYPE html>'
+        '<html id="facebook" class="_9dls" lang="en" dir="ltr"><head>'
+        '<title>Mark Zuckerberg</title>'
+        '<meta property="al:android:app_name" content="Facebook" />'
+        '<meta property="al:android:url" content="fb://profile/4" />'
+        '<meta property="og:title" content="Mark Zuckerberg" />'
+        '<meta property="og:description" content="Mark Zuckerberg. 121,000,000 likes" />'
+        '<meta property="og:url" content="https://www.facebook.com/zuck/" />'
+        '<meta property="og:image" content="https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=4" />'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '4'
+    assert info.get('username') == 'zuck'
+    assert info.get('fullname') == 'Mark Zuckerberg'
+    assert 'likes' in info.get('description', '')
+    assert 'lookaside' in info.get('image', '')
+
+
+def test_facebook_user_profile_no_match_without_og_title():
+    """
+    Verifies the **Facebook user profile** scheme does NOT match pages that lack
+    ``og:title`` meta tag (e.g. login/error pages).
+    """
+    html = (
+        '<!DOCTYPE html>'
+        '<html id="facebook" lang="en"><head>'
+        '<title>Error</title>'
+        '</head><body><h1>Sorry, something went wrong.</h1></body></html>'
+    )
+    info = extract(html)
+    assert not info.get('uid')
+    assert not info.get('fullname')
