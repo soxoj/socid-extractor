@@ -1289,3 +1289,35 @@ def test_facebook_user_profile_no_match_without_og_title():
     info = extract(html)
     assert not info.get('uid')
     assert not info.get('fullname')
+
+
+def test_smule_profile_extraction():
+    """
+    Verifies the **Smule** scheme extracts user data from the inline
+    ``Profile: {"user": ...}`` JSON block found in Smule profile pages.
+    """
+    user_data = {
+        "user": {
+            "account_id": 173,
+            "handle": "Blue",
+            "pic_url": "https://c-sf.smule.com/rs-z0/account/icon/v4_defpic.png",
+            "url": "/Blue",
+            "followers": "155",
+            "followees": "0",
+            "num_performances": "0",
+            "is_following": False,
+        }
+    }
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<title>Blue on Smule</title>'
+        '</head><body>'
+        '<script>smule.com Profile: ' + json.dumps(user_data) + '\n</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '173'
+    assert info.get('username') == 'Blue'
+    assert info.get('image') == 'https://c-sf.smule.com/rs-z0/account/icon/v4_defpic.png'
+    assert info.get('follower_count') == '155'
+    assert info.get('following_count') == '0'
