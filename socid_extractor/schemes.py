@@ -2492,5 +2492,23 @@ schemes = {
         'flags': ['og:site_name" content="Threads"', 'barcelona'],
         'regex': r'og:description" content="(?P<follower_count>\d+) Followers[^"]*?(?P<posts_count>\d+) Threads[\s\S]*?"user":\{"pk":"(?P<uid>\d+)","profile_pic_url":"(?P<image>[^"]*)"[^}]*?"username":"(?P<username>[^"]+)"[^}]*?"full_name":"(?P<fullname>[^"]*)"[^}]*?"is_verified":(?P<is_verified>\w+)',
     },
+    'Smule': {
+        'url_hints': ('smule.com',),
+        'flags': ['smule.com', 'Profile: {"user"'],
+        'regex': r'Profile:\s*(\{[^\n]+\})',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('user', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('account_id'),
+            'username': lambda x: x.get('handle'),
+            'image': lambda x: x.get('pic_url'),
+            'follower_count': lambda x: x.get('followers'),
+            'following_count': lambda x: x.get('followees'),
+        },
+    },
 }
 
