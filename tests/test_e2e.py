@@ -1461,3 +1461,58 @@ def test_boosty_api_e2e():
     assert 'boosty.to' in info.get('image', '')
     assert 'митапы' in info.get('blog_title', '')
     assert info.get('telegram_username') == 'soxoj'
+
+
+def test_warpcast_api_e2e():
+    """Warpcast API"""
+    info = extract(parse('https://client.warpcast.com/v2/user-by-username?username=dwr.eth')[0])
+
+    assert info.get('uid') == '3'
+    assert info.get('username') == 'dwr'
+    assert info.get('fullname') == 'Dan Romero'
+    assert info.get('bio')
+    assert info.get('follower_count')
+    assert info.get('twitter_username') == 'dwr'
+
+
+def test_paragraph_api_e2e():
+    """Paragraph API"""
+    info = extract(parse('https://paragraph.com/api/blogs/@vitalik')[0])
+
+    assert info.get('uid') == 'aLOC85RCnjhDinsLDfUr'
+    assert info.get('fullname') == 'Vitalik Buterin'
+    assert info.get('username') == 'vitalik'
+    assert info.get('twitter_username') == 'VitalikButerin'
+    assert info.get('wallet_address') == '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+
+
+def test_fragment_e2e():
+    """Fragment"""
+    info = extract(parse('https://fragment.com/username/durov')[0])
+
+    assert info.get('telegram_username') == 'durov'
+    assert info.get('ton_wallet')
+    assert 'tonviewer.com' not in info.get('ton_wallet', '')
+    assert info.get('purchased_at')
+
+
+@pytest.mark.rate_limited
+def test_tonometerbot_e2e():
+    """Tonometerbot"""
+    info = extract(parse('https://tonometerbot.com/@/jaga1985')[0])
+
+    assert info.get('username') == 'jaga1985'
+    assert info.get('subscriber_count')
+    assert info.get('nft_count')
+
+
+@pytest.mark.github_failed
+def test_spatial_e2e():
+    """Spatial"""
+    info = extract(parse('https://www.spatial.io/@rammy')[0])
+
+    assert info.get('uid') == '5eceef2dfa7f113e938acf63'
+    assert info.get('username') == 'rammy'
+    assert info.get('fullname') == 'Rammy'
+    assert info.get('bio')
+    assert info.get('follower_count')
