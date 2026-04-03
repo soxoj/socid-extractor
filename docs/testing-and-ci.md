@@ -19,7 +19,7 @@ Cookie-based scenarios may use files under [`tests/`](../tests/) (e.g. `*.cookie
 
 ## Pytest markers
 
-Defined in [`pytest.ini`](../pytest.ini):
+Defined in [`pyproject.toml`](../pyproject.toml) (`[tool.pytest.ini_options]`):
 
 | Marker | Meaning |
 | ------ | ------- |
@@ -52,9 +52,10 @@ Helper script that turns lines of the form `key: value` into `assert info.get("k
 
 - Python **3.10, 3.11, 3.12**
 - **flake8** — syntax/undefined-name checks; complexity/length as warnings (`setup.cfg` ignores `E501` for line length)
+- **mypy** — type checking with `mypy socid_extractor/` (stub overrides in `pyproject.toml`)
 - **pytest** — `pytest -k 'not cookies' -m 'not github_failed and not rate_limited' --reruns 3 --reruns-delay 30` (pytest-rerunfailures for flaky network tests)
 
-Publishing to PyPI on release is handled by [`.github/workflows/python-publish.yml`](../.github/workflows/python-publish.yml).
+Publishing to PyPI on release is handled by [`.github/workflows/python-publish.yml`](../.github/workflows/python-publish.yml) using `python -m build`.
 
 ## `revision.py`
 
@@ -66,7 +67,7 @@ python revision.py
 
 It:
 
-- Reads pytest marker descriptions from `pytest.ini`
+- Reads pytest marker descriptions from `pyproject.toml`
 - Loads tests from `tests/test_e2e.py` and schemes from `socid_extractor/schemes.py`
 - Associates tests with scheme names via docstrings (method name per line) or heuristic name matching
 - **Overwrites [`METHODS.md`](../METHODS.md)** with a table of methods, test links, and notes (markers, skip reasons)

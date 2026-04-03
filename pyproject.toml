@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "socid-extractor"
+version = "0.0.27"
+description = "Extract accounts' identifiers from personal pages on various platforms"
+readme = "README.md"
+license = "GPL-3.0"
+requires-python = ">=3.10"
+authors = [
+    {name = "Soxoj", email = "soxoj@protonmail.com"},
+]
+dependencies = [
+    "requests>=2.24.0",
+    "python-dateutil>=2.8.1",
+    "beautifulsoup4~=4.14.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/soxoj/socid-extractor"
+
+[project.scripts]
+socid_extractor = "socid_extractor.cli:run"
+
+[tool.setuptools.packages.find]
+include = ["socid_extractor*"]
+
+[tool.setuptools.package-data]
+socid_extractor = ["py.typed"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "requests.*",
+    "dateutil.*",
+    "bs4.*",
+]
+ignore_missing_imports = true
+
+[tool.flake8]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "github_failed: requests from GitHub Actions CI servers are blocked",
+    "rate_limited: anti-bot / captcha / rate limiting from the site",
+    "requires_cookies: cookies are required to get content",
+]
