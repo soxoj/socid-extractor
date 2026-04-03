@@ -1259,7 +1259,7 @@ def test_wattpad_api():
     assert int(info.get("following_count")) >= 89
     assert info.get("created_at") == "2019-12-10T00:25:02Z"
     assert info.get("updated_at") == "2020-09-08T08:24:38Z"
-    assert info.get("verified") == "False"
+    assert info.get("is_verified") == "False"
     assert info.get("verified_email") == "True"
 
 
@@ -1399,7 +1399,7 @@ def test_chess_com_api_e2e():
     assert info.get('country_code') == 'US'
     assert 'chesscomfiles.com' in info.get('image', '')
     assert info.get('is_streamer') == 'False'
-    assert info.get('verified') == 'False'
+    assert info.get('is_verified') == 'False'
 
 
 def test_chess_com_html_e2e():

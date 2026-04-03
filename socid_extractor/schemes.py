@@ -1854,7 +1854,7 @@ schemes = {
             'updated_at': lambda x: x.get('modifyDate'),
             'location': lambda x: x.get('location'),
             'isPrivate': lambda x: x.get('isPrivate'),
-            'verified': lambda x: x.get('verified'),
+            'is_verified': lambda x: x.get('verified'),
             'verified_email': lambda x: x.get('verified_email'),
             'ambassador': lambda x: x.get('ambassador'),
             'isMuted': lambda x: x.get('isMuted'),
@@ -2078,7 +2078,7 @@ schemes = {
     },
     'Chess.com API': {
         'url_hints': ('chess.com', 'api.chess.com'),
-        'flags': ['"player_id"', 'images.chesscomfiles.com/uploads/v1/user/', '"username"'],
+        'flags': ['"player_id"', '"username"', '"status"'],
         'regex': r'^({[\S\s]+})$',
         'extract_json': True,
         'url_mutations': [
@@ -2098,10 +2098,10 @@ schemes = {
             'follower_count': lambda x: x.get('followers'),
             'status': lambda x: x.get('status'),
             'is_streamer': lambda x: x.get('is_streamer'),
-            'verified': lambda x: x.get('verified'),
+            'is_verified': lambda x: x.get('verified'),
             'twitch_url': lambda x: x.get('twitch_url'),
-            'joined': lambda x: parse_datetime(x.get('joined')) if x.get('joined') else '',
-            'last_online': lambda x: parse_datetime(x.get('last_online')) if x.get('last_online') else '',
+            'created_at': lambda x: parse_datetime(x.get('joined')) if x.get('joined') else '',
+            'latest_activity_at': lambda x: parse_datetime(x.get('last_online')) if x.get('last_online') else '',
         },
     },
     'Roblox user API': {
@@ -2489,8 +2489,8 @@ schemes = {
     },
     'Threads': {
         'url_hints': ('threads.net', 'threads.com'),
-        'flags': ['og:site_name" content="Threads"', 'barcelona'],
-        'regex': r'og:description" content="(?P<follower_count>\d+) Followers[^"]*?(?P<posts_count>\d+) Threads[\s\S]*?"user":\{"pk":"(?P<uid>\d+)","profile_pic_url":"(?P<image>[^"]*)"[^}]*?"username":"(?P<username>[^"]+)"[^}]*?"full_name":"(?P<fullname>[^"]*)"[^}]*?"is_verified":(?P<is_verified>\w+)',
+        'flags': ['Threads, Say more', 'barcelona'],
+        'regex': r'og:title" content="(?P<fullname>[^"]*?) \((?:@|&#064;)(?P<username>[^)]+)\)[^"]*Threads[\s\S]*?og:description" content="(?P<follower_count>[\d,]+) Followers[^"]*?(?P<posts_count>[\d,]+) Threads[^"]*?(?:&quot;|")(?P<bio>[^"&]*)',
     },
     'Smule': {
         'url_hints': ('smule.com',),

@@ -196,6 +196,9 @@ def test_chess_com_pub_api_json():
     assert info.get('fullname') == 'Hikaru Nakamura'
     assert info.get('country_code') == 'US'
     assert info.get('follower_count') == '100'
+    assert info.get('is_verified') == 'False'
+    assert info.get('created_at')
+    assert info.get('latest_activity_at')
 
 
 def test_roblox_user_api_json():
@@ -925,31 +928,21 @@ def test_producthunt_profile_extraction():
 
 
 def test_threads_profile_extraction():
-    """Threads: extract follower/post counts, uid, username, fullname, image, is_verified from meta + JSON."""
-    # The HTML must contain og meta + "barcelona" flag and "user":{...} block
-    # matching the Threads regex, but must NOT trigger Instagram API flags
-    # (which look for '{"user":{"pk"' + 'profile_pic_url' as raw substrings).
-    # We avoid the Instagram flag by not placing a '{' immediately before "user".
+    """Threads: extract fullname, username, follower/post counts, bio from OG tags."""
     html = (
         '<!DOCTYPE html><html><head>'
-        '<meta property="og:site_name" content="Threads">'
-        '<meta property="og:description" content="12500 Followers, 340 Threads. Some bio text here.">'
+        '<meta property="og:title" content="Mark Zuckerberg (@zuck) · Threads, Say more">'
+        '<meta property="og:description" content="12,500 Followers · 340 Threads · &quot;CEO of Meta&quot;">'
         '</head><body>'
-        '<script>barcelona_config = true;</script>'
-        '<script type="application/json">'
-        '["user":{"pk":"55443322","profile_pic_url":"https://scontent.cdninstagram.com/v/pic.jpg",'
-        '"username":"zuck","full_name":"Mark Zuckerberg","biography":"CEO","is_verified":true}]'
-        '</script>'
+        '<div class="barcelona">content</div>'
         '</body></html>'
     )
     info = extract(html)
-    assert info.get('follower_count') == '12500'
-    assert info.get('posts_count') == '340'
-    assert info.get('uid') == '55443322'
-    assert info.get('username') == 'zuck'
     assert info.get('fullname') == 'Mark Zuckerberg'
-    assert 'cdninstagram.com' in info.get('image', '')
-    assert info.get('is_verified') == 'true'
+    assert info.get('username') == 'zuck'
+    assert info.get('follower_count') == '12,500'
+    assert info.get('posts_count') == '340'
+    assert info.get('bio') == 'CEO of Meta'
 
 
 # ---------------------------------------------------------------------------
@@ -1186,32 +1179,21 @@ def test_taplink_nonexistent_user_not_matched():
 
 
 def test_threads_profile():
-    """Threads: extract user id, username, fullname, avatar, verified, followers, threads count."""
+    """Threads: extract from OG tags with HTML entities (real SPA response format)."""
     html = (
         '<!DOCTYPE html><html><head>'
-        '<meta property="og:site_name" content="Threads">'
-        '<meta property="og:title" content="Jessica Brooke Martin (@jessbmart)">'
-        '<meta property="og:description" content="141 Followers &#x2022; 24 Threads. See the latest conversations.">'
+        '<meta property="og:title" content="Marc Fuste&#xe9; (&#064;fusteee) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="33 Followers &#x2022; 0 Threads &#x2022; &quot;Regalame tus mejores noches&quot;. See the latest conversations with &#064;fusteee.">'
         '</head><body>'
-        '<script>window.__barcelona = true;</script>'
-        '<script type="application/json" data-sjs>'
-        '{"require":[["ScheduledServerJS","handle",null,[{"__bbox":{"require":['
-        '["RelayPrefetchedStreamCache","next",[],['
-        '{"id":"post123","user":{"pk":"75812988992","profile_pic_url":"https:\\/\\/instagram.cdn.net\\/pic.jpg",'
-        '"friendship_status":null,"username":"jessbmart","id":"75812988992",'
-        '"full_name":"Jessica Brooke Martin","is_verified":false,'
-        '"has_onboarded_to_text_post_app":true}}'
-        ']]]}]}]]};</script>'
+        '<div class="barcelona">content</div>'
         '</body></html>'
     )
     info = extract(html)
-    assert info.get('uid') == '75812988992'
-    assert info.get('username') == 'jessbmart'
-    assert info.get('fullname') == 'Jessica Brooke Martin'
-    assert 'instagram' in info.get('image', '')
-    assert info.get('is_verified') == 'false'
-    assert info.get('follower_count') == '141'
-    assert info.get('posts_count') == '24'
+    assert info.get('username') == 'fusteee'
+    assert info.get('fullname') == 'Marc Fuste&#xe9;'
+    assert info.get('follower_count') == '33'
+    assert info.get('posts_count') == '0'
+    assert info.get('bio') == 'Regalame tus mejores noches'
 
 
 def test_chess_com_html_profile():
