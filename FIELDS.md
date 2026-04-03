@@ -40,9 +40,9 @@ If `name` is a login/handle, map it to `username`.
 
 | Field | Description | API mapping examples |
 |-------|-------------|----------------------|
-| `created_at` | Registration / account creation date | `joinedAt`, `registration`, `registration_date`, `history.joined`, `created_time` (unix), `createdAt` |
-| `updated_at` | Last update date | -- |
-| `last_online` | Last visit / activity | `last_seen_at` |
+| `created_at` | Registration / account creation date | `joinedAt`, `registration`, `registration_date`, `history.joined`, `joined` (unix), `created_time` (unix), `createdAt` |
+| `updated_at` | Last profile update date | `modifyDate`, `updatedAt` |
+| `latest_activity_at` | Last visit / activity / online time | `last_online` (unix), `last_seen_at`, `active` |
 
 ## Counters
 
@@ -74,6 +74,12 @@ If `name` is a login/handle, map it to `username`.
 | `is_employee` | Platform employee | `isEmployee`, `scratchteam` |
 
 **Rule:** Boolean fields start with `is_` and are stored as strings `'True'`/`'False'`.
+Never use bare `verified` — always `is_verified`.
+
+**Common mistakes to avoid:**
+- `verified` → `is_verified`
+- `joined` → `created_at`
+- `last_online` → `latest_activity_at`
 
 ## Cross-platform links
 
