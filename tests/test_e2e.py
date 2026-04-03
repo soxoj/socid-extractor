@@ -830,8 +830,6 @@ def test_tiktok_hydration_e2e():
     """
     TikTok
     TikTok (legacy SIGI_STATE)
-    Live check for the current web profile (hydration JSON, not SIGI_STATE).
-    Assertions are structural: ids and CDN avatar URL, not follower counts (those drift).
     """
     info = extract(parse('https://www.tiktok.com/@tiktok', timeout=20)[0])
 
@@ -1390,7 +1388,7 @@ def test_duolingo_api():
 
 
 def test_chess_com_api_e2e():
-    """Chess.com API: e2e test via pub API endpoint."""
+    """Chess.com API"""
     info = extract(parse('https://api.chess.com/pub/player/john')[0])
 
     assert info.get('chess_user_id') == '95037716'
@@ -1405,7 +1403,7 @@ def test_chess_com_api_e2e():
 
 
 def test_chess_com_html_e2e():
-    """Chess.com HTML: e2e test from member page."""
+    """Chess.com HTML"""
     info = extract(parse('https://www.chess.com/member/john')[0])
 
     assert info.get('username') == 'John'
@@ -1414,7 +1412,7 @@ def test_chess_com_html_e2e():
 
 
 def test_roblox_api_e2e():
-    """Roblox API: e2e test via users API."""
+    """Roblox user API"""
     info = extract(parse('https://users.roblox.com/v1/users/2191')[0])
 
     assert info.get('roblox_user_id') == '2191'
@@ -1426,7 +1424,7 @@ def test_roblox_api_e2e():
 
 
 def test_roblox_html_e2e():
-    """Roblox HTML: e2e test from profile page (redirect from user.aspx)."""
+    """Roblox HTML"""
     info = extract(parse('https://www.roblox.com/users/2191/profile')[0])
 
     assert info.get('username') == 'john'
@@ -1436,7 +1434,7 @@ def test_roblox_html_e2e():
 
 @pytest.mark.rate_limited
 def test_stack_exchange_api_e2e():
-    """Stack Exchange API: e2e test via /users endpoint."""
+    """Stack Exchange API"""
     info = extract(parse('https://api.stackexchange.com/2.3/users?order=desc&sort=name&inname=soxoj&site=stackoverflow')[0])
 
     assert info.get('username') == 'Soxoj1'
@@ -1450,12 +1448,12 @@ def test_stack_exchange_api_e2e():
 
 @pytest.mark.skip(reason='LeetCode GraphQL requires POST request')
 def test_leetcode_graphql_e2e():
-    """LeetCode GraphQL: e2e test (requires POST, skipped by default)."""
+    """LeetCode GraphQL"""
     pass
 
 
 def test_boosty_api_e2e():
-    """Boosty API: e2e test via blog endpoint."""
+    """Boosty API"""
     info = extract(parse('https://api.boosty.to/v1/blog/soxoj')[0])
 
     assert info.get('uid') == '10276482'
