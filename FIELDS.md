@@ -42,6 +42,7 @@ If `name` is a login/handle, map it to `username`.
 |-------|-------------|----------------------|
 | `created_at` | Registration / account creation date | `joinedAt`, `registration`, `registration_date`, `history.joined`, `created_time` (unix), `createdAt` |
 | `updated_at` | Last update date | -- |
+| `latest_activity_at` | Last content activity (post, comment, etc.) | `latestPostModifiedTs`, `last_activity` |
 | `last_online` | Last visit / activity | `last_seen_at` |
 
 ## Counters

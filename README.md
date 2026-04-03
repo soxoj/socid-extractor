@@ -84,6 +84,11 @@ The latest development version can be installed directly from GitHub:
 - Stack Overflow (HTML + API)
 - LeetCode
 - Boosty
+- Warpcast (Farcaster)
+- Paragraph
+- Fragment (TON/Telegram)
+- Tonometerbot
+- Spatial
 
 ...and many others.
 
