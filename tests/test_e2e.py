@@ -1480,7 +1480,7 @@ def test_paragraph_api_e2e():
     info = extract(parse('https://paragraph.com/api/blogs/@vitalik')[0])
 
     assert info.get('uid') == 'aLOC85RCnjhDinsLDfUr'
-    assert info.get('fullname') == 'vitalik.eth'
+    assert info.get('fullname') == 'Vitalik Buterin'
     assert info.get('username') == 'vitalik'
     assert info.get('twitter_username') == 'VitalikButerin'
     assert info.get('wallet_address') == '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
