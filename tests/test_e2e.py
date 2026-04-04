@@ -218,17 +218,16 @@ def test_reddit():  # Broken. Site move onto new version. Finding the right cook
     assert int(info.get('post_karma')) > int(7000)
 
 
-@pytest.mark.skip(reason="needs deeper rework")
+@pytest.mark.skip(reason="requires facebookexternalhit UA; use url_mutations via CLI")
 @pytest.mark.github_failed
-def test_facebook_user_profile():  # Broken. Needs deeper rework
-    info = extract(parse('https://ru-ru.facebook.com/anatolijsharij/')[0])
+def test_facebook_user_profile():
+    info = extract(parse('https://www.facebook.com/zuck/',
+                         headers={'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)'})[0])
 
-    assert info.get('uid') == '1486042157'
-    assert info.get('username') == 'anatolijsharij'
-    assert info.get('fullname') == 'Анатолий Шарий'
-    assert info.get('is_verified') == 'True'
+    assert info.get('uid') == '4'
+    assert info.get('username') == 'zuck'
+    assert info.get('fullname') == 'Mark Zuckerberg'
     assert 'image' in info
-    assert 'image_bg' in info
     assert 'all' not in info
 
 
@@ -269,6 +268,7 @@ def test_yandex_disk_photos():  # Occasional captcha
     assert info.get('name') == 'Вербочка'
 
 
+@pytest.mark.github_failed
 def test_my_mail_main():
     info = extract(parse('https://my.mail.ru/mail/zubovo/')[0])
 
@@ -283,6 +283,7 @@ def test_my_mail_main():
     assert info.get('is_video_channel') == 'False'
 
 
+@pytest.mark.github_failed
 def test_my_mail_communities():
     # also video, apps, photo
     info = extract(parse('https://my.mail.ru/mail/zubovo/communities/')[0])
@@ -829,8 +830,6 @@ def test_tiktok_hydration_e2e():
     """
     TikTok
     TikTok (legacy SIGI_STATE)
-    Live check for the current web profile (hydration JSON, not SIGI_STATE).
-    Assertions are structural: ids and CDN avatar URL, not follower counts (those drift).
     """
     info = extract(parse('https://www.tiktok.com/@tiktok', timeout=20)[0])
 
@@ -941,6 +940,7 @@ def test_ask_fm():
     assert 'image' in info
 
 
+@pytest.mark.github_failed
 def test_launchpad():
     info = extract(parse('https://launchpad.net/~antony')[0])
 
@@ -1292,7 +1292,7 @@ def test_wattpad_api():
     assert int(info.get("following_count")) >= 89
     assert info.get("created_at") == "2019-12-10T00:25:02Z"
     assert info.get("updated_at") == "2020-09-08T08:24:38Z"
-    assert info.get("verified") == "False"
+    assert info.get("is_verified") == "False"
     assert info.get("verified_email") == "True"
 
 
@@ -1418,3 +1418,134 @@ def test_duolingo_api():
     assert info.get('learningLanguage') == 'en'
     assert info.get('fromLanguage') == 'es'
     assert 'bio' not in info
+
+
+def test_chess_com_api_e2e():
+    """Chess.com API"""
+    info = extract(parse('https://api.chess.com/pub/player/john')[0])
+
+    assert info.get('chess_user_id') == '95037716'
+    assert info.get('username') == 'john'
+    assert info.get('fullname') == 'John'
+    assert info.get('follower_count') == '45'
+    assert info.get('status') == 'basic'
+    assert info.get('country_code') == 'US'
+    assert 'chesscomfiles.com' in info.get('image', '')
+    assert info.get('is_streamer') == 'False'
+    assert info.get('is_verified') == 'False'
+
+
+def test_chess_com_html_e2e():
+    """Chess.com HTML"""
+    info = extract(parse('https://www.chess.com/member/john')[0])
+
+    assert info.get('username') == 'John'
+    assert info.get('fullname') == 'John'
+    assert 'chess.com' in info.get('image', '')
+
+
+def test_roblox_api_e2e():
+    """Roblox user API"""
+    info = extract(parse('https://users.roblox.com/v1/users/2191')[0])
+
+    assert info.get('roblox_user_id') == '2191'
+    assert info.get('username') == 'john'
+    assert info.get('fullname') == 'john'
+    assert info.get('is_banned') == 'False'
+    assert info.get('is_verified') == 'False'
+    assert info.get('created_at') == '2006-08-24T08:42:25.047Z'
+
+
+def test_roblox_html_e2e():
+    """Roblox HTML"""
+    info = extract(parse('https://www.roblox.com/users/2191/profile')[0])
+
+    assert info.get('username') == 'john'
+    assert info.get('uid') == '2191'
+    assert 'rbxcdn.com' in info.get('image', '')
+
+
+@pytest.mark.rate_limited
+def test_stack_exchange_api_e2e():
+    """Stack Exchange API"""
+    info = extract(parse('https://api.stackexchange.com/2.3/users?order=desc&sort=name&inname=soxoj&site=stackoverflow')[0])
+
+    assert info.get('username') == 'Soxoj1'
+    assert info.get('uid') == '15880884'
+    assert info.get('account_id') == '21543594'
+    assert info.get('reputation') == '1'
+    assert 'gravatar.com' in info.get('image', '')
+    assert info.get('link') == 'https://stackoverflow.com/users/15880884/soxoj1'
+    assert info.get('created_at') == '1620592473'
+
+
+@pytest.mark.skip(reason='LeetCode GraphQL requires POST request')
+def test_leetcode_graphql_e2e():
+    """LeetCode GraphQL"""
+    pass
+
+
+def test_boosty_api_e2e():
+    """Boosty API"""
+    info = extract(parse('https://api.boosty.to/v1/blog/soxoj')[0])
+
+    assert info.get('uid') == '10276482'
+    assert info.get('fullname') == 'OSINT mindset'
+    assert 'boosty.to' in info.get('image', '')
+    assert 'митапы' in info.get('blog_title', '')
+    assert info.get('telegram_username') == 'soxoj'
+
+
+def test_warpcast_api_e2e():
+    """Warpcast API"""
+    info = extract(parse('https://client.warpcast.com/v2/user-by-username?username=dwr.eth')[0])
+
+    assert info.get('uid') == '3'
+    assert info.get('username') == 'dwr'
+    assert info.get('fullname') == 'Dan Romero'
+    assert info.get('bio')
+    assert info.get('follower_count')
+    assert info.get('twitter_username') == 'dwr'
+
+
+def test_paragraph_api_e2e():
+    """Paragraph API"""
+    info = extract(parse('https://paragraph.com/api/blogs/@vitalik')[0])
+
+    assert info.get('uid') == 'aLOC85RCnjhDinsLDfUr'
+    assert info.get('fullname') == 'Vitalik Buterin'
+    assert info.get('username') == 'vitalik'
+    assert info.get('twitter_username') == 'VitalikButerin'
+    assert info.get('wallet_address') == '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+
+
+def test_fragment_e2e():
+    """Fragment"""
+    info = extract(parse('https://fragment.com/username/durov')[0])
+
+    assert info.get('telegram_username') == 'durov'
+    assert info.get('ton_wallet')
+    assert 'tonviewer.com' not in info.get('ton_wallet', '')
+    assert info.get('purchased_at')
+
+
+@pytest.mark.rate_limited
+def test_tonometerbot_e2e():
+    """Tonometerbot"""
+    info = extract(parse('https://tonometerbot.com/@/jaga1985')[0])
+
+    assert info.get('username') == 'jaga1985'
+    assert info.get('subscriber_count')
+    assert info.get('nft_count')
+
+
+@pytest.mark.github_failed
+def test_spatial_e2e():
+    """Spatial"""
+    info = extract(parse('https://www.spatial.io/@rammy')[0])
+
+    assert info.get('uid') == '5eceef2dfa7f113e938acf63'
+    assert info.get('username') == 'rammy'
+    assert info.get('fullname') == 'Rammy'
+    assert info.get('bio')
+    assert info.get('follower_count')

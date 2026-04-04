@@ -196,6 +196,9 @@ def test_chess_com_pub_api_json():
     assert info.get('fullname') == 'Hikaru Nakamura'
     assert info.get('country_code') == 'US'
     assert info.get('follower_count') == '100'
+    assert info.get('is_verified') == 'False'
+    assert info.get('created_at')
+    assert info.get('latest_activity_at')
 
 
 def test_roblox_user_api_json():
@@ -235,17 +238,29 @@ def test_myanimelist_profile_regex():
     assert info.get('mal_uid') == '1'
 
 
-def test_xvideos_profile_id_user_regex():
-    """XVideos profile page JSON fragment with id_user + username."""
+def test_xvideos_profile_full():
+    """XVideos profile: extract user id, username, display name, gender, country, subscribers, signed up."""
     html = (
         '<html lang="en" class="xv-responsive"><body>'
-        '<a href="https://www.xvideos.com/profiles/xvideos">p</a>'
-        '"id_user":1356961,"username":"xvideos","display":"Xvideos"'
-        '</body></html>'
+        '<a href="https://www.xvideos.com/profiles/soxoj">p</a>'
+        '<script>"id_user":613639497,"username":"soxoj","display":"Soxoj","profile_picture_small":"","profile_picture":"","sex":"Man","url":"/profiles/soxoj"</script>'
+        '<div class="col-sm-4 col-xs-12 pfinfo-col" id="pfinfo-col-col1">'
+        '<p id="pinfo-sex"><strong>Gender:</strong> <span>Man</span></p>'
+        '<p id="pinfo-country"><strong>Country:</strong> <span>Honduras</span></p>'
+        '<p id="pinfo-profile-hits"><strong>Profile hits:</strong> <span>1,768</span></p>'
+        '<p id="pinfo-subscribers"><strong>Subscribers:</strong> <span>4</span></p>'
+        '<p id="pinfo-signedup"><strong>Signed up:</strong> <span>July 16, 2022 (1,354 days ago)</span></p>'
+        '</div></body></html>'
     )
     info = extract(html)
-    assert info.get('xvideos_user_id') == '1356961'
-    assert info.get('xvideos_username') == 'xvideos'
+    assert info.get('uid') == '613639497'
+    assert info.get('username') == 'soxoj'
+    assert info.get('fullname') == 'Soxoj'
+    assert info.get('gender') == 'Man'
+    assert info.get('country') == 'Honduras'
+    assert info.get('profile_hits') == '1,768'
+    assert info.get('follower_count') == '4'
+    assert 'July 16, 2022' in info.get('created_at', '')
 
 
 def test_lnk_bio_next_data_fixture():
@@ -827,6 +842,109 @@ def test_linktree_updated_flags():
     assert info.get('bio') == 'My bio'
 
 
+def test_picsart_facebook_uid_from_photo():
+    """Picsart API: extract facebook_uid from graph.facebook.com photo URL."""
+    body = {
+        'id': 100,
+        'name': 'FbUser',
+        'username': 'fbuser',
+        'photo': 'https://graph.facebook.com/999888777/picture',
+        'followers_count': 0,
+        'following_count': 0,
+        'likes_count': 0,
+        'photos_count': 0,
+        'remix_score': 0,
+        'dashboard_visibility': False,
+        'is_verified': False,
+    }
+    info = extract(json.dumps(body))
+    assert info.get('facebook_uid') == '999888777'
+
+
+def test_picsart_no_facebook_uid_when_no_graph_url():
+    """Picsart API: facebook_uid is absent when photo is not a graph.facebook.com URL."""
+    body = {
+        'id': 101,
+        'name': 'NormalUser',
+        'username': 'normaluser',
+        'photo': 'https://example.com/pic.jpg',
+        'followers_count': 0,
+        'following_count': 0,
+        'likes_count': 0,
+        'photos_count': 0,
+        'remix_score': 0,
+        'dashboard_visibility': False,
+        'is_verified': False,
+    }
+    info = extract(json.dumps(body))
+    assert not info.get('facebook_uid')
+
+
+def test_habr_profile_extraction():
+    """Habr: extract fullname, username, and profile URL from og meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Хабр">'
+        '<meta property="og:title" content="Иван Петров aka ipetrov  '
+        '\n- "'
+        '<meta property="og:url" content="https://habr.com/ru/users/ipetrov/">'
+        '</head><body>habr.com/ru/users/ipetrov</body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'Иван Петров'
+    assert info.get('username') == 'ipetrov'
+    assert 'habr.com/ru/users/ipetrov' in info.get('website', '')
+
+
+def test_taplink_profile_extraction():
+    """Taplink: extract image, fullname, and username from og meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Taplink">'
+        '<meta property="og:image" content="https://taplink.st/p/8/a/2/photo.jpg">'
+        '<meta property="og:title" content="John Doe at Taplink">'
+        '<meta property="og:url" content="https://taplink.cc/johndoe">'
+        '</head><body>Welcome at Taplink</body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'John Doe'
+    assert info.get('username') == 'johndoe'
+    assert 'taplink.st' in info.get('image', '')
+
+
+def test_producthunt_profile_extraction():
+    """Product Hunt: extract twitter_username and username from meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Product Hunt">'
+        '<meta property="og:type" content="profile">'
+        '<meta name="twitter:creator" content="@rrhoover">'
+        '<meta property="og:url" content="https://www.producthunt.com/@rrhoover">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('twitter_username') == 'rrhoover'
+    assert info.get('username') == 'rrhoover'
+
+
+def test_threads_profile_extraction():
+    """Threads: extract fullname, username, follower/post counts, bio from OG tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Mark Zuckerberg (&#064;zuck) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="12,500 Followers &#x2022; 340 Threads &#x2022; &quot;CEO of Meta&quot;. See the latest.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'Mark Zuckerberg'
+    assert info.get('username') == 'zuck'
+    assert info.get('follower_count') == '12,500'
+    assert info.get('posts_count') == '340'
+    assert info.get('bio') == 'CEO of Meta'
+
+
 # ---------------------------------------------------------------------------
 # Structural / meta tests
 # ---------------------------------------------------------------------------
@@ -1017,3 +1135,735 @@ def test_weibo_api_url_mutations():
     results = mutate_url('https://weibo.com/u/6215884155')
     urls = [r[0] for r in results]
     assert 'https://weibo.com/ajax/profile/info?uid=6215884155' in urls
+
+
+def test_picsart_facebook_uid_from_image():
+    """Picsart: extract facebook_uid from graph.facebook.com avatar URL."""
+    body = json.dumps({
+        "id": 12345,
+        "username": "testuser",
+        "name": "Test User",
+        "photo": "https://graph.facebook.com/231008367325211/picture?type=normal",
+        "status_message": "Hello",
+        "followers_count": 10,
+        "following_count": 5,
+        "likes_count": 100,
+        "photos_count": 50,
+        "is_verified": False,
+        "remix_score": 0,
+        "dashboard_visibility": True,
+    })
+    info = extract(body)
+    assert info.get('facebook_uid') == '231008367325211'
+    assert info.get('picsart_id') == '12345'
+
+
+def test_picsart_no_facebook_uid_for_regular_avatar():
+    """Picsart: no facebook_uid when avatar is not from graph.facebook.com."""
+    body = json.dumps({
+        "id": 99,
+        "username": "other",
+        "name": "Other",
+        "photo": "https://cdn.picsart.com/avatars/photo.jpg",
+        "remix_score": 0,
+        "dashboard_visibility": True,
+    })
+    info = extract(body)
+    assert not info.get('facebook_uid')
+    assert info.get('picsart_id') == '99'
+
+
+def test_habr_og_profile():
+    """Habr: extract fullname and username from og:title meta tag."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Хабр">'
+        '<meta property="og:title" content="Олег Бунин aka olegbunin\n     - ">'
+        '<meta property="og:url" content="https://habr.com/ru/users/olegbunin/">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'Олег Бунин'
+    assert info.get('username') == 'olegbunin'
+    assert 'habr.com' in info.get('website', '')
+
+
+def test_product_hunt_og_profile():
+    """Product Hunt: extract twitter_username and username from meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Product Hunt">'
+        '<meta property="og:type" content="profile">'
+        '<meta name="twitter:creator" content="@rrhoover">'
+        '<meta property="og:url" content="https://www.producthunt.com/@rrhoover">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('twitter_username') == 'rrhoover'
+    assert info.get('username') == 'rrhoover'
+
+
+def test_taplink_og_profile():
+    """Taplink: extract username, fullname and avatar from og:meta tags."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:image" content="https://taplink.st/a/0/5/e/e/c325e9.jpg?1">'
+        '<meta property="og:type" content=website />'
+        '<meta property="og:title" content="Selenagomez at Taplink"/>'
+        '<meta property="og:url" content="https://taplink.cc/selenagomez"/>'
+        '<meta property="og:site_name" content="Taplink"/>'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'Selenagomez'
+    assert info.get('username') == 'selenagomez'
+    assert 'taplink.st' in info.get('image', '')
+
+
+def test_taplink_nonexistent_user_not_matched():
+    """Taplink: homepage (redirect for non-existent user) should NOT match."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Taplink - landing page that drives your sales on Instagram">'
+        '<meta property="og:url" content="https://taplink.at/en/">'
+        '<meta property="og:site_name" content="Taplink">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    # Should not match Taplink scheme — no "at Taplink" in og:title
+    assert not info.get('username')
+
+
+def test_threads_profile():
+    """Threads: extract from OG tags with HTML entities (real SPA response format)."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Marc Fuste&#xe9; (&#064;fusteee) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="33 Followers &#x2022; 0 Threads &#x2022; &quot;Regalame tus mejores noches&quot;. See the latest conversations with &#064;fusteee.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'fusteee'
+    assert info.get('fullname') == 'Marc Fusteé'
+    assert info.get('follower_count') == '33'
+    assert info.get('posts_count') == '0'
+    assert info.get('bio') == 'Regalame tus mejores noches'
+
+
+def test_threads_profile_no_bio():
+    """Threads: profile without bio should not capture HTML garbage."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Alice (&#064;alice_test) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="5 Followers &#x2022; 0 Threads. See the latest conversations with &#064;alice_test.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'alice_test'
+    assert info.get('fullname') == 'Alice'
+    assert info.get('follower_count') == '5'
+    assert info.get('posts_count') == '0'
+    assert not info.get('bio')
+
+
+def test_threads_profile_unicode_name():
+    """Threads: fullname with unicode HTML entities should be decoded."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="&#x1d4d0;&#x1d4fb;&#x1d4fd; (&#064;bob_test) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="10 Followers &#x2022; 3 Threads &#x2022; &quot;hello&quot;. See the latest conversations.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'bob_test'
+    assert info.get('fullname') == '\U0001d4d0\U0001d4fb\U0001d4fd'
+    assert info.get('follower_count') == '10'
+    assert info.get('posts_count') == '3'
+    assert info.get('bio') == 'hello'
+
+
+def test_threads_profile_emoji_bio():
+    """Threads: emoji bio without quotes should be extracted, not lost."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Eve (&#064;eve_test) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="21 Followers &#x2022; 4 Threads &#x2022; &#x1f92b;. See the latest conversations.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'eve_test'
+    assert info.get('follower_count') == '21'
+    assert info.get('posts_count') == '4'
+    assert info.get('bio') == '🤫'
+    assert not info.get('bio_raw')
+
+
+def test_chess_com_html_profile():
+    """Chess.com HTML: extract fullname, username and image from og:meta."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="John (John) - Chess Profile">'
+        '<meta property="og:url" content="https://www.chess.com/member/john">'
+        '<meta property="og:site_name" content="Chess.com">'
+        '<meta property="og:image" content="https://www.chess.com/share/user/john">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('fullname') == 'John'
+    assert info.get('username') == 'John'
+    assert info.get('image') == 'https://www.chess.com/share/user/john'
+
+
+def test_roblox_html_profile():
+    """Roblox HTML: extract username, uid and avatar from og:meta after redirect."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:site_name" content="Roblox">'
+        '<meta property="og:title" content="john&#x27;s Profile">'
+        '<meta property="og:type" content="profile">'
+        '<meta property="og:url" content="https://www.roblox.com/users/2191/profile">'
+        '<meta property="og:image" content="https://tr.rbxcdn.com/30DAY-Avatar-A852E46C43BF1A5E01BD1FDA883FD398-Png/352/352/Avatar/Png/noFilter">'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'john'
+    assert info.get('uid') == '2191'
+    assert 'rbxcdn.com' in info.get('image', '')
+
+
+def test_stack_exchange_api_json():
+    """Stack Exchange API: extract user profile from /users?inname= JSON response."""
+    body = json.dumps({
+        "items": [{
+            "account_id": 21543594,
+            "reputation": 1,
+            "user_id": 15880884,
+            "user_type": "registered",
+            "link": "https://stackoverflow.com/users/15880884/soxoj1",
+            "profile_image": "https://www.gravatar.com/avatar/86d899547a5fce05b6a63e540878c69f",
+            "display_name": "Soxoj1",
+            "creation_date": 1620592473,
+        }],
+        "has_more": False,
+    })
+    info = extract(body)
+    assert info.get('uid') == '15880884'
+    assert info.get('account_id') == '21543594'
+    assert info.get('username') == 'Soxoj1'
+    assert 'gravatar.com' in info.get('image', '')
+    assert info.get('reputation') == '1'
+    assert info.get('link') == 'https://stackoverflow.com/users/15880884/soxoj1'
+    assert info.get('created_at') == '1620592473'
+
+
+def test_stack_exchange_api_empty_items():
+    """Stack Exchange API: empty items array should not match."""
+    body = json.dumps({"items": [], "has_more": False})
+    info = extract(body)
+    assert not info.get('uid')
+
+
+def test_leetcode_graphql_api_json():
+    """LeetCode GraphQL: extract user profile from matchedUser response."""
+    body = json.dumps({
+        "data": {
+            "matchedUser": {
+                "username": "soxoj",
+                "profile": {
+                    "realName": "Soxoj",
+                    "aboutMe": "OSINT researcher",
+                    "userAvatar": "https://assets.leetcode.com/users/soxoj/avatar_1561894548.png",
+                    "countryName": "Russia",
+                    "company": "Anthropic",
+                    "school": "MIT",
+                    "ranking": 5000001,
+                },
+            }
+        }
+    })
+    info = extract(body)
+    assert info.get('username') == 'soxoj'
+    assert info.get('fullname') == 'Soxoj'
+    assert info.get('bio') == 'OSINT researcher'
+    assert 'leetcode.com' in info.get('image', '')
+    assert info.get('country') == 'Russia'
+    assert info.get('company') == 'Anthropic'
+    assert info.get('school') == 'MIT'
+    assert info.get('ranking') == '5000001'
+
+
+def test_leetcode_graphql_empty_profile():
+    """LeetCode GraphQL: empty realName/aboutMe should return None, not empty string."""
+    body = json.dumps({
+        "data": {
+            "matchedUser": {
+                "username": "emptyuser",
+                "profile": {
+                    "realName": "",
+                    "aboutMe": "",
+                    "userAvatar": "https://assets.leetcode.com/users/default.png",
+                    "countryName": None,
+                    "company": None,
+                    "school": None,
+                    "ranking": 999999,
+                },
+            }
+        }
+    })
+    info = extract(body)
+    assert info.get('username') == 'emptyuser'
+    assert not info.get('fullname')
+    assert not info.get('bio')
+    assert not info.get('country')
+    assert not info.get('company')
+
+
+def test_boosty_api_json():
+    """Boosty API: extract blog owner profile with telegram crosslink."""
+    body = json.dumps({
+        "id": 123,
+        "title": "Организуем митапы",
+        "description": "Канал про митапы",
+        "owner": {
+            "name": "OSINT mindset",
+            "id": 10276482,
+            "avatarUrl": "https://images.boosty.to/user/10276482/avatar",
+            "externalApps": {
+                "telegram": {"username": "soxoj", "hasAccount": True},
+            },
+        },
+        "signedQuery": "abc123",
+    })
+    info = extract(body)
+    assert info.get('uid') == '10276482'
+    assert info.get('fullname') == 'OSINT mindset'
+    assert 'boosty.to' in info.get('image', '')
+    assert info.get('blog_title') == 'Организуем митапы'
+    assert info.get('blog_description') == 'Канал про митапы'
+    assert info.get('telegram_username') == 'soxoj'
+
+
+def test_boosty_api_no_telegram():
+    """Boosty API: missing telegram should return None, not crash."""
+    body = json.dumps({
+        "id": 456,
+        "title": "Some Blog",
+        "description": "",
+        "owner": {
+            "name": "Author",
+            "id": 999,
+            "avatarUrl": "https://images.boosty.to/user/999/avatar",
+            "externalApps": {},
+        },
+        "signedQuery": "xyz",
+    })
+    info = extract(body)
+    assert info.get('uid') == '999'
+    assert info.get('fullname') == 'Author'
+    assert not info.get('telegram_username')
+
+
+def test_facebook_user_profile_meta_tags():
+    """
+    Verifies the **Facebook user profile** scheme extracts data from OG and app-link
+    meta tags (the format served to crawlers by Facebook).
+
+    **Check:** `uid`, `username`, `fullname`, `description`, and `image` are extracted
+    from the meta tags in the HTML fixture.
+    """
+    html = (
+        '<!DOCTYPE html>'
+        '<html id="facebook" class="_9dls" lang="en" dir="ltr"><head>'
+        '<title>Mark Zuckerberg</title>'
+        '<meta property="al:android:app_name" content="Facebook" />'
+        '<meta property="al:android:url" content="fb://profile/4" />'
+        '<meta property="og:title" content="Mark Zuckerberg" />'
+        '<meta property="og:description" content="Mark Zuckerberg. 121,000,000 likes" />'
+        '<meta property="og:url" content="https://www.facebook.com/zuck/" />'
+        '<meta property="og:image" content="https://lookaside.fbsbx.com/lookaside/crawler/media/?media_id=4" />'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '4'
+    assert info.get('username') == 'zuck'
+    assert info.get('fullname') == 'Mark Zuckerberg'
+    assert 'likes' in info.get('description', '')
+    assert 'lookaside' in info.get('image', '')
+
+
+def test_facebook_user_profile_no_match_without_og_title():
+    """
+    Verifies the **Facebook user profile** scheme does NOT match pages that lack
+    ``og:title`` meta tag (e.g. login/error pages).
+    """
+    html = (
+        '<!DOCTYPE html>'
+        '<html id="facebook" lang="en"><head>'
+        '<title>Error</title>'
+        '</head><body><h1>Sorry, something went wrong.</h1></body></html>'
+    )
+    info = extract(html)
+    assert not info.get('uid')
+    assert not info.get('fullname')
+
+
+def test_smule_profile_extraction():
+    """
+    Verifies the **Smule** scheme extracts user data from the inline
+    ``Profile: {"user": ...}`` JSON block found in Smule profile pages.
+    """
+    user_data = {
+        "user": {
+            "account_id": 173,
+            "handle": "Blue",
+            "pic_url": "https://c-sf.smule.com/rs-z0/account/icon/v4_defpic.png",
+            "url": "/Blue",
+            "followers": "155",
+            "followees": "0",
+            "num_performances": "0",
+            "is_following": False,
+        }
+    }
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<title>Blue on Smule</title>'
+        '</head><body>'
+        '<script>smule.com Profile: ' + json.dumps(user_data) + '\n</script>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('uid') == '173'
+    assert info.get('username') == 'Blue'
+    assert info.get('image') == 'https://c-sf.smule.com/rs-z0/account/icon/v4_defpic.png'
+    assert info.get('follower_count') == '155'
+    assert info.get('following_count') == '0'
+
+
+def test_warpcast_api_json():
+    """Warpcast API: extract Farcaster profile with connected accounts."""
+    body = json.dumps({
+        "result": {
+            "user": {
+                "fid": 3,
+                "displayName": "Dan Romero",
+                "profile": {
+                    "bio": {"text": "Building Farcaster", "mentions": []},
+                    "url": "https://danromero.org",
+                },
+                "followerCount": 345000,
+                "followingCount": 77,
+                "username": "dwr",
+                "pfp": {"url": "https://imagedelivery.net/abc/original", "verified": False},
+                "connectedAccounts": [
+                    {"connectedAccountId": "123", "platform": "x", "username": "dwr", "expired": False}
+                ],
+            },
+            "collectionsOwned": [],
+            "extras": {
+                "fid": 3,
+                "custodyAddress": "0x6b0bda3f2ffed5efc83fa8c024acff1dd45793f1",
+            },
+        }
+    })
+    info = extract(body)
+    assert info.get('uid') == '3'
+    assert info.get('username') == 'dwr'
+    assert info.get('fullname') == 'Dan Romero'
+    assert info.get('bio') == 'Building Farcaster'
+    assert info.get('url') == 'https://danromero.org'
+    assert 'imagedelivery.net' in info.get('image', '')
+    assert info.get('follower_count') == '345000'
+    assert info.get('following_count') == '77'
+    assert info.get('twitter_username') == 'dwr'
+
+
+def test_warpcast_api_no_connected_accounts():
+    """Warpcast API: user with no connected accounts."""
+    body = json.dumps({
+        "result": {
+            "user": {
+                "fid": 999,
+                "displayName": "Anon",
+                "profile": {"bio": {"text": "", "mentions": []}, "url": ""},
+                "followerCount": 0,
+                "followingCount": 0,
+                "username": "anon",
+                "pfp": {"url": "https://example.com/avatar.png", "verified": False},
+                "connectedAccounts": [],
+            },
+            "collectionsOwned": [],
+            "extras": {"fid": 999},
+        }
+    })
+    info = extract(body)
+    assert info.get('uid') == '999'
+    assert info.get('username') == 'anon'
+    assert info.get('bio') is None
+    assert info.get('twitter_username') is None
+
+
+def test_paragraph_api_json():
+    """Paragraph API: extract blog profile with wallet, bio, socials."""
+    body = json.dumps({
+        "id": "abc123",
+        "userId": "user456",
+        "name": "ZachXBT",
+        "reputation": "MEDIUM_LOW",
+        "needToSetup": False,
+        "lowercase_url": "@zachxbt",
+        "url": "@zachXBT",
+        "updatedAt": 1763923578663,
+        "latestPostModifiedTs": 1763923734274,
+        "social": {"twitter": "zachxbt"},
+        "logo_url": None,
+        "user": {
+            "id": "user456",
+            "displayName": {"name": "ZachXBT", "isTruncated": False, "fullName": "ZachXBT"},
+            "authorName": "ZachXBT",
+            "authorBio": "Scam survivor turned investigator",
+            "avatar_url": "https://storage.googleapis.com/papyrus_images/avatar.jpg",
+            "social": {"twitter": "zachxbt ", "github": "", "facebook": "", "instagram": ""},
+            "wallet_address": "0x23dBf06665155FA55E7944803D43580a73ffa9b0",
+        },
+    })
+    info = extract(body)
+    assert info.get('uid') == 'abc123'
+    assert info.get('paragraph_user_id') == 'user456'
+    assert info.get('fullname') == 'ZachXBT'
+    assert info.get('username') == 'zachxbt'
+    assert info.get('bio') == 'Scam survivor turned investigator'
+    assert 'papyrus_images' in info.get('image', '')
+    assert '2025' in info.get('updated_at', '')  # 1763923578663 → datetime string
+    assert '2025' in info.get('latest_activity_at', '')  # 1763923734274 → datetime string
+    assert info.get('twitter_username') == 'zachxbt'  # trailing space stripped
+    assert info.get('github_username') is None  # empty string → None
+    assert info.get('facebook_username') is None  # empty string → None
+    assert info.get('instagram_username') is None
+    assert info.get('wallet_address') == '0x23dBf06665155FA55E7944803D43580a73ffa9b0'
+
+
+def test_fragment_html():
+    """Fragment: extract Telegram username, TON wallet, sale price, and purchase date."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<title>durov – Fragment</title>'
+        '<meta property="og:site_name" content="Fragment Auctions">'
+        '</head><body>'
+        '<div class="table-cell-value tm-value icon-before icon-ton">3</div>'
+        '<a href="https://tonviewer.com/EQBsfrfaZbp2AZsMTXjrO5h7SxegzOkMfYkiHq8hEmspNtxl" '
+        'class="tm-wallet" target="_blank">EQBs...Ntxl</a>'
+        '<div class="tm-datetime"><time datetime="2024-03-17T19:36:21+00:00">17 Mar 2024</time></div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('telegram_username') == 'durov'
+    assert info.get('ton_wallet') == 'EQBsfrfaZbp2AZsMTXjrO5h7SxegzOkMfYkiHq8hEmspNtxl'
+    assert info.get('sale_price') == '3'
+    assert info.get('purchased_at') == '2024-03-17T19:36:21+00:00'
+
+
+def test_tonometerbot_html():
+    """Tonometerbot: extract username and stats from OG meta tags."""
+    html = (
+        '<!DOCTYPE html><html lang="en"><head>'
+        '<meta property="og:title" content="@jaga1985"/>'
+        '<meta property="og:site_name" content="TonometerBot"/>'
+        '<meta property="og:description"\n'
+        '      content="@jaga1985, Subscribers: 21, NFT\'s: 111 "/>'
+        '</head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'jaga1985'
+    assert info.get('subscriber_count') == '21'
+    assert info.get('nft_count') == '111'
+
+
+def test_spatial_next_data():
+    """Spatial: extract profile from __NEXT_DATA__ with socialLinks."""
+    user_data = {
+        "isPrivate": False,
+        "userID": "5eceef2dfa7f113e938acf63",
+        "username": "rammy",
+        "displayName": "Rammy",
+        "about": "VR world builder",
+        "avatarImageURL": "https://api.avatarsdk.com/avatars/abc/preview/",
+        "numFollowers": 51,
+        "numFollowing": 64,
+        "socialLinks": {
+            "usernameDiscord": "rammy.b",
+            "usernameTwitter": "rammyvr",
+            "usernameInstagram": "",
+            "usernameLinkedin": "",
+            "usernameTiktok": "",
+        },
+        "totalSpacesCount": 8,
+    }
+    next_data = json.dumps({
+        "props": {
+            "pageProps": {
+                "dehydratedState": {
+                    "mutations": [],
+                    "queries": [{"state": {"data": user_data}}],
+                },
+                "username": "rammy",
+            }
+        }
+    })
+    html = f'<script id="__NEXT_DATA__" type="application/json">{next_data}</script>'
+    info = extract(html)
+    assert info.get('uid') == '5eceef2dfa7f113e938acf63'
+    assert info.get('username') == 'rammy'
+    assert info.get('fullname') == 'Rammy'
+    assert info.get('bio') == 'VR world builder'
+    assert 'avatarsdk.com' in info.get('image', '')
+    assert info.get('follower_count') == '51'
+    assert info.get('following_count') == '64'
+    assert info.get('discord_username') == 'rammy.b'
+    assert info.get('twitter_username') == 'rammyvr'
+    assert info.get('instagram_username') is None
+    assert info.get('tiktok_username') is None
+
+
+def test_opensea_full_profile():
+    """OpenSea: extract profile from ld+json with bio, image, links."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Zachxbt - Profile | OpenSea">'
+        '<script type="application/ld+json">'
+        '{"@context":"https://schema.org","@type":"ProfilePage","name":"Zachxbt",'
+        '"image":"https://i2c.seadn.io/profiles/0x67d890/avatar.jpeg",'
+        '"mainEntity":{"@type":"Person","name":"Zachxbt",'
+        '"image":"https://i2c.seadn.io/profiles/0x67d890/avatar.jpeg",'
+        '"description":"On-chain sleuth",'
+        '"url":"https://opensea.io/Zachxbt",'
+        '"sameAs":["https://investigations.notion.site/"]}}'
+        '</script></head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'Zachxbt'
+    assert info.get('uid') == 'Zachxbt'
+    assert info.get('bio') == 'On-chain sleuth'
+    assert 'seadn.io' in info.get('image', '')
+    assert 'notion.site' in info.get('links', '')
+
+
+def test_opensea_minimal_profile():
+    """OpenSea: profile without bio/image (wallet as uid)."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="vitalik - Profile | OpenSea">'
+        '<script type="application/ld+json">'
+        '{"@context":"https://schema.org","@type":"ProfilePage","name":"vitalik",'
+        '"image":"",'
+        '"mainEntity":{"@type":"Person","name":"vitalik",'
+        '"image":"","description":"",'
+        '"url":"https://opensea.io/0xd0770174161c0de87242775e7ef32c733e144ac4"}}'
+        '</script></head><body></body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'vitalik'
+    assert info.get('uid') == '0xd0770174161c0de87242775e7ef32c733e144ac4'
+    assert info.get('bio') is None
+    assert info.get('image') is None
+
+
+def test_hive_blog_full_profile():
+    """Hive Blog: extract profile from inline JSON with stats."""
+    profile_data = {
+        "community": {},
+        "global": {},
+        "offchain": {},
+        "user": {},
+        "transaction": {},
+        "discussion": {},
+        "routing": {},
+        "app": {},
+        "userProfiles": {
+            "profiles": {
+                "blocktrades": {
+                    "active": "2026-04-03T15:42:30",
+                    "created": "2016-03-30T00:04:33",
+                    "name": "blocktrades",
+                    "context": {"followed": False, "muted": False},
+                    "metadata": {
+                        "profile": {
+                            "about": "Exchange cryptocurrency fast and easy",
+                            "cover_image": "https://example.com/cover.jpg",
+                            "location": "Worldwide",
+                            "name": "BlockTrades",
+                            "profile_image": "https://example.com/avatar.png",
+                            "website": "https://blocktrades.us",
+                        }
+                    },
+                    "post_count": 4904,
+                    "reputation": 79.75,
+                    "id": 441,
+                    "stats": {"followers": 30932, "following": 47, "rank": 0},
+                }
+            }
+        },
+        "search": {},
+    }
+    html = f'<script type="application/json" data-iso-key="_0">{json.dumps(profile_data)}</script>'
+    info = extract(html)
+    assert info.get('uid') == '441'
+    assert info.get('username') == 'blocktrades'
+    assert info.get('fullname') == 'BlockTrades'
+    assert info.get('bio') == 'Exchange cryptocurrency fast and easy'
+    assert info.get('image') == 'https://example.com/avatar.png'
+    assert info.get('image_bg') == 'https://example.com/cover.jpg'
+    assert info.get('website') == 'https://blocktrades.us'
+    assert info.get('location') == 'Worldwide'
+    assert info.get('reputation') == '79.75'
+    assert info.get('posts_count') == '4904'
+    assert info.get('follower_count') == '30932'
+    assert info.get('following_count') == '47'
+    assert info.get('created_at') == '2016-03-30T00:04:33'
+    assert info.get('latest_activity_at') == '2026-04-03T15:42:30'
+
+
+def test_hive_blog_empty_profile():
+    """Hive Blog: user with empty metadata fields returns None for optional fields."""
+    profile_data = {
+        "community": {},
+        "global": {},
+        "userProfiles": {
+            "profiles": {
+                "newuser": {
+                    "active": "2025-01-01T00:00:00",
+                    "created": "2025-01-01T00:00:00",
+                    "name": "newuser",
+                    "metadata": {
+                        "profile": {
+                            "about": "",
+                            "cover_image": "",
+                            "location": "",
+                            "name": "",
+                            "profile_image": "",
+                            "website": "",
+                        }
+                    },
+                    "post_count": 0,
+                    "reputation": 25,
+                    "id": 999999,
+                    "stats": {"followers": 0, "following": 0},
+                }
+            }
+        },
+    }
+    html = f'<script type="application/json" data-iso-key="_0">{json.dumps(profile_data)}</script>'
+    info = extract(html)
+    assert info.get('uid') == '999999'
+    assert info.get('username') == 'newuser'
+    assert info.get('fullname') is None
+    assert info.get('bio') is None
+    assert info.get('image') is None
+    assert info.get('website') is None

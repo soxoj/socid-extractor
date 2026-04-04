@@ -1,6 +1,6 @@
 # socid_extractor
 
-Extract information about a user from profile webpages / API responses and save it in machine-readable format.
+Extract information about a user from profile webpages / API responses and save it in machine-readable format. 130+ methods for various sites and platforms.
 
 ## Usage
 
@@ -45,7 +45,7 @@ The latest development version can be installed directly from GitHub:
 
 ## Sites and methods
 
-[More than 100 methods](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md) for different sites and platforms are supported!
+[130+ methods](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md) for different sites and platforms are supported!
 
 - Google (all documents pages, maps contributions), cookies required
 - Yandex (disk, albums, znatoki, music, realty, collections), cookies required to prevent captcha blocks
@@ -81,6 +81,14 @@ The latest development version can be installed directly from GitHub:
 - Calendly
 - Google Play
 - Amazon Author
+- Stack Overflow (HTML + API)
+- LeetCode
+- Boosty
+- Warpcast (Farcaster)
+- Paragraph
+- Fragment (TON/Telegram)
+- Tonometerbot
+- Spatial
 
 ...and many others.
 
@@ -120,6 +128,8 @@ This tool uses the following OSINT techniques:
 ```sh
 python3 -m pytest tests/test_e2e.py -n 10  -k 'not cookies' -m 'not github_failed and not rate_limited'
 ```
+
+**Every new scheme must have an e2e test** in `tests/test_e2e.py` hitting a real URL/API. Unit tests with inline fixtures (`tests/test_socid_improvements.py`) are also required but do not replace e2e coverage. See [docs/testing-and-ci.md](docs/testing-and-ci.md) for details.
 
 Developer documentation (architecture, modules, CI): [docs/](docs/).
 
