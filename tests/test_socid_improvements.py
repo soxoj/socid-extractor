@@ -931,8 +931,8 @@ def test_threads_profile_extraction():
     """Threads: extract fullname, username, follower/post counts, bio from OG tags."""
     html = (
         '<!DOCTYPE html><html><head>'
-        '<meta property="og:title" content="Mark Zuckerberg (@zuck) · Threads, Say more">'
-        '<meta property="og:description" content="12,500 Followers · 340 Threads · &quot;CEO of Meta&quot;">'
+        '<meta property="og:title" content="Mark Zuckerberg (&#064;zuck) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="12,500 Followers &#x2022; 340 Threads &#x2022; &quot;CEO of Meta&quot;. See the latest.">'
         '</head><body>'
         '<div class="barcelona">content</div>'
         '</body></html>'
@@ -1190,10 +1190,64 @@ def test_threads_profile():
     )
     info = extract(html)
     assert info.get('username') == 'fusteee'
-    assert info.get('fullname') == 'Marc Fuste&#xe9;'
+    assert info.get('fullname') == 'Marc Fusteé'
     assert info.get('follower_count') == '33'
     assert info.get('posts_count') == '0'
     assert info.get('bio') == 'Regalame tus mejores noches'
+
+
+def test_threads_profile_no_bio():
+    """Threads: profile without bio should not capture HTML garbage."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Alice (&#064;alice_test) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="5 Followers &#x2022; 0 Threads. See the latest conversations with &#064;alice_test.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'alice_test'
+    assert info.get('fullname') == 'Alice'
+    assert info.get('follower_count') == '5'
+    assert info.get('posts_count') == '0'
+    assert not info.get('bio')
+
+
+def test_threads_profile_unicode_name():
+    """Threads: fullname with unicode HTML entities should be decoded."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="&#x1d4d0;&#x1d4fb;&#x1d4fd; (&#064;bob_test) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="10 Followers &#x2022; 3 Threads &#x2022; &quot;hello&quot;. See the latest conversations.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'bob_test'
+    assert info.get('fullname') == '\U0001d4d0\U0001d4fb\U0001d4fd'
+    assert info.get('follower_count') == '10'
+    assert info.get('posts_count') == '3'
+    assert info.get('bio') == 'hello'
+
+
+def test_threads_profile_emoji_bio():
+    """Threads: emoji bio without quotes should be extracted, not lost."""
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<meta property="og:title" content="Eve (&#064;eve_test) &#x2022; Threads, Say more">'
+        '<meta property="og:description" content="21 Followers &#x2022; 4 Threads &#x2022; &#x1f92b;. See the latest conversations.">'
+        '</head><body>'
+        '<div class="barcelona">content</div>'
+        '</body></html>'
+    )
+    info = extract(html)
+    assert info.get('username') == 'eve_test'
+    assert info.get('follower_count') == '21'
+    assert info.get('posts_count') == '4'
+    assert info.get('bio') == '🤫'
+    assert not info.get('bio_raw')
 
 
 def test_chess_com_html_profile():

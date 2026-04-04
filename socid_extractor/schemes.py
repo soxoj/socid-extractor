@@ -2490,7 +2490,7 @@ schemes = {
     'Threads': {
         'url_hints': ('threads.net', 'threads.com'),
         'flags': ['Threads, Say more', 'barcelona'],
-        'regex': r'og:title" content="(?P<fullname>[^"]*?) \((?:@|&#064;)(?P<username>[^)]+)\)[^"]*Threads[\s\S]*?og:description" content="(?P<follower_count>[\d,]+) Followers[^"]*?(?P<posts_count>[\d,]+) Threads[^"]*?(?:&quot;|")(?P<bio>[^"&]*)',
+        'regex': r'og:title" content="(?P<fullname>[^"]*?) \((?:@|&#064;)(?P<username>[^)]+)\)[^"]*Threads[\s\S]*?og:description" content="(?P<follower_count>[\d,]+) Followers[^"]*?(?P<posts_count>[\d,]+) Threads(?:[^"]*?(?:&#x2022;|\xb7) (?:&quot;(?P<bio>[^&]+)&quot;|(?P<bio_raw>[^".]*)\.))?',
     },
     'Smule': {
         'url_hints': ('smule.com',),

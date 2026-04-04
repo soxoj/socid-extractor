@@ -1,3 +1,4 @@
+import html as html_module
 import logging
 from http.cookies import SimpleCookie
 
@@ -120,7 +121,15 @@ def extract(page):
             else:
                 groupdict = regexp_group.groupdict()
                 if groupdict:
-                    values = groupdict
+                    values = {}
+                    for k, v in groupdict.items():
+                        if k.endswith('_raw'):
+                            base = k[:-4]
+                            if not values.get(base):
+                                values[base] = v
+                        else:
+                            if not values.get(k):
+                                values[k] = v
                 else:
                     extracted = regexp_group.group(1)
                     logging.debug('Extracted: %s', extracted)
@@ -145,7 +154,8 @@ def extract(page):
             except PROCESS_ERRORS as e:
                 logging.debug('Postprocess error: ', e)
 
-        return {a: b for a, b in values.items() if b or type(b) == bool}
+        return {a: html_module.unescape(b) if isinstance(b, str) else b
+                for a, b in values.items() if b or type(b) == bool}
 
     # all schemes have been checked
     return {}
