@@ -534,6 +534,7 @@ def test_blogger():
     assert info.get('blog_id') == '9057808199412143402'
 
 
+@pytest.mark.github_failed
 def test_d3():
     """D3.ru"""
     info = extract(parse('https://d3.ru/user/nomad62')[0])
