@@ -2676,3 +2676,6 @@ schemes = {
     },
 }
 
+# -- Plugin loading (must come after the built-in schemes dict is defined) --
+from .plugins import load_plugins  # noqa: E402
+load_plugins(schemes)
