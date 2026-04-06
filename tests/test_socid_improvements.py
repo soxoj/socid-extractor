@@ -1431,7 +1431,10 @@ def test_boosty_api_json():
     body = json.dumps({
         "id": 123,
         "title": "Организуем митапы",
-        "description": "Канал про митапы",
+        "description": [
+            {"type": "text", "content": '["Канал про митапы","unstyled",[]]', "modificator": ""},
+            {"type": "text", "content": "", "modificator": "BLOCK_END"},
+        ],
         "owner": {
             "name": "OSINT mindset",
             "id": 10276482,
