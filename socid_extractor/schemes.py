@@ -2553,7 +2553,13 @@ schemes = {
             'fullname': lambda x: x.get('owner', {}).get('name'),
             'image': lambda x: x.get('owner', {}).get('avatarUrl'),
             'blog_title': lambda x: x.get('title'),
-            'blog_description': lambda x: x.get('description') or None,
+            'blog_description': lambda x: ' '.join(
+                json.loads(b['content'])[0]
+                for b in (x.get('description') or [])
+                if b.get('type') in ('text', 'link') and b.get('content')
+                and isinstance(json.loads(b['content']), list)
+                and json.loads(b['content'])[0]
+            ).strip() or None,
             'telegram_username': lambda x: (x.get('owner', {}).get('externalApps', {}).get('telegram', {}).get('username') or None),
         },
     },
