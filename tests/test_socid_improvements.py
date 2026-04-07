@@ -1867,3 +1867,102 @@ def test_hive_blog_empty_profile():
     assert info.get('bio') is None
     assert info.get('image') is None
     assert info.get('website') is None
+
+
+def test_vimeo_html_ld_json():
+    """Vimeo HTML: extract profile from ld+json ProfilePage with social crosslinks."""
+    ld_json = json.dumps([{
+        "dateCreated": "2006-12-11T19:57:24Z",
+        "dateModified": "2022-08-01T02:48:55Z",
+        "url": "https://vimeo.com/testuser",
+        "mainEntity": {
+            "@type": "Person",
+            "name": "Test User",
+            "identifier": 12345,
+            "alternateName": "testuser",
+            "interactionStatistic": {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/FollowAction",
+                "userInteractionCount": 1621,
+            },
+            "agentInteractionStatistic": {
+                "@type": "InteractionCounter",
+                "interactionType": "https://schema.org/WriteAction",
+                "userInteractionCount": 519,
+            },
+            "description": "Bio with &#039;quotes&#039; and entities",
+            "image": "https://i.vimeocdn.com/portrait/12345_640x640",
+            "url": "/testuser",
+            "sameAs": [
+                "https://vimeo.com/testuser",
+                "http://testuser.example.com",
+                "http://twitter.com/testuser",
+                "https://www.instagram.com/testuser/",
+                "https://www.facebook.com/testuser/",
+                "https://www.youtube.com/@testuser/",
+                "https://www.tiktok.com/@testuser",
+                "https://www.linkedin.com/in/testuser/",
+            ],
+        },
+        "potentialAction": {
+            "@type": "ViewAction",
+            "target": "vimeo://app.vimeo.com/users/12345",
+        },
+        "@type": "ProfilePage",
+        "@context": "http://schema.org",
+    }])
+    html_page = (
+        '<!DOCTYPE html><html><head>'
+        f'<script type="application/ld+json">{ld_json}</script>'
+        '</head><body></body></html>'
+    )
+    info = extract(html_page)
+    assert info.get('uid') == '12345'
+    assert info.get('username') == 'testuser'
+    assert info.get('fullname') == 'Test User'
+    assert info.get('bio') == "Bio with 'quotes' and entities"
+    assert 'vimeocdn.com' in info.get('image', '')
+    assert info.get('created_at') == '2006-12-11T19:57:24Z'
+    assert info.get('updated_at') == '2022-08-01T02:48:55Z'
+    assert info.get('follower_count') == '1621'
+    assert info.get('videos_count') == '519'
+    assert info.get('twitter_url') == 'http://twitter.com/testuser'
+    assert info.get('instagram_url') == 'https://www.instagram.com/testuser/'
+    assert info.get('facebook_url') == 'https://www.facebook.com/testuser/'
+    assert info.get('youtube_url') == 'https://www.youtube.com/@testuser/'
+    assert info.get('tiktok_url') == 'https://www.tiktok.com/@testuser'
+    assert info.get('linkedin_url') == 'https://www.linkedin.com/in/testuser/'
+    # vimeo.com self-link should be excluded from `links`
+    assert 'vimeo.com/testuser' not in info.get('links', '')
+    assert 'testuser.example.com' in info.get('links', '')
+
+
+def test_vimeo_html_minimal_profile():
+    """Vimeo HTML: profile with no external links and no description."""
+    ld_json = json.dumps([{
+        "dateCreated": "2020-01-01T00:00:00Z",
+        "dateModified": "2020-01-01T00:00:00Z",
+        "url": "https://vimeo.com/minimal",
+        "mainEntity": {
+            "@type": "Person",
+            "name": "Minimal",
+            "identifier": 99999,
+            "alternateName": "minimal",
+            "image": "https://i.vimeocdn.com/portrait/default",
+            "sameAs": ["https://vimeo.com/minimal"],
+        },
+        "potentialAction": {"target": "vimeo://app.vimeo.com/users/99999"},
+        "@type": "ProfilePage",
+    }])
+    html_page = (
+        '<!DOCTYPE html><html><head>'
+        f'<script type="application/ld+json">{ld_json}</script>'
+        '</head><body></body></html>'
+    )
+    info = extract(html_page)
+    assert info.get('uid') == '99999'
+    assert info.get('username') == 'minimal'
+    assert info.get('fullname') == 'Minimal'
+    assert info.get('bio') is None
+    assert info.get('twitter_url') is None
+    assert info.get('links') is None

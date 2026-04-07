@@ -1239,18 +1239,58 @@ schemes = {
     # unactual
     'Vimeo HTML': {
         'url_hints': ('vimeo.com', 'vimeocdn.com'),
-        'flags': ['https://i.vimeocdn.com/favicon/main-touch'],
-        'regex': r'"app_config":({"user":.+?})},\"coach_notes',
+        'flags': ['ProfilePage', 'vimeo://app.vimeo.com/users/', 'vimeocdn.com'],
+        'regex': r'<script type="application/ld\+json">\s*(\[\{[\s\S]*?\}\])\s*</script>',
         'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x[0] if isinstance(x, list) else x,
+            json.dumps,
+        ],
         'fields': {
-            'uid': lambda x: x['user']['id'],
-            'name': lambda x: x['user']['display_name'],
-            'username': lambda x: x['user']['name'],
-            'location': lambda x: x['user']['location'],
-            'created_at': lambda x: x['user']['join_date']['raw'],
-            'account_type': lambda x: x['user']['account_type'],
-            'is_staff': lambda x: x['user']['is_staff'],
-            'links': lambda x: [a['url'] for a in x['user']['links']],
+            'uid': lambda x: x['mainEntity'].get('identifier'),
+            'username': lambda x: x['mainEntity'].get('alternateName'),
+            'fullname': lambda x: x['mainEntity'].get('name'),
+            'bio': lambda x: html.unescape(x['mainEntity'].get('description', '') or '') or None,
+            'image': lambda x: x['mainEntity'].get('image') or None,
+            'created_at': lambda x: x.get('dateCreated'),
+            'updated_at': lambda x: x.get('dateModified'),
+            'follower_count': lambda x: (x['mainEntity'].get('interactionStatistic') or {}).get('userInteractionCount'),
+            'videos_count': lambda x: (x['mainEntity'].get('agentInteractionStatistic') or {}).get('userInteractionCount'),
+            'links': lambda x: ', '.join(
+                link for link in (x['mainEntity'].get('sameAs') or [])
+                if not link.startswith('https://vimeo.com/')
+            ) or None,
+            'twitter_url': lambda x: next(
+                (link for link in (x['mainEntity'].get('sameAs') or [])
+                 if 'twitter.com' in link or 'x.com' in link),
+                None,
+            ),
+            'instagram_url': lambda x: next(
+                (link for link in (x['mainEntity'].get('sameAs') or [])
+                 if 'instagram.com' in link),
+                None,
+            ),
+            'facebook_url': lambda x: next(
+                (link for link in (x['mainEntity'].get('sameAs') or [])
+                 if 'facebook.com' in link),
+                None,
+            ),
+            'youtube_url': lambda x: next(
+                (link for link in (x['mainEntity'].get('sameAs') or [])
+                 if 'youtube.com' in link),
+                None,
+            ),
+            'tiktok_url': lambda x: next(
+                (link for link in (x['mainEntity'].get('sameAs') or [])
+                 if 'tiktok.com' in link),
+                None,
+            ),
+            'linkedin_url': lambda x: next(
+                (link for link in (x['mainEntity'].get('sameAs') or [])
+                 if 'linkedin.com' in link),
+                None,
+            ),
         }
     },
     'Vimeo GraphQL API': {

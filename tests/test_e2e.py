@@ -656,18 +656,29 @@ def test_eyeem():
     assert info.get('facebook_uid') == '1610716256'
 
 
-@pytest.mark.skip(reason="Broken, now API only: https://api.vimeo.com/users/alexaimephotography")
-def test_vimeo():
-    info = extract(parse('https://vimeo.com/alexaimephotography')[0])
+def test_vimeo_html_e2e():
+    """Vimeo HTML"""
+    info = extract(parse('https://vimeo.com/staff')[0])
 
-    assert info.get('uid') == '75857717'
-    assert info.get('name') == 'AlexAimePhotography'
-    assert info.get('username') == 'alexaimephotography'
-    assert info.get('location') == 'France'
-    assert info.get('created_at') == '2017-12-06 06:49:28'
-    assert info.get('is_staff') == 'False'
-    assert info.get(
-        'links') == "['https://500px.com/alexaimephotography', 'https://www.flickr.com/photos/photoambiance/', 'https://www.instagram.com/alexaimephotography/', 'https://www.youtube.com/channel/UC4NiYV3Yqih2WHcwKg4uPuQ', 'https://flii.by/alexaimephotography/']"
+    assert info.get('uid') == '152184'
+    assert info.get('username') == 'staff'
+    assert info.get('fullname') == 'Vimeo'
+    assert 'innovative video experience platform' in info.get('bio', '')
+    assert 'i.vimeocdn.com/portrait/' in info.get('image', '')
+    assert info.get('created_at') == '2007-01-18T16:40:11Z'
+    assert info.get('updated_at')
+    assert int(info.get('follower_count', 0)) >= 30000
+    assert int(info.get('videos_count', 0)) >= 2000
+    # All 6 social crosslinks
+    assert info.get('twitter_url') == 'https://twitter.com/vimeo'
+    assert info.get('instagram_url') == 'https://www.instagram.com/vimeo/'
+    assert info.get('facebook_url') == 'https://www.facebook.com/Vimeo/'
+    assert info.get('youtube_url') == 'https://www.youtube.com/@vimeo/'
+    assert info.get('linkedin_url') == 'https://www.linkedin.com/company/vimeo/'
+    assert info.get('tiktok_url') == 'https://www.tiktok.com/@vimeo?lang=en'
+    # Combined `links` field excludes self vimeo.com URL
+    assert 'vimeo.com/staff' not in info.get('links', '')
+    assert 'twitter.com/vimeo' in info.get('links', '')
 
 
 @pytest.mark.skip(reason="broken")
