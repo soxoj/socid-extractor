@@ -12,3 +12,4 @@ venv
 *.log
 *.json
 *.txt
+plugins
