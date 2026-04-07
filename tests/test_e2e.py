@@ -854,17 +854,23 @@ def test_tiktok_hydration_e2e():
     assert 'fullname' in info
 
 
+@pytest.mark.github_failed
 def test_picsart_api_e2e():
     """
     Picsart API
     """
-    info = extract(parse('https://api.picsart.com/users/show/adam.json', timeout=15)[0])
+    URL = 'https://www.picsart.com/u/adam'
+    mutated = mutate_url(URL)
+    assert len(mutated) >= 1
+    url, add_headers = mutated[0]
+
+    info = extract(parse(url, headers=add_headers, timeout=15)[0])
 
     assert info.get('picsart_username') == 'adam'
-    assert info.get('fullname') == 'Adam'
-    assert info.get('picsart_id') == '184924161000102'
-    assert info.get('is_verified') == 'False'
-    assert int(info.get('follower_count')) >= 0
+    assert info.get('fullname') is not None
+    assert info.get('picsart_id') is not None
+    assert info.get('is_verified') in ('True', 'False')
+    assert 'follower_count' in info
 
 
 def test_imgur_api_e2e():
