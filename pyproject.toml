@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "socid-extractor"
-version = "0.0.27"
+dynamic = ["version"]
 description = "Extract accounts' identifiers from personal pages on various platforms"
 readme = "README.md"
-license = "GPL-3.0"
+license = "MIT"
 requires-python = ">=3.10"
 authors = [
     {name = "Soxoj", email = "soxoj@protonmail.com"},
@@ -23,6 +23,9 @@ Homepage = "https://github.com/soxoj/socid-extractor"
 
 [project.scripts]
 socid_extractor = "socid_extractor.cli:run"
+
+[tool.setuptools.dynamic]
+version = {attr = "socid_extractor.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["socid_extractor*"]
