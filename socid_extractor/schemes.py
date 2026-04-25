@@ -884,7 +884,8 @@ schemes = {
             'channel_url': lambda x: x.get('vanityChannelUrl') or x.get('channelUrl'),
             'keywords': lambda x: x.get('keywords'),
             'is_family_safe': lambda x: x.get('isFamilySafe'),
-            'facebook_id': lambda x: x.get('facebookProfileId') or None,
+            'facebook_id': lambda x: x.get('facebookProfileId') if x.get('facebookProfileId', '').isdigit() else None,
+            'facebook_username': lambda x: x.get('facebookProfileId') if x.get('facebookProfileId') and not x.get('facebookProfileId', '').isdigit() else None,
         },
     },
     'Youtube Channel': {
@@ -2141,9 +2142,9 @@ schemes = {
         'flags': ['window.channel', 'og:site_name" content="TwitchTracker"'],
         # Inline script assigns a JS object literal (not JSON); capture fields by regex.
         'regex': (
-            r'window\.channel\s*=\s*\{[\s\S]*?id:\s*(?P<twitchtracker_channel_id>\d+)[\s\S]*?'
-            r"name:\s*'(?P<twitchtracker_username>[^']+)'[\s\S]*?"
-            r"created_at:\s*'(?P<twitchtracker_created_at>[^']+)'"
+            r'window\.channel\s*=\s*\{[\s\S]*?id:\s*(?P<twitch_channel_id>\d+)[\s\S]*?'
+            r"name:\s*'(?P<twitch_username>[^']+)'[\s\S]*?"
+            r"created_at:\s*'(?P<created_at>[^']+)'"
         ),
     },
     'Chess.com API': {

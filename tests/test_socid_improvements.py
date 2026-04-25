@@ -176,9 +176,9 @@ def test_twitchtracker_embedded_channel_script():
 <script>\n\t\twindow.channel = {\n\t\t\tid: 37402112,\n\t\t\tname: 'shroud',\n\t\t\tcreated_at: '2012-11-03'\n\t\t}\n\t</script>
 </body></html>"""
     info = extract(html)
-    assert info.get('twitchtracker_channel_id') == '37402112'
-    assert info.get('twitchtracker_username') == 'shroud'
-    assert info.get('twitchtracker_created_at') == '2012-11-03'
+    assert info.get('twitch_channel_id') == '37402112'
+    assert info.get('twitch_username') == 'shroud'
+    assert info.get('created_at') == '2012-11-03'
 
 
 def test_chess_com_pub_api_json():
@@ -1046,8 +1046,9 @@ def test_youtube_ytinitialdata():
     assert info.get('channel_url') == 'http://www.youtube.com/@Google'
     assert info.get('keywords') == 'Google Technology'
     assert info.get('is_family_safe') == 'True'
-    # 'Google' is a username, not a numeric ID — goes to facebook_username
+    # 'Google' is a username, not a numeric ID
     assert info.get('facebook_username') == 'Google'
+    assert 'facebook_id' not in info
 
 
 def test_lesswrong_graphql_api():
