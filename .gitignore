@@ -13,3 +13,4 @@ venv
 *.json
 *.txt
 plugins
+tests/test_extended.py

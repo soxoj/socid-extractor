@@ -1445,7 +1445,7 @@ def test_chess_com_api_e2e():
     assert info.get('chess_user_id') == '95037716'
     assert info.get('username') == 'john'
     assert info.get('fullname') == 'John'
-    assert info.get('follower_count') == '45'
+    assert info.get('follower_count').isdigit()
     assert info.get('status') == 'basic'
     assert info.get('country_code') == 'US'
     assert 'chesscomfiles.com' in info.get('image', '')

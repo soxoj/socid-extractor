@@ -176,9 +176,9 @@ def test_twitchtracker_embedded_channel_script():
 <script>\n\t\twindow.channel = {\n\t\t\tid: 37402112,\n\t\t\tname: 'shroud',\n\t\t\tcreated_at: '2012-11-03'\n\t\t}\n\t</script>
 </body></html>"""
     info = extract(html)
-    assert info.get('twitchtracker_channel_id') == '37402112'
-    assert info.get('twitchtracker_username') == 'shroud'
-    assert info.get('twitchtracker_created_at') == '2012-11-03'
+    assert info.get('twitch_channel_id') == '37402112'
+    assert info.get('twitch_username') == 'shroud'
+    assert info.get('created_at') == '2012-11-03'
 
 
 def test_chess_com_pub_api_json():
@@ -1046,7 +1046,9 @@ def test_youtube_ytinitialdata():
     assert info.get('channel_url') == 'http://www.youtube.com/@Google'
     assert info.get('keywords') == 'Google Technology'
     assert info.get('is_family_safe') == 'True'
-    assert info.get('facebook_id') == 'Google'
+    # 'Google' is a username, not a numeric ID
+    assert info.get('facebook_username') == 'Google'
+    assert 'facebook_id' not in info
 
 
 def test_lesswrong_graphql_api():
@@ -1969,3 +1971,43 @@ def test_vimeo_html_minimal_profile():
     assert info.get('bio') is None
     assert info.get('twitter_url') is None
     assert info.get('links') is None
+
+
+def test_discourse_api_json():
+    """Discourse API: extract user fields from JSON response."""
+    body = json.dumps({
+        "user": {
+            "id": 42,
+            "username": "jdoe",
+            "name": "John Doe",
+            "title": "Regular",
+            "bio_raw": "Hello from Discourse.",
+            "website": "https://example.com",
+            "location": "New York",
+            "avatar_template": "/user_avatar/meta.discourse.org/jdoe/{size}/1234.png",
+            "trust_level": 2,
+            "moderator": False,
+            "admin": False,
+            "badge_count": 5,
+            "profile_view_count": 100,
+            "created_at": "2020-01-15T10:00:00.000Z",
+            "last_seen_at": "2024-03-01T08:30:00.000Z",
+        },
+        "trust_level": 2,
+        "badge_count": 5,
+        "profile_view_count": 100,
+    })
+    info = extract(body)
+    assert info.get('uid') == '42'
+    assert info.get('username') == 'jdoe'
+    assert info.get('fullname') == 'John Doe'
+    assert info.get('title') == 'Regular'
+    assert info.get('bio') == 'Hello from Discourse.'
+    assert info.get('website') == 'https://example.com'
+    assert info.get('location') == 'New York'
+    assert '240' in info.get('image', '')
+    assert info.get('trust_level') == '2'
+    assert info.get('badge_count') == '5'
+    assert info.get('views_count') == '100'
+    assert info.get('created_at') == '2020-01-15T10:00:00.000Z'
+    assert info.get('latest_activity_at') == '2024-03-01T08:30:00.000Z'

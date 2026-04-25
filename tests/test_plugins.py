@@ -1,4 +1,4 @@
-"""Tests for the plugin loading system."""
+"""Tests for the plugin loading mechanism."""
 import json
 import logging
 
