@@ -2289,6 +2289,7 @@ schemes = {
             'fullname': lambda x: x.get('name'),
             'bio': lambda x: x.get('bio'),
             'image': lambda x: x.get('photo_url'),
+            'image_cdn': lambda x: 'https://substackcdn.com/image/fetch/w_224,h_224,c_fill,f_webp,q_auto:good,fl_progressive:steep/' + __import__('urllib.parse', fromlist=['quote']).quote(x.get('photo_url', ''), safe='') if x.get('photo_url') else None,
         },
         'url_mutations': [{
             'from': r'https?://substack\.com/@(?P<username>[^/?#]+)',
@@ -2468,6 +2469,10 @@ schemes = {
         'flags': ['"unavailability_reason"', '"owning_user"', '"organization_uuid"'],
         'regex': r'^(\{[\s\S]+\})$',
         'extract_json': True,
+        'url_mutations': [{
+            'from': r'https?://calendly\.com/(?P<username>[^/?#]+)(?:/.*)?',
+            'to': 'https://calendly.com/api/booking/profiles/{username}',
+        }],
         'fields': {
             'uid': lambda x: x.get('id'),
             'fullname': lambda x: x.get('name'),
@@ -2718,6 +2723,33 @@ schemes = {
             'following_count': lambda x: x.get('stats', {}).get('following'),
             'created_at': lambda x: x.get('created'),
             'latest_activity_at': lambda x: x.get('active'),
+        },
+    },
+    'Discourse API': {
+        'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('user', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'title': lambda x: x.get('title') or None,
+            'bio': lambda x: x.get('bio_raw') or None,
+            'website': lambda x: x.get('website') or None,
+            'location': lambda x: x.get('location') or None,
+            'image': lambda x: x.get('avatar_template', '').replace('{size}', '240') or None,
+            'trust_level': lambda x: x.get('trust_level'),
+            'is_moderator': lambda x: x.get('moderator'),
+            'is_admin': lambda x: x.get('admin'),
+            'badge_count': lambda x: x.get('badge_count'),
+            'views_count': lambda x: x.get('profile_view_count'),
+            'created_at': lambda x: x.get('created_at'),
+            'latest_activity_at': lambda x: x.get('last_seen_at'),
         },
     },
 }

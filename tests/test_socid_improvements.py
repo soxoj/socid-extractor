@@ -1046,7 +1046,8 @@ def test_youtube_ytinitialdata():
     assert info.get('channel_url') == 'http://www.youtube.com/@Google'
     assert info.get('keywords') == 'Google Technology'
     assert info.get('is_family_safe') == 'True'
-    assert info.get('facebook_id') == 'Google'
+    # 'Google' is a username, not a numeric ID — goes to facebook_username
+    assert info.get('facebook_username') == 'Google'
 
 
 def test_lesswrong_graphql_api():
