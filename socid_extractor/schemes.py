@@ -5,6 +5,116 @@ import itertools
 
 from .utils import *
 
+
+# Helpers for the Virgool RSC profile scheme (see "Virgool" entry below).
+def _virgool_parse_rsc_rows(chunk_text):
+    """Split an RSC push payload into ``{chunk_id: parsed_json}``.
+
+    Each row in an RSC push has the shape ``"<hex_id>:<json>\\n"``;
+    rows that do not parse as JSON are skipped silently (RSC bookkeeping
+    rows like ``10:[[...]]`` whose body is a list, not the profile).
+    """
+    rows = {}
+    for line in chunk_text.split('\n'):
+        if ':' not in line:
+            continue
+        rid, _, body = line.partition(':')
+        body = body.strip()
+        if not body:
+            continue
+        try:
+            rows[rid.strip()] = json.loads(body)
+        except (ValueError, json.JSONDecodeError):
+            continue
+    return rows
+
+
+def _virgool_user_row_from_chunk(chunk_text):
+    """Find the Virgool profile object inside an RSC push payload.
+
+    Picks the first parsed row that *looks like* the profile object
+    (must contain both ``username`` and ``followersCount``), then
+    one-level-resolves any ``"$<chunk_id>"`` cross-row references in
+    that object's top-level fields (e.g. ``socials``).
+    """
+    rows = _virgool_parse_rsc_rows(chunk_text)
+
+    user_row = None
+    for value in rows.values():
+        if (isinstance(value, dict)
+                and 'followersCount' in value
+                and 'username' in value):
+            user_row = value
+            break
+
+    if user_row is None:
+        raise ValueError('virgool: no SSR user row found in RSC push payload')
+
+    resolved = dict(user_row)
+    for key, value in user_row.items():
+        if isinstance(value, str) and len(value) > 1 and value.startswith('$'):
+            ref = value[1:]
+            if ref in rows:
+                resolved[key] = rows[ref]
+    return resolved
+
+
+def _virgool_socials_dict(user_row):
+    """Normalise ``socials`` to a flat ``{platform: handle}`` dict.
+
+    Two shapes have been observed in the wild:
+
+    * dict form (current SSR shape): ``{"twitter":"00397","linkedin":null}``
+    * list form (older docs / API shape): ``[{"type":"twitter","url":"..."}]``
+
+    Anything that is `None`/empty/missing is dropped so callers do not
+    have to distinguish "field present but null" from "field absent".
+    """
+    socials = user_row.get('socials')
+    out = {}
+    if isinstance(socials, dict):
+        for platform, handle in socials.items():
+            if handle:
+                out[str(platform).lower()] = str(handle)
+    elif isinstance(socials, list):
+        for item in socials:
+            if not isinstance(item, dict):
+                continue
+            platform = item.get('type') or item.get('platform')
+            url = item.get('url') or item.get('handle')
+            if platform and url:
+                out[str(platform).lower()] = str(url)
+    return out
+
+
+def _virgool_social(user_row, platform):
+    return _virgool_socials_dict(user_row).get(platform.lower())
+
+
+def _virgool_links(user_row):
+    canonical = {
+        'twitter': 'https://twitter.com/{}',
+        'linkedin': 'https://www.linkedin.com/in/{}',
+        'instagram': 'https://www.instagram.com/{}',
+        'github': 'https://github.com/{}',
+        'telegram': 'https://t.me/{}',
+    }
+    socials = _virgool_socials_dict(user_row)
+    links = []
+    for platform, handle in socials.items():
+        if handle.startswith('http://') or handle.startswith('https://'):
+            links.append(handle)
+        elif platform in canonical:
+            links.append(canonical[platform].format(handle))
+        else:
+            links.append(handle)
+    return links
+
+
+# Insert this entry inside the `schemes = { ... }` dict, after `Flickr`
+# and before `Yandex Disk file`. Same shape as `Flickr` /
+# `Yandex Q (Znatoki) user profile`: `extract_json` + `transforms` chain.
+
 schemes = {
     # IMPORTANT: extract() returns the FIRST matching scheme.
     # More specific schemes (more/stricter flags) must come BEFORE
@@ -182,6 +292,49 @@ schemes = {
             'is_deleted': lambda x: x['photostream-models'][0]['owner'].get('isDeleted'),
             'is_ad_free': lambda x: x['photostream-models'][0]['owner'].get('isAdFree'),
         }
+    },
+    'Virgool': {
+        # https://virgool.io/@<username> — Persian blog platform; SSR is
+        # Next.js 13/14 React Server Components. The profile JSON ships
+        # inside `self.__next_f.push([1,"<chunk_id>:<escaped JSON>"])`,
+        # so on the wire each `"` of the inner JSON is escape-quoted as
+        # `\"`. Both flags are required: gating on `__next_f.push` alone
+        # would catch every Next.js site, and `\"followersCount\"` keeps
+        # the scheme from firing on Virgool 404 / JS-cookie-wall bodies
+        # (none of those contain that substring).
+        'url_hints': ('virgool.io',),
+        'flags': ['__next_f.push', '\\"followersCount\\"'],
+        'regex': r'self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*\\"followersCount\\"(?:[^"\\]|\\.)*")\]',
+        'extract_json': True,
+        'transforms': [
+            # 1. The captured group is a JS string literal; json.loads
+            #    decodes it into the multi-row RSC text.
+            json.loads,
+            # 2. Walk the rows, find the user object, resolve cross-row refs.
+            _virgool_user_row_from_chunk,
+            # 3. main.extract() will json.loads(transformed) next, so we
+            #    have to hand it back a JSON string.
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name'),
+            # Virgool exposes no numeric `id` on the SSR path; `hash` is
+            # the stable public profile identifier.
+            'uid': lambda x: x.get('hash'),
+            'bio': lambda x: x.get('bio'),
+            'image': lambda x: x.get('avatar'),
+            'follower_count': lambda x: x.get('followersCount'),
+            'following_count': lambda x: x.get('followingCount'),
+            'feed_url': lambda x: x.get('feed'),
+            'profile_url': lambda x: x.get('url'),
+            'links': lambda x: _virgool_links(x),
+            'twitter_username': lambda x: _virgool_social(x, 'twitter'),
+            'linkedin_username': lambda x: _virgool_social(x, 'linkedin'),
+            'instagram_username': lambda x: _virgool_social(x, 'instagram'),
+            'github_username': lambda x: _virgool_social(x, 'github'),
+            'telegram_username': lambda x: _virgool_social(x, 'telegram'),
+        },
     },
     'Yandex Disk file': {
         'url_hints': ('yadi.sk', 'disk.yandex', 'yandex.ru'),
