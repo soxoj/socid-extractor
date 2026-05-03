@@ -154,8 +154,11 @@ def extract(page):
             except PROCESS_ERRORS as e:
                 logging.debug('Postprocess error: ', e)
 
-        return {a: html_module.unescape(b) if isinstance(b, str) else b
-                for a, b in values.items() if b or type(b) == bool}
+        result = {a: html_module.unescape(b) if isinstance(b, str) else b
+                  for a, b in values.items() if b or type(b) == bool}
+        if result:
+            result['_extractor'] = scheme_name
+        return result
 
     # all schemes have been checked
     return {}
