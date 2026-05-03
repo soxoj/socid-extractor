@@ -400,20 +400,33 @@ def test_hashnode_graphql_api_json():
         "data": {
             "user": {
                 "name": "Melwin D'Almeida",
-                "username": "melwinalm"
+                "username": "melwinalm",
+                "tagline": "Cloud enthusiast",
+                "dateJoined": "2018-02-18T15:24:29.694Z",
+                "socialMediaLinks": {
+                    "twitter": "https://twitter.com/melwinalm",
+                    "github": "",
+                    "linkedin": None,
+                    "website": ""
+                }
             }
         }
     })
     info = extract(body)
     assert info.get('username') == 'melwinalm'
     assert info.get('fullname') == "Melwin D'Almeida"
+    assert info.get('bio') == 'Cloud enthusiast'
+    assert info.get('created_at') == '2018-02-18T15:24:29.694Z'
+    assert info.get('twitter_username') == 'melwinalm'
 
 
 def test_hashnode_graphql_api_null_user():
     """hashnode GraphQL API: null user (unclaimed) should yield empty result."""
     body = json.dumps({
         "data": {
-            "user": None
+            "user": None,
+            "dateJoined": None,
+            "socialMediaLinks": None
         }
     })
     info = extract(body)
@@ -538,9 +551,9 @@ def test_periscope_profile_extraction():
     assert info.get('broadcasts_count') == '42'
     assert info.get('is_beta_user') == 'False'
     assert info.get('is_employee') == 'False'
-    assert info.get('isVerified') == 'False'
+    assert info.get('is_verified') == 'False'
     assert info.get('is_twitter_verified') == 'True'
-    assert info.get('twitterUserId') == '78901234'
+    assert info.get('twitter_uid') == '78901234'
     assert info.get('twitter_screen_name') == 'polina_z'
     assert info.get('created_at') == '2016-04-10T18:22:05.411012300+00:00'
 

@@ -284,7 +284,7 @@ schemes = {
             'fullname': lambda x: x['photostream-models'][0]['owner'].get('realname'),
             'location': lambda x: x['person-profile-models'][0].get('location'),
             'image': lambda x: 'https:' + x['photostream-models'][0]['owner']['buddyicon']['retina'],
-            'photo_count': lambda x: x['person-profile-models'][0]['photoCount'],
+            'photos_count': lambda x: x['person-profile-models'][0]['photoCount'],
             'follower_count': lambda x: x['person-contacts-count-models'][0]['followerCount'],
             'following_count': lambda x: x['person-contacts-count-models'][0]['followingCount'],
             'created_at': lambda x: parse_datetime(x['photostream-models'][0]['owner'].get('dateCreated', 0)),
@@ -1627,9 +1627,9 @@ schemes = {
         'bs': True,
         'fields': {
             'fullname': lambda x: x.find('span', {'class': 'header-title-display-name'}).contents[0].strip(),
-            # TODO: date convert
             'bio': lambda x: x.find('span', {'class': 'header-scrobble-since'}).contents[0].strip(),
             'image': lambda x: x.find('span', {'class': 'avatar'}).find('img').get('src', ''),
+            'created_at': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'(\d{4})', x.find('span', {'class': 'header-scrobble-since'}).text)) if x.find('span', {'class': 'header-scrobble-since'}) else None,
         }
     },
     'Ask.fm': {
@@ -1671,7 +1671,7 @@ schemes = {
             'image': lambda x: x.find('div', {'class': 'authorBlock-avatar'}).find('img').get('src', ''),
             'bio': lambda x: '\n'.join(x.find('p', {'class': 'authorBlock-header-bio'}).contents),
             'links': lambda x: [a.get('href') for a in x.find('div', {'class': 'authorBlock-meta'}).findAll('a')],
-            'joined_year': lambda x: extract_digits(
+            'created_at': lambda x: extract_digits(
                 x.find('div', {'class': 'authorBlock-header'}).find('h6').contents[0]),
         }
     },
@@ -1745,7 +1745,7 @@ schemes = {
             'image': lambda x: get_ucoz_image(x),
             'gender': lambda x: x.find('div', string='Имя:').next_sibling.split(' ')[-2],
             'created_at': lambda x: x.find('div', string='Дата регистрации:').next_sibling.strip(),
-            'last_seen_at': lambda x: x.find('div', string='Дата входа:').next_sibling.strip(),
+            'latest_activity_at': lambda x: x.find('div', string='Дата входа:').next_sibling.strip(),
             'link': lambda x: get_ucoz_uid_node(x).parent.get('href'),
             'uidme_uguid': lambda x: get_ucoz_uid_node(x).parent.get('href', '').split('/')[-1],
             'location': lambda x: x.find('div', string='Место проживания:').next_sibling.strip(),
@@ -1753,7 +1753,7 @@ schemes = {
             'city': lambda x: x.find('div', string='Город:').next_sibling.strip(),
             'state': lambda x: x.find('div', string='Штат:').next_sibling.strip(),
             'email': lambda x: get_ucoz_email(x.find('div', string='E-mail:').next_sibling.strip()),
-            'birthday_at': lambda x: x.find('div', string='Дата рождения:').next_sibling.split('[')[0].strip(),
+            'birthday': lambda x: x.find('div', string='Дата рождения:').next_sibling.split('[')[0].strip(),
         },
     },
     'uID.me': {
@@ -1954,9 +1954,9 @@ schemes = {
             'broadcasts_count': lambda x: x.get('n_broadcasts'),
             'is_beta_user': lambda x: x['is_beta_user'],
             'is_employee': lambda x: x['is_employee'],
-            'isVerified': lambda x: x['isVerified'],
+            'is_verified': lambda x: x['isVerified'],
             'is_twitter_verified': lambda x: x['is_twitter_verified'],
-            'twitterUserId': lambda x: x.get('twitterUserId'),
+            'twitter_uid': lambda x: x.get('twitterUserId'),
             'twitter_screen_name': lambda x: x.get('twitter_screen_name'),
             'image': lambda x: x['profile_image_urls'][0]['url'],
         }
@@ -2046,7 +2046,7 @@ schemes = {
             'image': lambda x: x['avatar']['url'],
             'follower_count': lambda x: x['num']['subscriptions'],
             'following_count': lambda x: x['num']['subscribers'],
-            'post_count': lambda x: x['num']['total_posts'],
+            'posts_count': lambda x: x['num']['total_posts'],
             'created_count': lambda x: x['num']['created'],
             'featured_count': lambda x: x['num']['featured'],
             'smile_count': lambda x: x['num']['total_smiles'],
@@ -2056,7 +2056,7 @@ schemes = {
     },
     'Wattpad API': {
         'url_hints': ('wattpad.com',),
-        'flags': ['{"username":"'],
+        'flags': ['{"username":"', '"allowCrawler"'],
         'regex': r'^({"username":"(.+)})$',
         'extract_json': True,
         'url_mutations': [
@@ -2187,8 +2187,8 @@ schemes = {
             'twitter_url': lambda x: x['user'].get('twitterHandle'),
             'linkedin_url': lambda x: x['user'].get('linkedinHandle'),
             'links': lambda x: x['user'].get('personalWebsite'),
-            'isAdmin': lambda x: x['user'].get('isAdmin'),
-            'isVerified': lambda x: x['user'].get('isVerified'),
+            'is_admin': lambda x: x['user'].get('isAdmin'),
+            'is_verified': lambda x: x['user'].get('isVerified'),
             'HistoryPublic': lambda x: x['user'].get('preferredHistoryPublic'),
             'RoomPublic': lambda x: x['user'].get('preferredRoomPublic'),
             'InviteOnly': lambda x: x['user'].get('preferredInviteOnly'),
@@ -2470,16 +2470,21 @@ schemes = {
     },
     'hashnode GraphQL API': {
         'url_hints': ('hashnode.com', 'gql.hashnode.com'),
-        'flags': ['"data"', '"user"'],
+        'flags': ['"dateJoined"', '"socialMediaLinks"'],
         'regex': r'^(\{[\s\S]*\})$',
         'extract_json': True,
         'fields': {
             'username': lambda x: x.get('data', {}).get('user', {}).get('username') if x.get('data', {}).get('user') else None,
             'fullname': lambda x: x.get('data', {}).get('user', {}).get('name') if x.get('data', {}).get('user') else None,
+            'bio': lambda x: x.get('data', {}).get('user', {}).get('tagline') or None if x.get('data', {}).get('user') else None,
+            'created_at': lambda x: x.get('data', {}).get('user', {}).get('dateJoined') if x.get('data', {}).get('user') else None,
+            'twitter_username': lambda x: (x.get('data', {}).get('user', {}).get('socialMediaLinks', {}) or {}).get('twitter', '').rstrip('/').rsplit('/', 1)[-1] or None if x.get('data', {}).get('user') else None,
+            'github_username': lambda x: (x.get('data', {}).get('user', {}).get('socialMediaLinks', {}) or {}).get('github', '').rstrip('/').rsplit('/', 1)[-1] or None if x.get('data', {}).get('user') else None,
+            'website': lambda x: (x.get('data', {}).get('user', {}).get('socialMediaLinks', {}) or {}).get('website') or None if x.get('data', {}).get('user') else None,
         },
         'url_mutations': [{
             'from': r'https?://hashnode\.com/@(?P<username>[^/?#]+)',
-            'to': 'https://gql.hashnode.com?query=%7Buser(username%3A%20%22{username}%22)%20%7B%20name%20username%20%7D%7D',
+            'to': 'https://gql.hashnode.com?query=%7Buser(username%3A%20%22{username}%22)%20%7B%20name%20username%20tagline%20dateJoined%20socialMediaLinks%20%7B%20twitter%20github%20linkedin%20website%20%7D%20%7D%7D',
         }],
     },
     'Rarible API': {

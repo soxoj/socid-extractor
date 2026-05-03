@@ -25,13 +25,17 @@ If `name` is a login/handle, map it to `username`.
 | `image_bg` | Background / banner image URL | `banner`, `cover`, `bannerImageURL`, `cover_250_url` |
 | `website` | Personal website URL | `url`, `domain_url`, `external_url`, `blog_url` |
 | `email` | Public email | -- |
+| `occupation` | Job title / profession | `jobTitle`, `role`, `work` |
+| `company` | Employer / organization | `company_name`, `organization`, `worksFor` |
+| `interests` | Interests / hobbies (free text) | `interest_names` |
 
 ## Demographics
 
 | Field | Description | API mapping examples |
 |-------|-------------|----------------------|
 | `gender` | Gender | `sex` |
-| `country` | Country | `country_code` (normalize to name) |
+| `country` | Country (name) | `country_code` (normalize to name) |
+| `country_code` | Country (ISO 3166-1 alpha-2 code) | `countryCode`, `country_code` |
 | `city` | City | -- |
 | `location` | Location (free text, city+country) | `address` |
 | `birthday` | Date of birth | `birth_date`, `dateOfBirth` |
