@@ -1146,6 +1146,7 @@ def test_buzzfeed():
         'image') == 'https://img.buzzfeed.com/buzzfeed-static/static/user_images/web02/2009/12/17/20/lisa-31169-1261100831-63_large.jpg'
 
 
+@pytest.mark.github_failed
 def test_freelancer():
     info = extract(parse('https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D=theDesignerz&compact=true')[0])
 
