@@ -260,7 +260,7 @@ def test_xvideos_profile_full():
     assert info.get('country') == 'Honduras'
     assert info.get('profile_hits') == '1,768'
     assert info.get('follower_count') == '4'
-    assert 'July 16, 2022' in info.get('created_at', '')
+    assert info.get('created_at') == '2022-07-16 00:00:00 UTC'
 
 
 def test_lnk_bio_next_data_fixture():

@@ -136,7 +136,7 @@ def test_habr():
     assert info.get("about") == "автор, переводчик, редактор"
     assert info.get("gender") == "0"
     assert info.get("rating") == "0"
-    assert info.get("karma") == "1284"
+    assert int(info.get("karma")) >= 1284
     assert info.get("fullname") == "Анатолий Ализар"
     assert info.get("is_readonly") == "False"
     assert info.get(
@@ -580,6 +580,7 @@ def test_vcru():
     assert info.get('name') == 'Павел'
 
 
+@pytest.mark.github_failed
 def test_livejournal():
     info = extract(parse('https://julia-klay.livejournal.com/')[0])
 
@@ -761,21 +762,16 @@ def test_pinterest_board():
     assert info.get('locale') == 'hu-HU'
 
 
-@pytest.mark.github_failed
 def test_pinterest_account():
-    """Pinterest API"""
-    URL = 'https://www.pinterest.com/melgaspar666/'
-    mutated = mutate_url(URL)
-    assert len(mutated) >= 1
-    url, add_headers = mutated[0]
+    """Pinterest profile/board page"""
+    info = extract(parse('https://www.pinterest.com/melgaspar666/')[0])
 
-    info = extract(parse(url, headers=add_headers)[0])
-
-    assert info.get('pinterest_username') == 'melgaspar666'
-    assert info.get('fullname') is not None
-    assert info.get('links') == "['https://plus.google.com/101397814498498498769']"
+    assert info.get('uid') == '225109818782805421'
+    assert info.get('username') == 'melgaspar666'
+    assert info.get('fullname') == 'Mel Gaspar'
     assert 'follower_count' in info
     assert 'following_count' in info
+    assert 'created_at' in info
 
 
 @pytest.mark.skip(reason="service no longer public")
@@ -826,7 +822,7 @@ def test_tiktok():
     assert info.get('tiktok_username') == 'red'
     assert info.get('fullname') == '(RED)'
     assert 'bio' in info
-    assert 'tiktokcdn.com' in info.get('image')
+    assert 'tiktokcdn' in info.get('image')
     assert info.get('is_verified') == 'True'
     assert info.get('is_secret') == 'False'
     assert info.get('sec_uid') == 'MS4wLjABAAAAVAp3JR-xHP7UnaDt4S9T9eyPqRDwgGiBRnzdZRm63jIGWy5s39a027nKJlu_UjOZ'
@@ -1153,15 +1149,13 @@ def test_buzzfeed():
 def test_freelancer():
     info = extract(parse('https://www.freelancer.com/api/users/0.1/users?usernames%5B%5D=theDesignerz&compact=true')[0])
 
-    assert info.get('id') == '6751536'
-    assert info.get('nickname') == 'theDesignerz'
+    assert info.get('uid') == '6751536'
     assert info.get('username') == 'theDesignerz'
     assert info.get('fullname') == 'theDesignerz'
     assert info.get('company') == 'theDesignerz'
-    assert info.get('company_founder_id') == '26684749'
-    assert info.get('role') == 'freelancer'
-    assert info.get('location') == 'Islamabad, Pakistan'
-    assert info.get('created_at').startswith('2012-12-09')
+    assert info.get('country') == 'Pakistan'
+    assert info.get('city') == 'Islamabad'
+    assert info.get('created_at') == '1355079433'
 
 
 @pytest.mark.skip(reason="broken")

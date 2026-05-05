@@ -1,6 +1,50 @@
 import re
+from datetime import datetime, timezone
 
 from .utils import is_bare_gravatar_root_url, is_valid_gravatar_email_hash
+
+
+_DATE_FIELDS = ('created_at', 'updated_at', 'latest_activity_at', 'birthday')
+
+# Human-readable formats found in the wild (e.g. XVideos "January 14, 2016")
+_DATE_FORMATS = (
+    '%B %d, %Y',
+    '%b %d, %Y',
+    '%d %B %Y',
+    '%d %b %Y',
+    '%a, %d %b %Y %H:%M:%S %Z',  # RFC-822 (Medium RSS lastBuildDate)
+    '%a, %d %b %Y %H:%M:%S GMT',
+)
+
+
+class NormalizeDates:
+    """Convert human-readable date strings to UTC `YYYY-MM-DD HH:MM:SS UTC`.
+
+    Skips values that already match a numeric/ISO/UTC pattern so existing
+    extractors keep their formatting.
+    """
+
+    def __init__(self, data):
+        self.data = data
+
+    def process(self):
+        out = {}
+        for k in _DATE_FIELDS:
+            v = self.data.get(k)
+            if not isinstance(v, str) or not v.strip():
+                continue
+            v = v.strip()
+            # Skip if already normalized or in ISO / numeric form
+            if 'UTC' in v or re.match(r'^\d{4}-\d{2}-\d{2}', v) or v.isdigit():
+                continue
+            for fmt in _DATE_FORMATS:
+                try:
+                    dt = datetime.strptime(v, fmt).replace(tzinfo=timezone.utc)
+                    out[k] = dt.strftime('%Y-%m-%d %H:%M:%S %Z')
+                    break
+                except ValueError:
+                    continue
+        return out
 
 
 class StripInvalidGravatarUrls:
@@ -100,4 +144,4 @@ class YandexUsernameToEmail:
         return output
 
 
-POSTPROCESSORS = [StripInvalidGravatarUrls, Gravatar, EmailToUsername, YandexUsernameToEmail]
+POSTPROCESSORS = [StripInvalidGravatarUrls, Gravatar, EmailToUsername, YandexUsernameToEmail, NormalizeDates]

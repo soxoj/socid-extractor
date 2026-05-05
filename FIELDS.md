@@ -55,6 +55,7 @@ If `name` is a login/handle, map it to `username`.
 | `follower_count` | Followers / subscribers | `followers`, `followers_count`, `followersCount`, `subscribers_count`, `numFollowers` |
 | `following_count` | Following / subscriptions | `following`, `friends_count`, `followingCount`, `numFollowing` |
 | `posts_count` | Number of posts / publications | `postsCount`, `media_count`, `buzz_count`, `numPosts` |
+| `last_posts_count` | Number of recent posts visible on the first page (not the total) | -- |
 | `comments_count` | Number of comments | `numPosts` (Disqus counts comments as posts) |
 | `likes_count` | Received likes | `numLikesReceived`, `likes_count`, `heartCount` |
 | `views_count` | Views | `all_views_count`, `profile_views`, `profile_hits` |
