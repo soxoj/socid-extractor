@@ -2,15 +2,13 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
 [![Python versions](https://img.shields.io/pypi/pyversions/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
+[![Downloads/month](https://static.pepy.tech/badge/socid-extractor/month)](https://pepy.tech/project/socid-extractor)
 [![Total downloads](https://static.pepy.tech/badge/socid-extractor)](https://pepy.tech/project/socid-extractor)
 [![License](https://img.shields.io/pypi/l/socid-extractor.svg)](https://github.com/soxoj/socid-extractor/blob/master/LICENSE)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/soxoj/socid-extractor/python-package.yml?branch=master&label=tests)](https://github.com/soxoj/socid-extractor/actions/workflows/python-package.yml)
 [![GitHub stars](https://img.shields.io/github/stars/soxoj/socid-extractor.svg?style=social)](https://github.com/soxoj/socid-extractor/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/soxoj/socid-extractor.svg?style=social)](https://github.com/soxoj/socid-extractor/network/members)
-[![Last commit](https://img.shields.io/github/last-commit/soxoj/socid-extractor.svg)](https://github.com/soxoj/socid-extractor/commits/master)
-[![Contributors](https://img.shields.io/github/contributors/soxoj/socid-extractor.svg)](https://github.com/soxoj/socid-extractor/graphs/contributors)
 
 > Turn any public profile page into a structured account record — usernames, display names, bios, avatars, locations, joined-at dates, follower counts, external links, and the **stable internal identifiers** that uniquely pin an account across renames, redesigns, and deletions.
 

@@ -1,6 +1,6 @@
 # Contributing to socid_extractor
 
-Thanks for your interest! Adding a new site is intentionally low-friction: most schemes are 5–15 lines of declarative config plus an e2e test. This guide is the single source of truth — there is **no wiki**.
+Thanks for your interest! Adding a new site is intentionally low-friction: most schemes are 5–15 lines of declarative config plus an e2e test.
 
 ---
 
