@@ -1,7 +1,6 @@
 # socid_extractor
 
 [![PyPI version](https://img.shields.io/pypi/v/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
-[![Python versions](https://img.shields.io/pypi/pyversions/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
 [![Downloads/month](https://static.pepy.tech/badge/socid-extractor/month)](https://pepy.tech/project/socid-extractor)
 [![Total downloads](https://static.pepy.tech/badge/socid-extractor)](https://pepy.tech/project/socid-extractor)
 [![License](https://img.shields.io/pypi/l/socid-extractor.svg)](https://github.com/soxoj/socid-extractor/blob/master/LICENSE)
@@ -22,6 +21,8 @@
 - **Battle-tested.** Powers [Maigret](https://github.com/soxoj/maigret) and a number of other OSINT tools.
 
 ## Installation
+
+Python: 3.10+.
 
 ```sh
 pip install socid-extractor
