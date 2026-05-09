@@ -99,6 +99,7 @@ Never use bare `verified` — always `is_verified`.
 | `telegram_username` | Telegram handle | -- |
 | `vk_username` | VK handle | -- |
 | `github_username` | GitHub username | -- |
+| `linkedin_username` | LinkedIn handle | `linkedin_url` (extract last path segment) |
 
 ## Platform-specific fields
 

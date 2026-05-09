@@ -1,11 +1,51 @@
 # socid_extractor
 
-Extract information about a user from profile webpages / API responses and save it in machine-readable format. 130+ methods for various sites and platforms.
+[![PyPI version](https://img.shields.io/pypi/v/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
+[![Python versions](https://img.shields.io/pypi/pyversions/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/socid-extractor.svg)](https://pypi.org/project/socid-extractor/)
+[![Total downloads](https://static.pepy.tech/badge/socid-extractor)](https://pepy.tech/project/socid-extractor)
+[![License](https://img.shields.io/pypi/l/socid-extractor.svg)](https://github.com/soxoj/socid-extractor/blob/master/LICENSE)
 
-## Usage
+[![CI](https://img.shields.io/github/actions/workflow/status/soxoj/socid-extractor/python-package.yml?branch=master&label=tests)](https://github.com/soxoj/socid-extractor/actions/workflows/python-package.yml)
+[![GitHub stars](https://img.shields.io/github/stars/soxoj/socid-extractor.svg?style=social)](https://github.com/soxoj/socid-extractor/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/soxoj/socid-extractor.svg?style=social)](https://github.com/soxoj/socid-extractor/network/members)
+[![Last commit](https://img.shields.io/github/last-commit/soxoj/socid-extractor.svg)](https://github.com/soxoj/socid-extractor/commits/master)
+[![Contributors](https://img.shields.io/github/contributors/soxoj/socid-extractor.svg)](https://github.com/soxoj/socid-extractor/graphs/contributors)
 
-As a command-line tool:
+> Turn any public profile page into a structured account record — usernames, display names, bios, avatars, locations, joined-at dates, follower counts, external links, and the **stable internal identifiers** that uniquely pin an account across renames, redesigns, and deletions.
+
+`socid_extractor` parses HTML pages and API responses from 130+ platforms and returns a flat, machine-readable dictionary of account fields. No API keys required, no headless browser — just a single function call on response text.
+
+**Why it's useful**
+
+- **Stable cross-service IDs.** Get GAIA ID (Google), Facebook UID, Yandex Public ID, Instagram pk, and dozens more — values that survive username changes and let you correlate accounts across leaks, archives, and search-engine indices.
+- **One uniform interface.** Same `extract()` call for Instagram, GitHub, VK, Reddit, Substack, Bluesky, TikTok — no per-platform glue code on your side.
+- **Field ontology.** Normalized field names across platforms (`username`, `fullname`, `created_at`, `is_verified`, …) so downstream pipelines don't need 130 mappings.
+- **Battle-tested.** Powers [Maigret](https://github.com/soxoj/maigret) and a number of other OSINT tools.
+
+## Installation
+
+```sh
+pip install socid-extractor
 ```
+
+For a clean CLI install on a workstation:
+
+```sh
+pipx install socid-extractor
+```
+
+The latest development version:
+
+```sh
+pip install -U git+https://github.com/soxoj/socid-extractor.git
+```
+
+## Quick start
+
+**As a CLI:**
+
+```sh
 $ socid_extractor --url https://www.deviantart.com/muse1908
 country: France
 created_at: 2005-06-16 18:17:41
@@ -16,123 +56,75 @@ links: ['https://www.facebook.com/musemercier', 'https://www.instagram.com/muse.
 tagline: Nothing worth having is easy...
 ```
 
-Without installing: 
-```
-$ ./run.py --url https://www.deviantart.com/muse1908
+**As a Python library:**
+
+```python
+import requests
+import socid_extractor
+
+r = requests.get('https://www.patreon.com/annetlovart')
+print(socid_extractor.extract(r.text))
+# {'patreon_id': '33913189', 'patreon_username': 'annetlovart',
+#  'fullname': 'Annet Lovart',
+#  'links': "['https://www.facebook.com/322598031832479', ...]"}
 ```
 
-To skip the HTTP request when the URL string does not match any known site hint (faster batch runs; optional, may skip generic engines such as forum templates):
+**Tip — batch runs:** pass `--skip-fetch-if-no-url-hint` to skip the HTTP request when the URL doesn't match any known site hint (faster, but may skip generic engines such as forum templates):
 
-```
+```sh
 $ socid_extractor --url https://example.com/foo --skip-fetch-if-no-url-hint
 ```
 
-As a Python library:
-```
->>> import socid_extractor, requests
->>> r = requests.get('https://www.patreon.com/annetlovart')
->>> socid_extractor.extract(r.text)
-{'patreon_id': '33913189', 'patreon_username': 'annetlovart', 'fullname': 'Annet Lovart', 'links': "['https://www.facebook.com/322598031832479', 'https://www.instagram.com/annet_lovart', 'https://twitter.com/annet_lovart', 'https://youtube.com/channel/UClDg4ntlOW_1j73zqSJxHHQ']"}
-```
+## Supported sites
 
-## Installation
+[**130+ schemes** — see METHODS.md for the full list.](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md)
 
-    $ pip3 install socid-extractor
+A non-exhaustive sample:
 
-The latest development version can be installed directly from GitHub:
+- **Major networks:** Facebook (user & group pages), Instagram, VK.com, OK.ru, Reddit, TikTok, Bluesky, Tumblr, Flickr
+- **Google ecosystem:** Google docs/maps contributions (cookies required), Google Play, YouTube
+- **Mail.ru:** my.mail.ru user mainpage, photo, video
+- **Dev / writing platforms:** GitHub, Stack Overflow (HTML + API), LeetCode, Hashnode, Medium, Substack, Paragraph, WordPress.org, Virgool
+- **Forums (universal detectors):** Discourse, MediaWiki / Fandom wikis, Mastodon
+- **Niche / vertical:** Chess.com, Roblox, MyAnimeList, Scratch, Wikipedia, DailyMotion, SlideShare, Weebly, Calendly, Amazon Author, Boosty, Warpcast (Farcaster), Fragment (TON/Telegram), Rarible, CSSBattle, lnk.bio, Spatial, TwitchTracker, Max (max.ru)
 
-    $ pip3 install -U git+https://github.com/soxoj/socid_extractor.git
+…and many others.
 
-## Sites and methods
+For data examples, see [`tests/test_e2e.py`](https://github.com/soxoj/socid-extractor/blob/master/tests/test_e2e.py); for the parsing logic, see [`socid_extractor/schemes.py`](https://github.com/soxoj/socid-extractor/blob/master/socid_extractor/schemes.py); for the field ontology, see [FIELDS.md](https://github.com/soxoj/socid-extractor/blob/master/FIELDS.md).
 
-[130+ methods](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md) for different sites and platforms are supported!
+## Use cases
 
-- Google (all documents pages, maps contributions), cookies required
-- Yandex (disk, albums, znatoki, music, realty, collections), cookies required to prevent captcha blocks
-- Mail.ru (my.mail.ru user mainpage, photo, video, games, communities)
-- Facebook (user & group pages)
-- VK.com (user page)
-- OK.ru (user page)
-- Instagram
-- Reddit
-- Medium
-- Flickr
-- Tumblr
-- TikTok
-- GitHub
-- Chess.com
-- Roblox
-- MyAnimeList
-- Substack
-- Hashnode
-- Fandom wikis (MediaWiki API)
-- Rarible
-- CSSBattle
-- Max (max.ru)
-- TwitchTracker
-- lnk.bio
-- Bluesky
-- Scratch
-- Wikipedia
-- DailyMotion
-- SlideShare
-- WordPress.org
-- Weebly
-- Calendly
-- Google Play
-- Amazon Author
-- Stack Overflow (HTML + API)
-- LeetCode
-- Boosty
-- Warpcast (Farcaster)
-- Paragraph
-- Fragment (TON/Telegram)
-- Tonometerbot
-- Spatial
-
-...and many others.
-
-You can also check [tests file](https://github.com/soxoj/socid-extractor/blob/master/tests/test_e2e.py) for data examples, [schemes file](https://github.com/soxoj/socid-extractor/blob/master/socid_extractor/schemes.py) to expore all the methods.
-
-## When it may be useful
-
-- Getting all available info by the username or/and account UID. Examples: [Week in OSINT](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43), [OSINTCurious](https://osintcurio.us/2019/10/01/searching-instagram-part-2/)
-- Users tracking, checking that the account was previously known (by ID) even if all public info has changed. Examples: [Aware Online](https://www.aware-online.com/en/importance-of-user-ids-in-social-media-investigations/)
-- Searching by commonly used cross-service UIDs (GAIA ID, Facebook UID, Yandex Public ID, etc.)
-  - DB leaks of forums and platforms in SQL format
-  - Indexed links that contain target profile ID
-- Searching for tracking data by comparison with other IDs - [how it works](https://www.eff.org/wp/behind-the-one-way-mirror), [how can it be used](https://www.nytimes.com/interactive/2019/12/19/opinion/location-tracking-cell-phone.html).
-- Law enforcement investigations
+- **Pivot from a profile to everything you can see.** One call returns the visible info plus the hidden internal IDs the platform uses behind the scenes. Background reading: [Week in OSINT — Getting a grasp on Google IDs](https://medium.com/week-in-osint/getting-a-grasp-on-googleids-77a8ab707e43).
+- **Track accounts across renames, redesigns, and deletions.** Stable IDs (GAIA, FB UID, Yandex Public ID, Instagram pk, …) let you re-identify the same person even when every visible field has changed. Background: [Aware Online — User IDs in social-media investigations](https://www.aware-online.com/en/importance-of-user-ids-in-social-media-investigations/).
+- **Search by cross-service UID.** Once you have a stable identifier you can pivot into:
+  - SQL / leaked databases (forum dumps, breach data) where the UID is the join key,
+  - Google / Yandex / archive.org indices that captured URLs containing the UID.
+- **Feed downstream OSINT tooling.** A normalized record is much easier to ingest than per-site scrapers — used by [Maigret](https://github.com/soxoj/maigret) and similar tools for enrichment.
 
 ## SOWEL classification
 
-This tool uses the following OSINT techniques:
+Maps to the following [SOWEL](https://sowel.soxoj.com/) techniques:
 - [SOTL-1.4. Analyze Internal Identifiers](https://sowel.soxoj.com/internal-identifiers)
 - [SOTL-11.1. Check Outdated And Unused Functionality](https://sowel.soxoj.com/outdated-unused-functionality)
 
-
 ## Tools using socid_extractor
 
-- [Maigret](https://github.com/soxoj/maigret) - powerful namechecker, generate a report with all available info from accounts found.
-
-- [TheScrapper](https://github.com/champmq/TheScrapper) - scrape emails, phone numbers and social media accounts from a website.
-
-- [InfoHunter](https://github.com/sweetnight19/InfoHunter) - An open source OSINT tool that allows you to search, collect and analyze information online to get a complete picture of the person or company you are interested in.
-
-- [YaSeeker](https://github.com/HowToFind-bot/YaSeeker) - tool to gather all available information about Yandex account by login/email.
-
-- [Marple](https://github.com/soxoj/marple) - scrape search engines results for a given username.
+- [**Maigret**](https://github.com/soxoj/maigret) — powerful namechecker that generates a report with all available info from accounts found across 3000+ sites.
+- [**TheScrapper**](https://github.com/champmq/TheScrapper) — scrape emails, phone numbers, and social-media accounts from a website.
+- [**InfoHunter**](https://github.com/sweetnight19/InfoHunter) — open-source OSINT tool to search, collect, and analyze information online.
+- [**YaSeeker**](https://github.com/HowToFind-bot/YaSeeker) — gather all available information about a Yandex account by login/email.
+- [**Marple**](https://github.com/soxoj/marple) — scrape search-engine results for a given username.
 
 ## Testing
 
 ```sh
-python3 -m pytest tests/test_e2e.py -n 10  -k 'not cookies' -m 'not github_failed and not rate_limited'
+python3 -m pytest tests/test_e2e.py -n 10 -k 'not cookies' -m 'not github_failed and not rate_limited'
 ```
 
 **Every new scheme must have an e2e test** in `tests/test_e2e.py` hitting a real URL/API. Unit tests with inline fixtures (`tests/test_socid_improvements.py`) are also required but do not replace e2e coverage. See [docs/testing-and-ci.md](docs/testing-and-ci.md) for details.
 
-Developer documentation (architecture, modules, CI): [docs/](docs/).
+Developer documentation (architecture, modules, CI) lives in [docs/](docs/).
 
 ## Contributing
 
-Check [separate page](https://github.com/soxoj/socid-extractor/blob/master/CONTRIBUTING.md) if you want to add a new methods of fix anything.
+See the [contributing guide](https://github.com/soxoj/socid-extractor/blob/master/CONTRIBUTING.md) if you want to add a new scheme or fix anything.
