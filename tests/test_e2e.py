@@ -630,6 +630,7 @@ def test_deviantart():
     assert info.get('created_at').startswith('2005-06-16')
 
 
+@pytest.mark.github_failed
 def test_tumblr():
     info = extract(parse('https://alexaimephotography.tumblr.com/')[0])
 
