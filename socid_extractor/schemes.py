@@ -798,7 +798,7 @@ schemes = {
     'Medium RSS': {
         'url_hints': ('medium.com',),
         'flags': ['<rss', 'medium.com', 'Stories by'],
-        'regex': r'<title><!\[CDATA\[Stories by (?P<fullname>[^\]]+?) on Medium\]\]></title>[\s\S]*?<image>\s*<url>(?P<image>[^<]+)</url>[\s\S]*?<lastBuildDate>(?P<latest_activity_at>[^<]+)</lastBuildDate>',
+        'regex': r'<title><!\[CDATA\[Stories by (?P<fullname>[^\]]+?) on Medium\]\]></title>[\s\S]*?<link>https://medium\.com/@(?P<username>[^?/<\s]+)[\s\S]*?<image>\s*<url>(?P<image>[^<]+)</url>[\s\S]*?<lastBuildDate>(?P<latest_activity_at>[^<]+)</lastBuildDate>',
         'fields': {},
     },
     'Medium': {
