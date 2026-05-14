@@ -1,4 +1,6 @@
 import argparse
+import ast
+import json
 import logging
 import sys
 from functools import reduce
@@ -8,6 +10,21 @@ from .main import parse, extract, mutate_url
 from .schemes import schemes
 from .url_relevance import check_url_relevance
 from .utils import parse_cookies, import_cookiejar, join_cookies
+
+
+def _jsonify_value(v):
+    if isinstance(v, str) and v[:1] in ('[', '{'):
+        try:
+            parsed = ast.literal_eval(v)
+            if isinstance(parsed, (list, tuple, dict)):
+                return parsed
+        except (ValueError, SyntaxError):
+            pass
+    return v
+
+
+def jsonify_info(info):
+    return {k: _jsonify_value(v) for k, v in (info or {}).items()}
 
 
 def print_info(info):
@@ -40,6 +57,7 @@ def run():
         action='store_true',
         help='skip HTTP request when the URL does not match any supported site hint (substring check; may skip generic engines)',
     )
+    parser.add_argument('--json', action='store_true', help='output results as JSON')
 
     args = parser.parse_args()
 
@@ -68,7 +86,9 @@ def run():
     if args.file:
         page = open(args.file).read()
         info = extract(page)
-        if info:
+        if args.json:
+            print(json.dumps(jsonify_info(info), ensure_ascii=False, indent=2, default=str))
+        elif info:
             print_info(info)
     # load from url(s)
     elif args.url:
@@ -78,10 +98,12 @@ def run():
         if mutations:
             reqs += list(mutations)
 
+        results = []
         for req in reqs:
             url, add_headers = req
 
-            print(f'Analyzing URL {url}...')
+            if not args.json:
+                print(f'Analyzing URL {url}...')
             url_headers = dict(headers)
             url_headers.update(add_headers)
 
@@ -91,8 +113,15 @@ def run():
 
             page = get_site_response(url, cookies_str, url_headers)
             info = extract(page)
-            if info:
+            if args.json:
+                jsonified = jsonify_info(info)
+                if jsonified:
+                    results.append({'url': url, 'info': jsonified})
+            elif info:
                 print_info(info)
+
+        if args.json:
+            print(json.dumps(results, ensure_ascii=False, indent=2, default=str))
 
 
 if __name__ == '__main__':

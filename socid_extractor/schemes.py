@@ -115,6 +115,15 @@ def _virgool_links(user_row):
 # and before `Yandex Disk file`. Same shape as `Flickr` /
 # `Yandex Q (Znatoki) user profile`: `extract_json` + `transforms` chain.
 
+
+def _gh_handle_for(accounts, provider):
+    for a in accounts:
+        if a.get('provider') == provider:
+            url = (a.get('url') or '').split('?')[0].split('#')[0].rstrip('/')
+            return url.rsplit('/', 1)[-1].lstrip('@') or None
+    return None
+
+
 schemes = {
     # IMPORTANT: extract() returns the FIRST matching scheme.
     # More specific schemes (more/stricter flags) must come BEFORE
@@ -199,17 +208,18 @@ schemes = {
         'flags': ['com.facebook.katana', 'XPagesProfileHomeController'],
         'regex': r'{"imp_id":".+?","ef_page":.+?,"uri":".+?\/(?P<username>[^\/]+?)","entity_id":"(?P<uid>\d+)"}',
     },
-    'GitHub HTML': {
-        'url_hints': ('github.com',),
-        'flags': ['github.githubassets.com'],
-        'regex': r'data-hydro-click.+?profile_user_id&quot;:(?P<uid>\d+).+?originating_url&quot;:&quot;https:\/\/github\.com\/(?P<username>[^&]+)'
-    },
     # https://api.github.com/users/torvalds
     'GitHub API': {
         'url_hints': ('api.github.com', 'github.com'),
         'flags': ['gists_url', 'received_events_url'],
         'regex': r'^({[\S\s]+?})$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'^https?://(?:www\.)?github\.com/(?P<username>[^/?#]+)/?$',
+                'to': 'https://api.github.com/users/{username}',
+            }
+        ],
         'fields': {
             'uid': lambda x: x.get('id'),
             'image': lambda x: x.get('avatar_url'),
@@ -224,13 +234,45 @@ schemes = {
             'is_looking_for_job': lambda x: x.get('hireable'),
             'gravatar_id': lambda x: x.get('gravatar_id'),
             'bio': lambda x: x['bio'].strip() if x.get('bio', '') else None,
-            'is_company': lambda x: x.get('company'),
+            'company': lambda x: x.get('company'),
             'blog_url': lambda x: x.get('blog'),
+        }
+    },
+    # https://api.github.com/users/torvalds/social_accounts
+    # Separate endpoint that lists Bluesky, Mastodon, LinkedIn, YouTube,
+    # Twitch, etc. — fields the main /users/{u} response omits.
+    'GitHub Social Accounts API': {
+        'url_hints': ('api.github.com',),
+        'flags': ['"provider":', '"url":', 'https://'],
+        'regex': r'^(\[[\s\S]+\])$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: {'accounts': x},
+            json.dumps,
+        ],
+        'url_mutations': [
+            {
+                'from': r'^https?://(?:www\.)?github\.com/(?P<username>[^/?#]+)/?$',
+                'to': 'https://api.github.com/users/{username}/social_accounts',
+            }
+        ],
+        'fields': {
+            'links': lambda x: [a['url'] for a in x['accounts'] if a.get('url')] or None,
+            'twitter_username': lambda x: _gh_handle_for(x['accounts'], 'twitter'),
+            'bluesky_username': lambda x: _gh_handle_for(x['accounts'], 'bluesky'),
+            'mastodon_username': lambda x: _gh_handle_for(x['accounts'], 'mastodon'),
+            'linkedin_username': lambda x: _gh_handle_for(x['accounts'], 'linkedin'),
+            'youtube_username': lambda x: _gh_handle_for(x['accounts'], 'youtube'),
+            'twitch_username': lambda x: _gh_handle_for(x['accounts'], 'twitch'),
+            'facebook_username': lambda x: _gh_handle_for(x['accounts'], 'facebook'),
+            'instagram_username': lambda x: _gh_handle_for(x['accounts'], 'instagram'),
+            'reddit_username': lambda x: _gh_handle_for(x['accounts'], 'reddit'),
         }
     },
     'Gitlab API': {
         'url_hints': ('gitlab.com',),
-        'flags': ['avatar_url', 'https://gitlab.com'],
+        'flags': ['avatar_url', 'https://gitlab.com', '"public_email"'],
         'regex': r'^\[({[\S\s]+?})\]$',
         'extract_json': True,
         'url_mutations': [
@@ -245,6 +287,9 @@ schemes = {
             'username': lambda x: x.get('username'),
             'state': lambda x: x.get('state'),
             'image': lambda x: x.get('avatar_url'),
+            'website': lambda x: x.get('web_url') or None,
+            'email': lambda x: x.get('public_email') or None,
+            'emails': lambda x: ([x['public_email']] if x.get('public_email') else None),
         }
     },
     'Patreon': {

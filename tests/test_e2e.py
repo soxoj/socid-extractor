@@ -240,13 +240,6 @@ def test_facebook_group():
     assert 'all' not in info
 
 
-def test_github_html():
-    info = extract(parse('https://github.com/soxoj')[0])
-
-    assert info.get('uid') == '31013580'
-    assert info.get('username') == 'soxoj'
-
-
 @pytest.mark.skip(reason="broken")
 def test_github_api():
     info = extract(parse('https://api.github.com/users/soxoj')[0])

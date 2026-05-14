@@ -2024,3 +2024,97 @@ def test_discourse_api_json():
     assert info.get('views_count') == '100'
     assert info.get('created_at') == '2020-01-15T10:00:00.000Z'
     assert info.get('latest_activity_at') == '2024-03-01T08:30:00.000Z'
+
+
+def test_github_api_url_mutations():
+    """GitHub API: profile URLs of shape `github.com/{username}` are
+    rewritten to the REST endpoint `api.github.com/users/{username}`
+    so the CLI can fetch the JSON user object automatically. The
+    mutation must match the bare profile path only — repo paths
+    (e.g. `github.com/torvalds/linux`) must not fire so we don't
+    waste an API hit on `/users/torvalds/linux`."""
+    from socid_extractor.main import mutate_url
+
+    # Bare profile URL → API user endpoint
+    for url in (
+        'https://github.com/soxoj',
+        'http://github.com/soxoj',
+        'https://www.github.com/soxoj',
+        'https://github.com/soxoj/',
+    ):
+        urls = [r[0] for r in mutate_url(url)]
+        assert 'https://api.github.com/users/soxoj' in urls, url
+
+    # Repo URL must NOT be rewritten to /users/torvalds/linux
+    urls = [r[0] for r in mutate_url('https://github.com/torvalds/linux')]
+    assert not any('api.github.com/users/' in u for u in urls)
+
+
+def test_github_social_accounts_api():
+    """GitHub /users/{u}/social_accounts: separate endpoint that lists
+    accounts the main /users/{u} response doesn't expose. Schema must
+    fire on this array shape, surface every URL in `links`, and parse
+    handles for each known provider (twitter, bluesky, mastodon,
+    linkedin, youtube, twitch, facebook, instagram, reddit)."""
+    # Real GitHub API responses are compact (no whitespace) — flag
+    # `'"provider":"'` won't match if json.dumps adds default spaces.
+    page = json.dumps([
+        {"provider": "twitter",   "url": "https://twitter.com/sox0j"},
+        {"provider": "bluesky",   "url": "https://bsky.app/profile/soxoj.bsky.social"},
+        {"provider": "mastodon",  "url": "https://infosec.exchange/@soxoj"},
+        {"provider": "linkedin",  "url": "https://www.linkedin.com/in/soxoj/"},
+        {"provider": "youtube",   "url": "https://www.youtube.com/@soxoj"},
+        {"provider": "twitch",    "url": "https://www.twitch.tv/soxoj"},
+        {"provider": "facebook",  "url": "https://www.facebook.com/soxoj"},
+        {"provider": "instagram", "url": "https://www.instagram.com/soxoj"},
+        {"provider": "reddit",    "url": "https://www.reddit.com/user/soxoj"},
+    ], separators=(',', ':'))
+    info = extract(page)
+    assert info.get('_extractor') == 'GitHub Social Accounts API'
+    assert info.get('twitter_username') == 'sox0j'
+    assert info.get('bluesky_username') == 'soxoj.bsky.social'
+    assert info.get('mastodon_username') == 'soxoj'
+    assert info.get('linkedin_username') == 'soxoj'
+    assert info.get('youtube_username') == 'soxoj'
+    assert info.get('twitch_username') == 'soxoj'
+    assert info.get('facebook_username') == 'soxoj'
+    assert info.get('instagram_username') == 'soxoj'
+    assert info.get('reddit_username') == 'soxoj'
+    assert 'https://bsky.app/profile/soxoj.bsky.social' in info.get('links', '')
+    assert 'https://infosec.exchange/@soxoj' in info.get('links', '')
+
+
+def test_github_social_accounts_url_mutation():
+    """GitHub Social Accounts API: bare profile URL `github.com/{u}`
+    auto-mutates to the social_accounts endpoint so the CLI can fetch
+    Bluesky/Mastodon/etc. without a second manual call."""
+    from socid_extractor.main import mutate_url
+    urls = [r[0] for r in mutate_url('https://github.com/soxoj')]
+    assert 'https://api.github.com/users/soxoj/social_accounts' in urls
+
+
+def test_gitlab_api_with_public_email():
+    """Gitlab API: response from /api/v4/users?username=… exposes
+    `public_email` and `web_url` in addition to the basic identity
+    fields. The scheme requires `"public_email"` in flags so it only
+    fires on the array-form user-search response, then surfaces the
+    email as both `email` and `emails`, and the profile URL as
+    `website`."""
+    page = json.dumps([{
+        "id": 1244269,
+        "username": "ainslie",
+        "public_email": "ainslie@example.com",
+        "name": "ainslie cleverdon",
+        "state": "active",
+        "avatar_url": "https://secure.gravatar.com/avatar/eb7d.jpg",
+        "web_url": "https://gitlab.com/ainslie",
+    }])
+    info = extract(page)
+    assert info.get('_extractor') == 'Gitlab API'
+    assert info.get('uid') == '1244269'
+    assert info.get('username') == 'ainslie'
+    assert info.get('fullname') == 'ainslie cleverdon'
+    assert info.get('state') == 'active'
+    assert info.get('email') == 'ainslie@example.com'
+    assert 'ainslie@example.com' in info.get('emails', '')
+    assert info.get('website') == 'https://gitlab.com/ainslie'

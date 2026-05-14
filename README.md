@@ -100,6 +100,15 @@ For data examples, see [`tests/test_e2e.py`](https://github.com/soxoj/socid-extr
   - Google / Yandex / archive.org indices that captured URLs containing the UID.
 - **Feed downstream OSINT tooling.** A normalized record is much easier to ingest than per-site scrapers — used by [Maigret](https://github.com/soxoj/maigret) and similar tools for enrichment.
 
+## Commercial Use
+
+The open-source `socid_extractor` is MIT-licensed and free for commercial use without restriction — but page parsers break over time as platforms change their HTML and APIs, and they need active maintenance.
+
+For serious commercial use — with a maintained private plugin pack of extra parsers or a hosted extraction API — reach out: 📧 socid@soxoj.com
+
+- Private parser plugin — **100+ additional checks** on top of the public 150+ sites, kept up to date as platforms change (separate from the public open-source database)
+- Extraction API — integrate `socid_extractor` into your product
+
 ## SOWEL classification
 
 Maps to the following [SOWEL](https://sowel.soxoj.com/) techniques:
