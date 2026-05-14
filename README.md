@@ -17,7 +17,7 @@
 
 - **Stable cross-service IDs.** Get GAIA ID (Google), Facebook UID, Yandex Public ID, Instagram pk, and dozens more — values that survive username changes and let you correlate accounts across leaks, archives, and search-engine indices.
 - **One uniform interface.** Same `extract()` call for Instagram, GitHub, VK, Reddit, Substack, Bluesky, TikTok — no per-platform glue code on your side.
-- **Field ontology.** Normalized field names across platforms (`username`, `fullname`, `created_at`, `is_verified`, …) so downstream pipelines don't need 130 mappings.
+- **Field ontology.** [Normalized field names](https://github.com/soxoj/socid-extractor/blob/master/FIELDS.md) across platforms (`username`, `fullname`, `created_at`, `is_verified`, …) so downstream pipelines don't need 130 mappings.
 - **Battle-tested.** Powers [Maigret](https://github.com/soxoj/maigret) and a number of other OSINT tools.
 
 ## Installation
