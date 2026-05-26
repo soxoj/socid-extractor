@@ -2,8 +2,57 @@
 
 ## [Unreleased]
 
-* CLI: optional `--skip-fetch-if-no-url-hint` to avoid HTTP when the URL does not match substring hints from schemes (`url_hints` field and name tokens); see `socid_extractor/url_relevance.py` and docs.
-* Expanded `url_hints` on many `schemes` entries (major domains and special cases such as Yandex Disk `yadi.sk`, Twitter/X).
+## [0.1.0] - 2026-05-26
+* Change release trigger from 'created' to 'published' by @soxoj in https://github.com/soxoj/socid-extractor/pull/233
+* Bump pytest from 9.0.2 to 9.0.3 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/230
+* Substack and Calendly fixes; Discourse support added by @soxoj in https://github.com/soxoj/socid-extractor/pull/235
+* Add Virgool profile scheme (Persian blog platform, Next.js RSC SSR) by @CasperCodes-CPU in https://github.com/soxoj/socid-extractor/pull/236
+* Fixes for false positive matchers and ontology by @soxoj in https://github.com/soxoj/socid-extractor/pull/237
+* Added extractor name as service info in response by @soxoj in https://github.com/soxoj/socid-extractor/pull/239
+* Tests fixes, fix some fields according to ontology, dates normalization by @soxoj in https://github.com/soxoj/socid-extractor/pull/240
+* Update README and CONTRIBUTING by @soxoj in https://github.com/soxoj/socid-extractor/pull/241
+* Add Python versions 3.13 and 3.14 to workflow by @soxoj in https://github.com/soxoj/socid-extractor/pull/242
+* Bump pytest-rerunfailures from 16.1 to 16.2 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/244
+* Capture username in Medium RSS schema by @razbenya in https://github.com/soxoj/socid-extractor/pull/243
+* Update README with field ontology link by @soxoj in https://github.com/soxoj/socid-extractor/pull/245
+* Update of Readme, improvements for GitHub/Gitlab, JSON output by @soxoj in https://github.com/soxoj/socid-extractor/pull/246
+* Bump pytest-rerunfailures from 16.2 to 16.3 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/247
+* chore: pyproject cleanup by @soxoj in https://github.com/soxoj/socid-extractor/pull/248
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.28...v0.1.0
+
+## [0.0.28] - 2026-04-09
+* A few improvements, tests fixed by @soxoj in https://github.com/soxoj/socid-extractor/pull/204
+* Additional tests by @soxoj in https://github.com/soxoj/socid-extractor/pull/205
+* added duolingo.com by @ayxkaddd in https://github.com/soxoj/socid-extractor/pull/199
+* feat(schemes): TwitchTracker, Chess.com API, Roblox user/lookup, MAL,… by @soxoj in https://github.com/soxoj/socid-extractor/pull/206
+* Bump pytest from 8.3.4 to 9.0.2 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/203
+* Bump pytest-xdist from 3.6.1 to 3.8.0 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/192
+* Update beautifulsoup4 requirement from ~=4.12.3 to ~=4.14.3 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/202
+* Bump pytest-rerunfailures from 15.0 to 16.1 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/198
+* feat(cli): optional URL hint pre-check by @soxoj in https://github.com/soxoj/socid-extractor/pull/207
+* Add Pinterest link extraction and URL mutation support by @Copilot in https://github.com/soxoj/socid-extractor/pull/208
+* Add 6 new extractors: Fandom, Substack, Hashnode, Rarible, CSSBattle,… by @soxoj in https://github.com/soxoj/socid-extractor/pull/211
+* Add Periscope (pscp.tv) extraction test and broadcasts_count field by @Copilot in https://github.com/soxoj/socid-extractor/pull/212
+* Fix BuzzFeed extraction: update stale page flag by @Copilot in https://github.com/soxoj/socid-extractor/pull/210
+* Add YouTube, Wikipedia, Lesswrong, Bluesky, Scratch, DailyMotion, Sli… by @soxoj in https://github.com/soxoj/socid-extractor/pull/213
+* Add Habr, Taplink, Product Hunt, Threads extractors; improve XVideos,… by @soxoj in https://github.com/soxoj/socid-extractor/pull/215
+* Add Chess.com and Roblox by @soxoj in https://github.com/soxoj/socid-extractor/pull/216
+* Fix broken Facebook profile parsing by @Copilot in https://github.com/soxoj/socid-extractor/pull/217
+* Add Stack Exchange API, LeetCode GraphQL, Boosty API by @soxoj in https://github.com/soxoj/socid-extractor/pull/220
+* Pyproject toml migration by @soxoj in https://github.com/soxoj/socid-extractor/pull/221
+* Add Smule profile extraction by @Copilot in https://github.com/soxoj/socid-extractor/pull/219
+* License change to MIT by @soxoj in https://github.com/soxoj/socid-extractor/pull/222
+* Fix Threads and Chess parsing by @soxoj in https://github.com/soxoj/socid-extractor/pull/224
+* Crypto/Web3 platform extractors with crosslinks by @soxoj in https://github.com/soxoj/socid-extractor/pull/225
+* Fix Threads parsing by @soxoj in https://github.com/soxoj/socid-extractor/pull/226
+* Add Weibo API scheme for JSON profile extraction by @Copilot in https://github.com/soxoj/socid-extractor/pull/214
+* Add plugins support by @soxoj in https://github.com/soxoj/socid-extractor/pull/227
+* Fix descr extraction for Boosty by @soxoj in https://github.com/soxoj/socid-extractor/pull/228
+* Fix Vimeo extraction by @soxoj in https://github.com/soxoj/socid-extractor/pull/229
+* Bump to 0.0.28 by @soxoj in https://github.com/soxoj/socid-extractor/pull/231
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.0.27...v0.0.28
 
 ## [0.0.27] - 2024-12-12
 * Fixed extraction of Gravatar username by @soxoj in https://github.com/soxoj/socid-extractor/pull/178
