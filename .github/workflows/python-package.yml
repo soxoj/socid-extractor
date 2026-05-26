@@ -21,22 +21,21 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
+      # Installs runtime deps + the [dev] extra from pyproject.toml,
+      # which pulls in flake8, mypy, pytest, pytest-rerunfailures and pytest-xdist.
       run: |
         python -m pip install --upgrade pip
-        pip install .
+        pip install '.[dev]'
     - name: Lint with flake8
       run: |
-        pip install flake8
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Type check with mypy
       run: |
-        pip install mypy
         mypy socid_extractor/
     - name: Test with pytest
       run: |
-        pip install -r test-requirements.txt
         # do not run tests required auth with secrets
         pytest -k 'not cookies' -m 'not github_failed and not rate_limited' --reruns 3 --reruns-delay 30

@@ -134,6 +134,14 @@ See [`docs/testing-and-ci.md`](docs/testing-and-ci.md) for details.
 
 ### Running the suite
 
+First, install the test extras (pytest + pytest-rerunfailures + pytest-xdist) — or `[dev]` for the full set used by CI (adds flake8 / mypy / black):
+
+```sh
+pip install '.[test]'   # or '.[dev]'
+```
+
+Then:
+
 ```sh
 python3 -m pytest tests/test_e2e.py -n 10 -k 'not cookies' -m 'not github_failed and not rate_limited'
 ```

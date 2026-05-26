@@ -29,6 +29,20 @@ Defined in [`pyproject.toml`](../pyproject.toml) (`[tool.pytest.ini_options]`):
 
 Use `@pytest.mark.skip` for temporarily broken tests; reasons appear in `revision.py` output when regenerating `METHODS.md`.
 
+## Installing the test/dev dependencies
+
+All test, lint, type-check and format tools are declared in [`pyproject.toml`](../pyproject.toml) under `[project.optional-dependencies]`:
+
+```sh
+# minimal: pytest + pytest-rerunfailures + pytest-xdist
+pip install '.[test]'
+
+# everything above + flake8 + mypy + black
+pip install '.[dev]'
+```
+
+CI uses `pip install '.[dev]'` — see [`.github/workflows/python-package.yml`](../.github/workflows/python-package.yml).
+
 ## Local commands
 
 From the [root README](../README.md):
@@ -37,10 +51,8 @@ From the [root README](../README.md):
 python3 -m pytest tests/test_e2e.py -n 10 -k 'not cookies' -m 'not github_failed and not rate_limited'
 ```
 
-- **`-n 10`** — Requires **pytest-xdist** (listed in [`test-requirements.txt`](../test-requirements.txt)) for parallel workers. Omit `-n 10` if you did not install xdist.
+- **`-n 10`** — parallel workers via **pytest-xdist** (shipped in the `[test]` / `[dev]` extra). Omit `-n 10` if you did not install xdist.
 - Filters match what CI runs, plus optional parallelism for speed.
-
-Minimal dependency set for tests is in `test-requirements.txt` (pytest, rerun plugin, xdist). Runtime library deps remain in [`requirements.txt`](../requirements.txt).
 
 ## `tests/reformat.sh`
 
@@ -50,9 +62,9 @@ Helper script that turns lines of the form `key: value` into `assert info.get("k
 
 [`.github/workflows/python-package.yml`](../.github/workflows/python-package.yml) runs on pushes and pull requests to `master`:
 
-- Python **3.10, 3.11, 3.12**
-- **flake8** — syntax/undefined-name checks; complexity/length as warnings (`setup.cfg` ignores `E501` for line length)
-- **mypy** — type checking with `mypy socid_extractor/` (stub overrides in `pyproject.toml`)
+- Python **3.10, 3.11, 3.12, 3.13, 3.14**
+- **flake8** — syntax/undefined-name checks; complexity/length as warnings. Config in `pyproject.toml` (`[tool.flake8]`) ignores `E501` (line length).
+- **mypy** — type checking with `mypy socid_extractor/` (stub overrides in `[[tool.mypy.overrides]]`)
 - **pytest** — `pytest -k 'not cookies' -m 'not github_failed and not rate_limited' --reruns 3 --reruns-delay 30` (pytest-rerunfailures for flaky network tests)
 
 Publishing to PyPI on release is handled by [`.github/workflows/python-publish.yml`](../.github/workflows/python-publish.yml) using `python -m build`.
@@ -75,6 +87,12 @@ It:
 
 Keep docstrings in tests aligned with scheme names in `schemes` when you want accurate coverage reporting.
 
-## Flake8
+## Code style
 
-[`setup.cfg`](../setup.cfg) configures flake8 with `ignore = E501` (line length). CI still runs additional flake8 passes as defined in the workflow file.
+[`pyproject.toml`](../pyproject.toml) configures three tools; none of them is enforced as a CI gate (flake8 is the only one that can fail the build, and only on syntax / undefined-name errors), but they're all in the `[dev]` extra so contributors can run them locally:
+
+| Tool | Config | What it does |
+| ---- | ------ | ------------ |
+| **flake8** | `[tool.flake8]` (`ignore = E501`) | Style + obvious bugs. CI runs `flake8 --select=E9,F63,F7,F82` as a build gate. |
+| **mypy** | `[tool.mypy]` | Static typing. `disallow_untyped_defs = false` — gradual. |
+| **black** | `[tool.black]` (`line-length = 127`) | Optional formatter; matches CI's `--max-line-length=127`. |

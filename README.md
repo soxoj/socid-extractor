@@ -125,9 +125,14 @@ Maps to the following [SOWEL](https://sowel.soxoj.com/) techniques:
 
 ## Testing
 
+Install the test extras from [`pyproject.toml`](pyproject.toml), then run pytest:
+
 ```sh
+pip install '.[test]'   # pytest, pytest-rerunfailures, pytest-xdist
 python3 -m pytest tests/test_e2e.py -n 10 -k 'not cookies' -m 'not github_failed and not rate_limited'
 ```
+
+Use `pip install '.[dev]'` instead if you also want flake8 / mypy / black (the full set used by CI).
 
 **Every new scheme must have an e2e test** in `tests/test_e2e.py` hitting a real URL/API. Unit tests with inline fixtures (`tests/test_socid_improvements.py`) are also required but do not replace e2e coverage. See [docs/testing-and-ci.md](docs/testing-and-ci.md) for details.
 
