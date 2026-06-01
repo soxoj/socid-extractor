@@ -144,7 +144,7 @@
 139 | Product Hunt |  |  |
 140 | Chess.com HTML | [chess_com_html_e2e](https://github.com/soxoj/socid-extractor/search?q=test_chess_com_html_e2e) |  |
 141 | Roblox HTML | [roblox_html_e2e](https://github.com/soxoj/socid-extractor/search?q=test_roblox_html_e2e) |  |
-142 | LeetCode GraphQL | [leetcode_graphql_e2e](https://github.com/soxoj/socid-extractor/search?q=test_leetcode_graphql_e2e) | LeetCode GraphQL requires POST request |
+142 | LeetCode GraphQL | [leetcode_graphql_e2e](https://github.com/soxoj/socid-extractor/search?q=test_leetcode_graphql_e2e) |  |
 143 | Boosty API | [boosty_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_boosty_api_e2e) |  |
 144 | Threads |  |  |
 145 | Smule |  |  |
@@ -158,4 +158,4 @@
 153 | BuyMeACoffee | [buymeacoffee](https://github.com/soxoj/socid-extractor/search?q=test_buymeacoffee) |  |
 154 | Discourse API |  |  |
 
-The table has been updated at 2026-06-01 07:47:37.379241 UTC
+The table has been updated at 2026-06-01 10:57:00.710594 UTC

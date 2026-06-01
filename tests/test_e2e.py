@@ -650,7 +650,6 @@ def test_eyeem():
     assert info.get('photos') == '3'
     assert info.get('facebook_uid') == '1610716256'
 
-
 @pytest.mark.github_failed
 def test_vimeo_html_e2e():
     """Vimeo HTML"""
@@ -1488,10 +1487,17 @@ def test_stack_exchange_api_e2e():
     assert info.get('created_at') == '1620592473'
 
 
-@pytest.mark.skip(reason='LeetCode GraphQL requires POST request')
 def test_leetcode_graphql_e2e():
     """LeetCode GraphQL"""
-    pass
+    graphql_url = 'https://leetcode.com/graphql?query=query%20userPublicProfile%28%24username%3A%20String%21%29%20%7B%20matchedUser%28username%3A%20%24username%29%20%7B%20username%20profile%20%7B%20realName%20aboutMe%20userAvatar%20countryName%20company%20school%20ranking%20%7D%20%7D%20%7D&variables=%7B%22username%22%3A%20%22votrubac%22%7D'
+
+    info = extract(parse(graphql_url)[0])
+
+    assert info.get('username') == 'votrubac'
+    assert info.get('fullname') == 'Vlad'
+    assert info.get('company') == 'Google'
+    assert info.get('ranking') == '51'
+    assert 'assets.leetcode.com' in info.get('image', '')
 
 
 def test_boosty_api_e2e():

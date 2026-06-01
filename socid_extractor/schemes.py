@@ -2748,6 +2748,12 @@ schemes = {
     },
     'LeetCode GraphQL': {
         'url_hints': ('leetcode.com',),
+        'url_mutations': [
+            {
+                'from': r'https?://leetcode\.com/(?:u/)?(?P<username>[^/]+)/?$',
+                'to': 'https://leetcode.com/graphql?query=query%20userPublicProfile%28%24username%3A%20String%21%29%20%7B%20matchedUser%28username%3A%20%24username%29%20%7B%20username%20profile%20%7B%20realName%20aboutMe%20userAvatar%20countryName%20company%20school%20ranking%20%7D%20%7D%20%7D&variables=%7B%22username%22%3A%20%22{username}%22%7D',
+            }
+        ],
         'flags': ['"data":', '"matchedUser":', '"profile":'],
         'regex': r'^(\{[\s\S]+\})$',
         'extract_json': True,
