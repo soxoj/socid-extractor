@@ -1220,7 +1220,7 @@ def test_weibo_api():
 
 @pytest.mark.github_failed
 def test_weibo_api_by_id():
-    """Weibo API by user ID"""
+    """Weibo API"""
     URL = 'https://weibo.com/u/6215884155'
     mutated = mutate_url(URL)
     assert len(mutated) >= 1
@@ -1557,3 +1557,12 @@ def test_spatial_e2e():
     assert info.get('fullname') == 'Rammy'
     assert info.get('bio')
     assert info.get('follower_count')
+
+
+def test_buymeacoffee():
+    """BuyMeACoffee"""
+    info = extract(parse('https://buymeacoffee.com/johndoe')[0])
+
+    assert info.get("fullname") == "John Doe"
+    assert info.get("bio") == "Designer & Art Director, Growing brands.Welcome to my BMC page. If you like my content, please consider buying me a coffee. Thank you for your support!"
+    assert "15211" in info.get("image") or "cdn.buymeacoffee.com" in info.get("image")

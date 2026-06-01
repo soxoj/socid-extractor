@@ -2944,6 +2944,24 @@ schemes = {
             'latest_activity_at': lambda x: x.get('active'),
         },
     },
+    'BuyMeACoffee': {
+        'url_hints': ('buymeacoffee.com',),
+        'flags': ['buymeacoffee.com', 'og:title'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: (
+                (x.find('meta', property='og:title') and x.find('meta', property='og:title').get('content')) or
+                (x.find('title') and x.find('title').text.replace(' - Buymeacoffee', '').strip())
+            ),
+            'bio': lambda x: (
+                (x.find('meta', attrs={'name': 'description'}) and x.find('meta', attrs={'name': 'description'}).get('content')) or
+                (x.find('meta', property='og:description') and x.find('meta', property='og:description').get('content'))
+            ),
+            'image': lambda x: (
+                x.find('meta', property='og:image') and x.find('meta', property='og:image').get('content')
+            ),
+        }
+    },
     'Discourse API': {
         'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
         'regex': r'^(\{[\s\S]+\})$',
