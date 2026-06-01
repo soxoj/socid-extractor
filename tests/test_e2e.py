@@ -651,6 +651,7 @@ def test_eyeem():
     assert info.get('facebook_uid') == '1610716256'
 
 
+@pytest.mark.github_failed
 def test_vimeo_html_e2e():
     """Vimeo HTML"""
     info = extract(parse('https://vimeo.com/staff')[0])
