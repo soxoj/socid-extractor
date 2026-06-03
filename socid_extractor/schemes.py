@@ -806,6 +806,33 @@ schemes = {
             'following_count': lambda x: x.get('edge_follow', {}).get('count'),
         }
     },
+    'Instagram GraphQL': {
+        'url_hints': ('instagram.com', 'cdninstagram.com'),
+        'flags': ['"biography"', '"edge_followed_by"', '"profile_pic_url_hd"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('data') or {}).get('user') or {},
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('full_name'),
+            'id': lambda x: x.get('id'),
+            'image': lambda x: x.get('profile_pic_url_hd'),
+            'bio': lambda x: x.get('biography'),
+            'business_email': lambda x: x.get('business_email'),
+            'external_url': lambda x: x.get('external_url'),
+            'facebook_uid': lambda x: x.get('fbid'),
+            'is_business': lambda x: x.get('is_business_account'),
+            'is_joined_recently': lambda x: x.get('is_joined_recently'),
+            'is_private': lambda x: x.get('is_private'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'follower_count': lambda x: (x.get('edge_followed_by') or {}).get('count'),
+            'following_count': lambda x: (x.get('edge_follow') or {}).get('count'),
+        }
+    },
     'Spotify API': {
         'url_hints': ('spotify.com', 'open.spotify.com'),
         'flags': ['"uri": "spotify:user:'],
