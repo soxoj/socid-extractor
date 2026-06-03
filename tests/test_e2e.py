@@ -1573,3 +1573,29 @@ def test_buymeacoffee():
     assert info.get("fullname") == "John Doe"
     assert info.get("bio") == "Designer & Art Director, Growing brands.Welcome to my BMC page. If you like my content, please consider buying me a coffee. Thank you for your support!"
     assert "15211" in info.get("image") or "cdn.buymeacoffee.com" in info.get("image")
+
+
+@pytest.mark.github_failed
+@pytest.mark.rate_limited
+def test_instagram_graphql_e2e():
+    """Instagram GraphQL"""
+    headers = {
+        'x-ig-app-id': '936619743392459',
+        'referer': 'https://www.instagram.com/',
+    }
+    body, status_code = parse('https://www.instagram.com/api/v1/users/web_profile_info/?username=cristiano', headers=headers)
+ 
+    # Gracefully skip if rate limited / blocked in current environment
+    if status_code in (403, 429) or not body:
+        pytest.skip(f"Rate limited or blocked by Instagram API (status {status_code})")
+
+    info = extract(body)
+
+    assert info.get('username') == 'cristiano'
+    assert info.get('fullname') == 'Cristiano Ronaldo'
+    assert info.get('id') == '173560420'
+    assert 'cdninstagram.com' in info.get('image', '')
+    assert info.get('is_business') == 'False'
+    assert info.get('is_private') == 'False'
+    assert info.get('is_verified') == 'True'
+    assert int(info.get('follower_count', 0)) > 500000000
