@@ -806,6 +806,33 @@ schemes = {
             'following_count': lambda x: x.get('edge_follow', {}).get('count'),
         }
     },
+    'Instagram GraphQL': {
+        'url_hints': ('instagram.com', 'cdninstagram.com'),
+        'flags': ['"biography"', '"edge_followed_by"', '"profile_pic_url_hd"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('data') or {}).get('user') or {},
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('full_name'),
+            'id': lambda x: x.get('id'),
+            'image': lambda x: x.get('profile_pic_url_hd'),
+            'bio': lambda x: x.get('biography'),
+            'business_email': lambda x: x.get('business_email'),
+            'external_url': lambda x: x.get('external_url'),
+            'facebook_uid': lambda x: x.get('fbid'),
+            'is_business': lambda x: x.get('is_business_account'),
+            'is_joined_recently': lambda x: x.get('is_joined_recently'),
+            'is_private': lambda x: x.get('is_private'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'follower_count': lambda x: (x.get('edge_followed_by') or {}).get('count'),
+            'following_count': lambda x: (x.get('edge_follow') or {}).get('count'),
+        }
+    },
     'Spotify API': {
         'url_hints': ('spotify.com', 'open.spotify.com'),
         'flags': ['"uri": "spotify:user:'],
@@ -2748,6 +2775,12 @@ schemes = {
     },
     'LeetCode GraphQL': {
         'url_hints': ('leetcode.com',),
+        'url_mutations': [
+            {
+                'from': r'https?://leetcode\.com/(?:u/)?(?P<username>[^/]+)/?$',
+                'to': 'https://leetcode.com/graphql?query=query%20userPublicProfile%28%24username%3A%20String%21%29%20%7B%20matchedUser%28username%3A%20%24username%29%20%7B%20username%20profile%20%7B%20realName%20aboutMe%20userAvatar%20countryName%20company%20school%20ranking%20%7D%20%7D%20%7D&variables=%7B%22username%22%3A%20%22{username}%22%7D',
+            }
+        ],
         'flags': ['"data":', '"matchedUser":', '"profile":'],
         'regex': r'^(\{[\s\S]+\})$',
         'extract_json': True,
@@ -3113,6 +3146,23 @@ schemes = {
                 'to': 'https://scholia.toolforge.org/orcid/{orcid}',
             },
         ],
+    'BuyMeACoffee': {
+        'url_hints': ('buymeacoffee.com',),
+        'flags': ['buymeacoffee.com', 'og:title'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: (
+                (x.find('meta', property='og:title') and x.find('meta', property='og:title').get('content')) or
+                (x.find('title') and x.find('title').text.replace(' - Buymeacoffee', '').strip())
+            ),
+            'bio': lambda x: (
+                (x.find('meta', attrs={'name': 'description'}) and x.find('meta', attrs={'name': 'description'}).get('content')) or
+                (x.find('meta', property='og:description') and x.find('meta', property='og:description').get('content'))
+            ),
+            'image': lambda x: (
+                x.find('meta', property='og:image') and x.find('meta', property='og:image').get('content')
+            ),
+        }
     },
     'Discourse API': {
         'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
