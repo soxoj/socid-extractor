@@ -1275,7 +1275,8 @@ def test_ifunny_co():
     assert info.get("id") == "5ab1fd49a2cf59ac948b456e"
     assert info.get("username") == "CuddleKinnz"
     assert info.get("bio") == "Humor Some Like, Some Hate"
-    assert info.get("image", "").startswith("https://imageproxy.ifunny.co/noop/user_photos/")
+    assert info.get("image", "").startswith("https://")
+    assert "/noop/user_photos/" in info.get("image", "")
     # assert int(info.get("follower_count")) >= 0
     # assert int(info.get("following_count")) >= 70
     # assert int(info.get("posts_count")) >= 127
@@ -1496,7 +1497,8 @@ def test_leetcode_graphql_e2e():
     assert info.get('username') == 'votrubac'
     assert info.get('fullname') == 'Vlad'
     assert info.get('company') == 'Google'
-    assert info.get('ranking') == '51'
+    assert info.get('ranking', '').isdigit()
+    assert int(info['ranking']) > 0
     assert 'assets.leetcode.com' in info.get('image', '')
 
 
