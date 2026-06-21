@@ -928,6 +928,7 @@ def test_patreon():
     assert 'bio' in info
 
 
+@pytest.mark.github_failed
 def test_last_fm():
     info = extract(parse('https://www.last.fm/user/alex')[0])
 
