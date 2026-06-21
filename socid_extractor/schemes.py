@@ -3146,6 +3146,7 @@ schemes = {
                 'to': 'https://scholia.toolforge.org/orcid/{orcid}',
             },
         ],
+    },
     'BuyMeACoffee': {
         'url_hints': ('buymeacoffee.com',),
         'flags': ['buymeacoffee.com', 'og:title'],
