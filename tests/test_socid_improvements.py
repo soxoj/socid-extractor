@@ -959,6 +959,187 @@ def test_threads_profile_extraction():
 
 
 # ---------------------------------------------------------------------------
+# ORCID-keyed academic platforms (ORCID, OpenAlex, arXiv, DBLP, Scholia)
+# ---------------------------------------------------------------------------
+
+def test_orcid_api_extracts_profile_and_affiliations():
+    """ORCID public API (pub.orcid.org v3): JSON response with `orcid-identifier`
+    + `activities-summary` exposes orcid id, name, bio, researcher URLs, keywords,
+    country, current employer/role, education school/degree, works count.
+    """
+    payload = {
+        'orcid-identifier': {'path': '0000-0002-9322-3515', 'host': 'orcid.org'},
+        'history': {
+            'submission-date': {'value': 1407175067347},
+            'verified-primary-email': True,
+        },
+        'person': {
+            'name': {
+                'given-names': {'value': 'Yoshua'},
+                'family-name': {'value': 'Bengio'},
+                'credit-name': None,
+            },
+            'biography': {'content': 'Bio line.'},
+            'researcher-urls': {'researcher-url': [
+                {'url': {'value': 'http://www.iro.umontreal.ca/~bengioy'}},
+            ]},
+            'keywords': {'keyword': [{'content': 'deep learning'}, {'content': 'causality'}]},
+            'addresses': {'address': [{'country': {'value': 'CA'}}]},
+            'emails': {'email': []},
+            'other-names': {'other-name': []},
+            'external-identifiers': {'external-identifier': [
+                {'external-id-type': 'Scopus Author ID', 'external-id-value': '7003958103'},
+            ]},
+        },
+        'activities-summary': {
+            'employments': {'affiliation-group': [{'summaries': [{'employment-summary': {
+                'organization': {'name': 'Université de Montréal'},
+                'role-title': 'Professeur titulaire',
+            }}]}]},
+            'educations': {'affiliation-group': [{'summaries': [{'education-summary': {
+                'organization': {'name': 'McGill University'},
+                'role-title': 'PhD',
+            }}]}]},
+            'works': {'group': [{}, {}, {}]},
+        },
+    }
+    info = extract(json.dumps(payload))
+    assert info.get('_extractor') == 'ORCID API'
+    assert info.get('orcid') == '0000-0002-9322-3515'
+    assert info.get('fullname') == 'Yoshua Bengio'
+    assert info.get('bio') == 'Bio line.'
+    assert info.get('links') == "['http://www.iro.umontreal.ca/~bengioy']"
+    assert info.get('interests') == 'deep learning, causality'
+    assert info.get('country_code') == 'CA'
+    assert info.get('company') == 'Université de Montréal'
+    assert info.get('occupation') == 'Professeur titulaire'
+    assert info.get('education_school') == 'McGill University'
+    assert info.get('education_degree') == 'PhD'
+    assert info.get('posts_count') == '3'
+    assert info.get('is_verified') == 'True'
+    assert info.get('created_at') == '1407175067347'
+    assert "'Scopus Author ID': '7003958103'" in info.get('external_ids', '')
+
+
+def test_openalex_authors_api_maps_metrics_and_topics():
+    """OpenAlex Authors API: `works_count` + `cited_by_count` + `summary_stats`
+    flags, mapped to standard fields (posts_count, h_index, ...). ORCID and
+    OpenAlex IDs have URL prefixes stripped.
+    """
+    payload = {
+        'id': 'https://openalex.org/A5086198262',
+        'orcid': 'https://orcid.org/0000-0002-9322-3515',
+        'display_name': 'Yoshua Bengio',
+        'display_name_alternatives': ['Y. Bengio', 'Bengio Y.'],
+        'works_count': 1279,
+        'cited_by_count': 452107,
+        'summary_stats': {'h_index': 183, 'i10_index': 709},
+        'last_known_institutions': [
+            {'display_name': 'Mila', 'country_code': 'CA'},
+            {'display_name': 'Université de Montréal', 'country_code': 'CA'},
+        ],
+        'topics': [
+            {'display_name': 'Neural Networks'},
+            {'display_name': 'Topic Modeling'},
+        ],
+        'created_date': '2016-06-24T00:00:00',
+        'updated_date': '2026-05-25T12:27:37',
+    }
+    info = extract(json.dumps(payload))
+    assert info.get('_extractor') == 'OpenAlex Authors API'
+    assert info.get('orcid') == '0000-0002-9322-3515'
+    assert info.get('openalex_id') == 'A5086198262'
+    assert info.get('fullname') == 'Yoshua Bengio'
+    assert info.get('posts_count') == '1279'
+    assert info.get('cited_by_count') == '452107'
+    assert info.get('h_index') == '183'
+    assert info.get('i10_index') == '709'
+    assert info.get('company') == 'Mila'
+    assert info.get('country_code') == 'CA'
+    assert info.get('institutions') == "['Mila', 'Université de Montréal']"
+    assert info.get('interests') == 'Neural Networks, Topic Modeling'
+
+
+def test_arxiv_author_page_extracts_fullname_and_paper_ids():
+    """arXiv author page: `<h1>X's articles on arXiv</h1>` + `/abs/<id>` links."""
+    html = (
+        '<!DOCTYPE html><html><head><title>X</title></head><body>'
+        '<h1 class="arxiv-logo">logo</h1>'
+        "<h1>Yoshua Bengio's articles on arXiv</h1>"
+        '<dl>'
+        '<dt><a href="/abs/2305.14594">arXiv:2305.14594</a></dt>'
+        '<dt><a href="/abs/2310.04925">arXiv:2310.04925</a></dt>'
+        '<dt><a href="/abs/2305.14594">duplicate</a></dt>'
+        '</dl></body></html>'
+    )
+    info = extract(html)
+    assert info.get('_extractor') == 'arXiv author page'
+    assert info.get('fullname') == 'Yoshua Bengio'
+    assert info.get('arxiv_ids') == "['2305.14594', '2310.04925']"
+    assert info.get('posts_count') == '2'
+
+
+def test_dblp_person_record_xml_extracts_pid_affiliation_awards_links():
+    """DBLP XML person record: `<dblpperson name pid n>` + `<note type="affiliation">`
+    + `<note type="award">` + `<url>` (only those inside the `<person>` wrapper, not
+    the `<r>` per-publication URLs).
+    """
+    xml = (
+        '<?xml version="1.0"?>'
+        '<dblpperson name="Yoshua Bengio" pid="56/953" n="1236">'
+        '<person key="homepages/56/953">'
+        '<author pid="56/953">Yoshua Bengio</author>'
+        '<note type="affiliation">University of Montréal, Department of Computer Science</note>'
+        '<note label="2018" type="award">Turing Award</note>'
+        '<url>https://mila.quebec/en/yoshua-bengio/</url>'
+        '<url>https://orcid.org/0000-0002-9322-3515</url>'
+        '</person>'
+        '<r><article key="x"><url>https://example.com/paper.pdf</url></article></r>'
+        '</dblpperson>'
+    )
+    info = extract(xml)
+    assert info.get('_extractor') == 'DBLP person record'
+    assert info.get('fullname') == 'Yoshua Bengio'
+    assert info.get('dblp_pid') == '56/953'
+    assert info.get('posts_count') == '1236'
+    assert 'University of Montréal' in info.get('company', '')
+    assert info.get('awards') == "['2018: Turing Award']"
+    # Per-publication URL must NOT leak into `links`.
+    assert info.get('links') == "['https://mila.quebec/en/yoshua-bengio/', 'https://orcid.org/0000-0002-9322-3515']"
+
+
+def test_scholia_canonical_link_yields_wikidata_qid():
+    """Scholia author page: canonical link exposes Wikidata QID; the rest of
+    the page is JS-rendered, so QID is the only durable signal.
+    """
+    html = (
+        '<!DOCTYPE html><html><head>'
+        '<title>Scholia</title>'
+        '<link rel="canonical" href="https://scholia.toolforge.org/author/Q3572699">'
+        '</head><body><h1 id="h1">Author</h1></body></html>'
+    )
+    info = extract(html)
+    assert info.get('_extractor') == 'Scholia author profile'
+    assert info.get('wikidata_qid') == 'Q3572699'
+
+
+def test_orcid_url_mutations_target_five_platforms():
+    """A bare orcid.org/{id} URL fans out into the 5 ORCID-keyed endpoints."""
+    from socid_extractor.main import mutate_url
+    results = mutate_url('https://orcid.org/0000-0002-9322-3515')
+    urls = {u for u, _hdrs in results}
+    assert 'https://pub.orcid.org/v3.0/0000-0002-9322-3515/record' in urls
+    assert 'https://api.openalex.org/authors/orcid:0000-0002-9322-3515' in urls
+    assert 'https://arxiv.org/a/0000-0002-9322-3515' in urls
+    assert 'https://dblp.org/orcid/0000-0002-9322-3515.xml' in urls
+    assert 'https://scholia.toolforge.org/orcid/0000-0002-9322-3515' in urls
+    # ORCID API mutation must carry the Accept: application/json header
+    # (default content-negotiation returns XML).
+    orcid_api = next((h for u, h in results if u.endswith('/v3.0/0000-0002-9322-3515/record')), None)
+    assert orcid_api == {'Accept': 'application/json'}
+
+
+# ---------------------------------------------------------------------------
 # Structural / meta tests
 # ---------------------------------------------------------------------------
 
