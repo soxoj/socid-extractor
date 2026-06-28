@@ -2118,3 +2118,54 @@ def test_gitlab_api_with_public_email():
     assert info.get('email') == 'ainslie@example.com'
     assert 'ainslie@example.com' in info.get('emails', '')
     assert info.get('website') == 'https://gitlab.com/ainslie'
+
+
+def _deviantart_fixture(extra_user_fields=''):
+    """Build a minimal page that triggers the DeviantArt scheme.
+
+    The embedded user object is in the same escaped-JSON shape DeviantArt
+    uses (`\\"key\\":\\"val\\"`). `extra_user_fields` lets a test append
+    fields *after* `legacyTextEditUrl` — the position where the old
+    regex terminator would stop, leaving unbalanced braces.
+    """
+    user = (
+        r'{\"username\":\"rootkea\",\"country\":\"Antarctica\",'
+        r'\"gender\":\"\",\"tagline\":\"hi\",\"website\":\"x.com\",'
+        r'\"socialLinks\":[],\"twitterUsername\":\"\",'
+        r'\"textContent\":{\"excerpt\":\"bio\"},'
+        r'\"devidDeviation\":{\"author\":{\"usericon\":\"u.jpg\"}},'
+        r'\"deviantFor\":352125671,'
+        r'\"legacyTextEditUrl\":\"\\\/users\\\/edit\"'
+        + (',' + extra_user_fields if extra_user_fields else '')
+        + r'}'
+    )
+    return '<script>window.deviantART = {};\n' + user + '\n</script>'
+
+
+def test_deviantart_user_object_with_trailing_fields_does_not_crash():
+    """Regression for soxoj/socid-extractor#255.
+
+    Some DeviantArt profiles embed user fields *after* `legacyTextEditUrl`
+    (e.g. `isNewDeviant`). The old regex terminator `legacyTextEditUrl.+?})`
+    stopped at the first `})` inside `devidDeviation`, leaving the captured
+    slice with unbalanced braces and crashing `json.loads` in `extract()`.
+    The fix widens the regex and uses `raw_decode` to trim at the real
+    matching brace.
+    """
+    page = _deviantart_fixture(
+        extra_user_fields=r'\"isNewDeviant\":false,\"isWatching\":false'
+    )
+    info = extract(page)
+    assert info.get('_extractor') == 'DeviantArt'
+    assert info.get('username') == 'rootkea'
+    assert info.get('country') == 'Antarctica'
+
+
+def test_deviantart_user_object_without_trailing_fields_still_works():
+    """The fix must not regress the simpler shape (no fields after
+    `legacyTextEditUrl`) that the original regex was written for.
+    """
+    info = extract(_deviantart_fixture())
+    assert info.get('_extractor') == 'DeviantArt'
+    assert info.get('username') == 'rootkea'
+    assert info.get('country') == 'Antarctica'

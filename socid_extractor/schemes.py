@@ -1530,13 +1530,21 @@ schemes = {
     'DeviantArt': {
         'url_hints': ('deviantart.com',),
         'flags': ['window.deviantART = '],
-        'regex': r'({\\"username\\":\\".+?\",\\"country.+?legacyTextEditUrl.+?})',
+        # Capture from `{"username":"...","country...` greedily — previous
+        # `legacyTextEditUrl.+?})` terminator stopped at the first `})` and
+        # broke for users whose object had extra fields after that key
+        # (e.g. `isNewDeviant`). raw_decode below trims trailing garbage.
+        'regex': r'({\\"username\\":\\"[^"]+\\",\\"country[\s\S]+)',
         'extract_json': True,
         'transforms': [
             lambda x: x.replace('\\"', '"'),
             lambda x: x.replace('\\\\"', '\''),
             lambda x: x.replace('\\\\u002F', '/'),
-            lambda x: x.replace("\\'", "'")
+            lambda x: x.replace("\\'", "'"),
+            # Trim to the first complete JSON object (the user record);
+            # raw_decode finds the matching closing brace regardless of
+            # whatever HTML/JS tail the regex pulled in after it.
+            lambda x: json.dumps(json.JSONDecoder().raw_decode(x)[0]),
         ],
         'fields': {
             'country': lambda x: x['country'],
