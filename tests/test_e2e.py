@@ -1288,6 +1288,7 @@ def test_ifunny_co():
     assert info.get("is_verified") == "False"
 
 
+@pytest.mark.skip(reason="Wattpad API endpoint is unavailable / unstable from CI (2026)")
 def test_wattpad_api():
     # https://wattpad.com/user/JeniferBalanzar
     info = extract(parse('https://www.wattpad.com/api/v3/users/JeniferBalanzar')[0])
