@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-13
+* Add extraction for BuyMeACoffee and fix Weibo test docstring by @kaifcodec in https://github.com/soxoj/socid-extractor/pull/251
+* fix: LeetCode GraphQL extraction with newer api endpoint query by @kaifcodec in https://github.com/soxoj/socid-extractor/pull/252
+* add: instagram graphql extractor by @kaifcodec in https://github.com/soxoj/socid-extractor/pull/253
+* feat: add 5 ORCID-keyed academic schemes (ORCID, OpenAlex, arXiv, DBLP, Semantic Scholar) by @soxoj in https://github.com/soxoj/socid-extractor/pull/254
+* DeviantArt fixes by @soxoj in https://github.com/soxoj/socid-extractor/pull/256
+* Added snapchat.com by @ayxkaddd in https://github.com/soxoj/socid-extractor/pull/257
+* Added bio.site by @ayxkaddd in https://github.com/soxoj/socid-extractor/pull/258
+* Added Faceit by @ayxkaddd in https://github.com/soxoj/socid-extractor/pull/259
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.1.0...v0.1.1
+
 ## [0.1.0] - 2026-05-26
 * Change release trigger from 'created' to 'published' by @soxoj in https://github.com/soxoj/socid-extractor/pull/233
 * Bump pytest from 9.0.2 to 9.0.3 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/230
