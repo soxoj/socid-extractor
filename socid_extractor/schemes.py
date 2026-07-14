@@ -882,6 +882,15 @@ schemes = {
             'is_verified': lambda x: x.get('is_verified'),
             'follower_count': lambda x: (x.get('edge_followed_by') or {}).get('count'),
             'following_count': lambda x: (x.get('edge_follow') or {}).get('count'),
+            'post_count': lambda x: (x.get('edge_owner_to_timeline_media') or {}).get('count'),
+            'links': lambda x: [
+                link['url'] for link in (x.get('bio_links') or []) if link.get('url')
+            ] or None,
+            'usernames': lambda x: [
+                entity['user']['username']
+                for entity in ((x.get('biography_with_entities') or {}).get('entities') or [])
+                if (entity.get('user') or {}).get('username')
+            ] or None,
         }
     },
     'Spotify API': {

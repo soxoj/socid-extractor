@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import json
+
 import pytest
 
 from socid_extractor.activation import get_twitter_headers
@@ -1603,6 +1605,43 @@ def test_instagram_graphql_e2e():
     assert info.get('is_private') == 'False'
     assert info.get('is_verified') == 'True'
     assert int(info.get('follower_count', 0)) > 500000000
+
+
+def test_instagram_graphql_bio_links_and_tagged_usernames():
+    """Instagram GraphQL: bio_links, tagged usernames, post_count"""
+    body = json.dumps({
+        'data': {
+            'user': {
+                'username': 'ronaldinho',
+                'full_name': 'Ronaldinho Gaúcho',
+                'biography': 'Instagram oficial de Ronaldinho Gaúcho.\n@tropadobruxo_',
+                'bio_links': [{'url': 'https://r10score.net/ronaldinho'}],
+                'biography_with_entities': {
+                    'entities': [
+                        {'user': {'username': 'tropadobruxo_'}},
+                        {'hashtag': 'melhor'},
+                    ]
+                },
+                'edge_followed_by': {'count': 80107703},
+                'edge_follow': {'count': 600},
+                'edge_owner_to_timeline_media': {'count': 3200},
+                'is_verified': True,
+                'is_private': False,
+                'profile_pic_url_hd': 'https://example.com/pic.jpg',
+            }
+        }
+    })
+
+    info = extract(body)
+
+    assert info.get('username') == 'ronaldinho'
+    assert info.get('fullname') == 'Ronaldinho Gaúcho'
+    assert 'tropadobruxo_' in info.get('bio')
+    assert info.get('links') == "['https://r10score.net/ronaldinho']"
+    assert info.get('usernames') == "['tropadobruxo_']"
+    assert info.get('post_count') == '3200'
+    assert info.get('follower_count') == '80107703'
+    assert info.get('following_count') == '600'
 
 
 def test_snapchat():
