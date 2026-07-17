@@ -979,7 +979,7 @@ schemes = {
         'regex': r'__APOLLO_STATE__ = ({.+})',
         'extract_json': True,
         'transforms': [
-            json.loads,
+            lambda x: json.JSONDecoder().raw_decode(x)[0],
             lambda x: [v for k, v in x.items() if k.startswith('User:')][0],
             json.dumps,
         ],
