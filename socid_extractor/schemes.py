@@ -2,6 +2,7 @@ from dateutil.parser import parse as parse_datetime_str
 import html
 import json
 import itertools
+from urllib.parse import unquote
 
 from .utils import *
 
@@ -173,6 +174,45 @@ def _faceit_streaming_links(profile):
         if handle:
             links[platform.removesuffix('_id')] = handle
     return links
+
+
+def _yt_redirect_urls(data):
+    """Collect external destination URLs from youtube.com/redirect?...q= links in ytInitialData."""
+    urls = set()
+    for u in re.findall(r'youtube\.com/redirect\?[^"]*?q=([^"&]+)', json.dumps(data)):
+        decoded = unquote(u)
+        if 'youtube.com' not in decoded and 'google.com' not in decoded:
+            urls.add(decoded)
+    return list(urls)
+
+
+def _yt_find_about(data):
+    """Depth-first search for the aboutChannelViewModel dict, wherever YouTube nests it."""
+    stack = [data]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, dict):
+            about = node.get('aboutChannelViewModel')
+            if isinstance(about, dict):
+                return about
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+    return {}
+
+
+def _yt_social_username(data, domain):
+    """Extract a username from YouTube redirect URLs for a given social platform domain."""
+    for url in data.get('_all_redirect_urls', []):
+        if domain in url.lower():
+            path = re.sub(r'https?://(www\.|[a-z]{2}\.)?', '', url).split('/')
+            if len(path) >= 2 and path[1]:
+                username = path[1].rstrip('/')
+                if username and username not in ('invite',):
+                    return username
+            if 'invite' in url and len(path) >= 3:
+                return path[2].rstrip('/')
+    return None
 
 
 schemes = {
@@ -1172,6 +1212,10 @@ schemes = {
         'flags': ['/maps/preview/opensearch.xml', '<meta content="Contributions by'],
         'regex': r'"Contributions by (?P<name>.+?)",("(?P<contributions_count>\d+) Contribution|"(?P<contribution_level>.+?)")',
     },
+    # Parses the /about page ytInitialData: channel metadata, social crosslinks decoded from
+    # youtube.com/redirect URLs, and aboutChannelViewModel fields
+    # (location/created_at/follower_count/views_count/videos_count). Social links and the
+    # about panel only appear on /about — hence the url_mutation.
     'YouTube ytInitialData': {
         'url_hints': ('youtube.com', 'youtu.be'),
         'flags': ['ytInitialData', 'channelMetadataRenderer'],
@@ -1179,7 +1223,11 @@ schemes = {
         'extract_json': True,
         'transforms': [
             json.loads,
-            lambda x: x.get('metadata', {}).get('channelMetadataRenderer', {}),
+            lambda x: {
+                **x.get('metadata', {}).get('channelMetadataRenderer', {}),
+                '_all_redirect_urls': _yt_redirect_urls(x),
+                '_about': _yt_find_about(x),
+            },
             json.dumps,
         ],
         'fields': {
@@ -1190,9 +1238,26 @@ schemes = {
             'channel_url': lambda x: x.get('vanityChannelUrl') or x.get('channelUrl'),
             'keywords': lambda x: x.get('keywords'),
             'is_family_safe': lambda x: x.get('isFamilySafe'),
+            'location': lambda x: (x.get('_about') or {}).get('country') or None,
+            'created_at': lambda x: ((x.get('_about') or {}).get('joinedDateText') or {}).get('content', '').replace('Joined ', '') or None,
+            'follower_count': lambda x: (x.get('_about') or {}).get('subscriberCountText') or None,
+            'views_count': lambda x: (x.get('_about') or {}).get('viewCountText') or None,
+            'videos_count': lambda x: (x.get('_about') or {}).get('videoCountText') or None,
             'facebook_id': lambda x: x.get('facebookProfileId') if x.get('facebookProfileId', '').isdigit() else None,
-            'facebook_username': lambda x: x.get('facebookProfileId') if x.get('facebookProfileId') and not x.get('facebookProfileId', '').isdigit() else None,
+            'links': lambda x: json.dumps(x.get('_all_redirect_urls')) if x.get('_all_redirect_urls') else None,
+            'instagram_username': lambda x: _yt_social_username(x, 'instagram.com'),
+            'twitter_username': lambda x: _yt_social_username(x, 'twitter.com') or _yt_social_username(x, 'x.com'),
+            'facebook_username': lambda x: _yt_social_username(x, 'facebook.com') or (x.get('facebookProfileId') if not x.get('facebookProfileId', '').isdigit() else None) or None,
+            'tiktok_username': lambda x: _yt_social_username(x, 'tiktok.com'),
+            'twitch_username': lambda x: _yt_social_username(x, 'twitch.tv'),
+            'soundcloud_username': lambda x: _yt_social_username(x, 'soundcloud.com'),
+            'pinterest_username': lambda x: _yt_social_username(x, 'pinterest.com') or _yt_social_username(x, 'pinterest.'),
+            'discord_invite': lambda x: _yt_social_username(x, 'discord.gg') or _yt_social_username(x, 'discord.com/invite'),
         },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?youtube\.com/@(?P<username>[^/?#]+)$',
+            'to': 'https://www.youtube.com/@{username}/about',
+        }],
     },
     'Youtube Channel': {
         'url_hints': ('youtube.com', 'youtu.be'),
@@ -2598,6 +2663,12 @@ schemes = {
             'fullname': lambda x: x.get('name'),
             'bio': lambda x: x.get('bio'),
             'image': lambda x: x.get('photo_url'),
+            'created_at': lambda x: x.get('profile_set_up_at') or None,
+            'twitter_username': lambda x: (x.get('twitterAccount') or {}).get('screen_name') or None,
+            'twitter_id': lambda x: (x.get('twitterAccount') or {}).get('twitter_id') or None,
+            'publication_subdomain': lambda x: ((x.get('publicationUsers') or [{}])[0].get('publication') or {}).get('subdomain') or None,
+            'publication_name': lambda x: ((x.get('publicationUsers') or [{}])[0].get('publication') or {}).get('name') or None,
+            'publication_bio': lambda x: ((x.get('publicationUsers') or [{}])[0].get('publication') or {}).get('hero_text') or None,
             'image_cdn': lambda x: 'https://substackcdn.com/image/fetch/w_224,h_224,c_fill,f_webp,q_auto:good,fl_progressive:steep/' + __import__('urllib.parse', fromlist=['quote']).quote(x.get('photo_url', ''), safe='') if x.get('photo_url') else None,
         },
         'url_mutations': [{
@@ -3328,6 +3399,160 @@ schemes = {
             'steam_id': lambda x: x.get('platforms', {}).get('steam', {}).get('id64'),
             'steam_nickname': lambda x: x.get('platforms', {}).get('steam', {}).get('nickname'),
             'social_links': lambda x: _faceit_streaming_links(x),
+        },
+    },
+    'Codewars API': {
+        'url_hints': ('codewars.com',),
+        # ponytail: structural keys only — no user-dependent values (see FIELDS/flags rule)
+        'flags': ['"honor":', '"leaderboardPosition":', '"codeChallenges":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://(?:www\.)?codewars\.com/users/(?P<username>[^/?#]+).*',
+                'to': 'https://www.codewars.com/api/v1/users/{username}',
+            },
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'honor': lambda x: x.get('honor'),
+            'clan': lambda x: x.get('clan') or None,
+            'leaderboard_position': lambda x: x.get('leaderboardPosition'),
+            'rank': lambda x: ((x.get('ranks') or {}).get('overall') or {}).get('name'),
+            'rank_score': lambda x: ((x.get('ranks') or {}).get('overall') or {}).get('score'),
+            'languages': lambda x: sorted((((x.get('ranks') or {}).get('languages')) or {}).keys()) or None,
+            'challenges_completed': lambda x: (x.get('codeChallenges') or {}).get('totalCompleted'),
+            'challenges_authored': lambda x: (x.get('codeChallenges') or {}).get('totalAuthored'),
+        },
+    },
+    'Minds API': {
+        'url_hints': ('minds.com',),
+        # ponytail: structural keys only, present on any successful channel response
+        'flags': ['"briefdescription":', '"icontime":', '"boostProPlus"'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('channel') or {},
+            json.dumps,
+        ],
+        'url_mutations': [
+            {
+                'from': r'https?://(?:www\.)?minds\.com/(?P<username>[^/?#]+).*',
+                'to': 'https://www.minds.com/api/v1/channel/{username}',
+            },
+        ],
+        'fields': {
+            'uid': lambda x: x.get('guid'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('briefdescription') or None,
+            'location': lambda x: x.get('city') or None,
+            'gender': lambda x: x.get('gender') or None,
+            'website': lambda x: x.get('website') or None,
+            'is_verified': lambda x: x.get('verified'),
+            'created_at': lambda x: parse_datetime(x['time_created']) if x.get('time_created') else None,
+            'image': lambda x: 'https://www.minds.com/icon/{}/large/{}'.format(x['guid'], x.get('icontime')) if x.get('guid') else None,
+            # social_profiles: [{key, value}] — scheme-less crosslink URLs (instagram/github/gitlab/...)
+            'social_links': lambda x: [p.get('value') for p in (x.get('social_profiles') or []) if p.get('value')] or None,
+        },
+    },
+    'HackerNoon API': {
+        'url_hints': ('hackernoon.com', 'hackernoon-app.cloudfunctions.net'),
+        # ponytail: all three present on any profile envelope, absent on the {"redirect":…}
+        # case-mismatch response and the 404 {"ok":false} body — so neither is mis-parsed.
+        'flags': ['"handle":', '"displayName":', '"socialMedia":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('profile') or {},
+            json.dumps,
+        ],
+        'url_mutations': [
+            {
+                'from': r'https?://(?:www\.)?hackernoon\.com/u/(?P<username>[^/?#]+).*',
+                'to': 'https://us-central1-hackernoon-app.cloudfunctions.net/profilesApi/?handle={username}',
+            },
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('handle'),
+            'fullname': lambda x: x.get('displayName') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'email': lambda x: x.get('email') or None,
+            'image': lambda x: x.get('avatar'),
+            # socialMedia values are mixed (bare handle vs full URL) — keep the platform label,
+            # ponytail: per-platform username normalisation is a future enhancement.
+            'social_accounts': lambda x: ['{}:{}'.format(k, v) for k, v in (x.get('socialMedia') or {}).items() if v] or None,
+        },
+    },
+    'Polar API': {
+        'url_hints': ('polar.sh', 'api.polar.sh'),
+        'flags': ['"organization":{', '"slug":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('organization') or {},
+            json.dumps,
+        ],
+        'url_mutations': [
+            {
+                'from': r'https?://(?:www\.)?polar\.sh/(?P<username>[^/?#]+).*',
+                'to': 'https://api.polar.sh/v1/customer-portal/organizations/{username}',
+            },
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('slug'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'company': lambda x: x.get('company') or None,
+            'location': lambda x: x.get('location') or None,
+            'blog': lambda x: x.get('blog') or None,
+            'website': lambda x: x.get('website') or None,
+            'email': lambda x: x.get('email') or None,
+            'twitter_username': lambda x: x.get('twitter_username') or None,
+            'image': lambda x: x.get('avatar_url'),
+            # avatar is a GitHub CDN URL → the numeric u/{id} is the github_uid (same as GitHub API)
+            'github_uid': lambda x: m.group(1) if (m := re.search(r'githubusercontent\.com/u/(\d+)', x.get('avatar_url') or '')) else None,
+            'created_at': lambda x: x.get('created_at') or None,
+        },
+    },
+    'thanks.dev API': {
+        'url_hints': ('thanks.dev', 'api.thanks.dev'),
+        'flags': ['"git":{', '"ghgl":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'fields': {
+            # shadow profiles (any GitHub user, not registered) set name to the literal `gh/{handle}`
+            'fullname': lambda x: x.get('name') if x.get('name') and x.get('name') != 'gh/' + ((x.get('git') or {}).get('name') or '\0') else None,
+            'bio': lambda x: x.get('bio') or None,
+            'description': lambda x: x.get('resume') or None,
+            'website': lambda x: x.get('url') or None,
+            'linkedin_url': lambda x: x.get('li') or None,
+            # `tw` is sometimes a bare handle, sometimes a full URL — normalise to the handle
+            'twitter_username': lambda x: (x.get('tw') or '').rstrip('/').split('/')[-1] or None,
+            'discord_invite': lambda x: x.get('dc') or None,
+            'bluesky_handle': lambda x: x.get('bs') or None,
+            'github_username': lambda x: (x.get('git') or {}).get('name'),
+            'is_thanks_dev_user': lambda x: x.get('isTdUser'),
+        },
+    },
+    'Matrix profile API': {
+        # federated: works against any homeserver's /_matrix/client/v3/profile/@{user}:{hs} endpoint.
+        # Body carries only display name + avatar; username/uid live in the request URL, not here.
+        'url_hints': ('matrix.org', '_matrix/client'),
+        'flags': ['"displayname":', '"avatar_url":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'fields': {
+            'fullname': lambda x: x.get('displayname') or None,
+            # mxc://{server}/{id} → media thumbnail URL on matrix.org's media repo
+            'image': lambda x: 'https://matrix-client.matrix.org/_matrix/client/v1/media/thumbnail/{}/{}?width=512&height=512&method=scale'.format(*x['avatar_url'][6:].split('/', 1)) if (x.get('avatar_url') or '').startswith('mxc://') and '/' in x['avatar_url'][6:] else None,
         },
     },
 }
