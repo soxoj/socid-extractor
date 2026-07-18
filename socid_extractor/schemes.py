@@ -3555,6 +3555,44 @@ schemes = {
             'image': lambda x: 'https://matrix-client.matrix.org/_matrix/client/v1/media/thumbnail/{}/{}?width=512&height=512&method=scale'.format(*x['avatar_url'][6:].split('/', 1)) if (x.get('avatar_url') or '').startswith('mxc://') and '/' in x['avatar_url'][6:] else None,
         },
     },
+    "osu!": {
+        "url_hints": ("osu.ppy.sh"),
+        "flags": ["data-initial-data=", "osu-layout"],
+        "regex": r'data-initial-data="([^"]*)"',
+        "extract_json": True,
+        "transforms": [
+            lambda x: x.replace("&quot;", '"'),
+            json.loads,
+            lambda x: x.get("user"),
+            json.dumps,
+        ],
+        "fields": {
+            "uid": lambda x: x.get("id"),
+            "username": lambda x: x.get("username"),
+            "image": lambda x: x.get("avatar_url"),
+            "image_bg": lambda x: x.get("cover_url"),
+            "website": lambda x: x.get("website"),
+            "occupation": lambda x: x.get("occupation"),
+            "interests": lambda x: x.get("interests"),
+            "country": lambda x: x.get("country").get("name"),
+            "country_code": lambda x: x.get("country").get("code"),
+            "location": lambda x: x.get("location"),
+            "created_at": lambda x: x.get("join_date"),
+            "latest_activity_at": lambda x: x.get("last_visit"),
+            "follower_count": lambda x: x.get("follower_count"),
+            "posts_count": lambda x: x.get("post_count"),
+            "comments_count": lambda x: x.get("comments_count"),
+            "is_deleted": lambda x: x.get("is_deleted"),
+            "is_employee": lambda x: x.get("is_admin"),  # maybe not totally correct?
+            "is_banned": lambda x: x.get(
+                "is_restricted"
+            ),  # maybe is_suspended instead of is_banned?
+            "social_links": lambda x: [
+                {"discord": x.get("discord")},
+                {"twitter/x": x.get("twitter")},
+            ],
+        },
+    },
 }
 
 # -- Plugin loading (must come after the built-in schemes dict is defined) --

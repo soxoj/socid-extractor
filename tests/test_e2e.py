@@ -1695,3 +1695,14 @@ def test_faceit_api():
     assert info.get('social_links') == "{'twitch': 'umarooff'}"
     assert 'faceit-cdn.net' in info.get('image', '')
     assert 'faceit-cdn.net' in info.get('image_bg', '')
+
+
+def test_osu():
+    """osu!"""
+    info = extract(parse("https://osu.ppy.sh/users/peppy")[0])
+
+    assert info.get("uid") == "2"
+    assert info.get("username") == "peppy"
+    assert info.get("country") == "Australia"
+    assert info.get("country_code") == "AU"
+    assert info.get("created_at") == "2007-08-28T03:09:12+00:00"
