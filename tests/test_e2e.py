@@ -419,23 +419,18 @@ def test_behance():
     assert 'appreciations' in info
 
 
-@pytest.mark.skip(reason="non-actual, 500px requires POST requests for now")
 def test_500px():
     """500px GraphQL API"""
-    info = extract(parse(
-        'https://api.500px.com/graphql?operationName=ProfileRendererQuery&variables=%7B%22username%22%3A%22the-maksimov%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22105058632482dd2786fd5775745908dc928f537b28e28356b076522757d65c19%22%7D%7D')[
-                       0])
+    mutated_url = mutate_url('https://500px.com/p/the-maksimov')
+    url, add_headers = mutated_url[0]
+    info = extract(parse(url, headers=add_headers)[0])
 
-    assert info.get('uid') == 'dXJpOm5vZGU6VXNlcjoyMzg5Ng=='
-    assert info.get('legacy_id') == '23896'
-    assert info.get('username') == 'The-Maksimov'
-    assert info.get('name') == 'Maxim Maximov'
-    assert info.get('qq_uid') is None
-    assert info.get('fb_uid') is None
-    assert info.get('instagram_username') == 'the.maksimov'
-    assert info.get('twitter_username') == 'The_Maksimov'
-    assert info.get('website') == 'www.instagram.com/the.maksimov'
-    assert info.get('facebook_link') == 'www.facebook.com/the.maksimov'
+    assert info.get('uid') == 'dXJpOm5vZGU6VXNlcjoyMDQxNzc1MQ=='
+    assert info.get('legacy_id') == '20417751'
+    assert info.get('username') == 'the-maksimov'
+    assert info.get('fullname') == 'Max Max'
+    assert info.get('account_type') == 'BASIC'
+    assert info.get('created_at') == '2016-11-30T08:14:52.000+00:00'
 
 
 def test_google_documents():  # Does work on the second try
@@ -692,72 +687,6 @@ def test_gravatar():
     assert 'emails_username' not in info
 
 
-@pytest.mark.skip(reason="broken")
-def test_pinterest_api():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36'}
-    info = extract(parse(
-        'https://www.pinterest.ru/resource/UserResource/get/?source_url=%2Fgergelysndorszendrenyi%2F_saved%2F&data=%7B%22options%22%3A%7B%22isPrefetch%22%3Atrue%2C%22field_set_key%22%3A%22profile%22%2C%22username%22%3A%22gergelysndorszendrenyi%22%2C%22no_fetch_context_on_resource%22%3Afalse%7D%2C%22context%22%3A%7B%7D%7D&_=1615737383499',
-        headers=headers)[0])
-    assert info.get('pinterest_id') == '730849983187756836'
-    assert info.get('pinterest_username') == 'gergelysndorszendrenyi'
-    assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
-    assert info.get('type') == 'user'
-    assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
-    # assert info.get('country') == 'HU' # Doesn't exist within the page anymore
-    assert info.get('is_indexed') == 'True'
-    assert info.get('is_partner') == 'False'
-    assert info.get('is_tastemaker') == 'False'
-    assert info.get('is_indexed') == 'True'
-    # assert info.get('has_board') == 'True'
-    assert info.get('is_verified_merchant') == 'False'
-    assert info.get('website') == 'https://plus.google.com/106803550602898494752'
-    assert info.get('last_pin_save_datetime') is not None
-    assert info.get('is_website_verified') == 'False'
-    assert info.get('group_board_count') == '1'
-    assert 'follower_count' in info
-    assert 'following_count' in info
-    assert info.get('board_count') == '11'
-    assert int(info.get('pin_count')) > 100
-
-
-@pytest.mark.skip(reason="broken")
-def test_pinterest_profile():
-    info = extract(parse('https://www.pinterest.ru/gergelysndorszendrenyi/boards/')[0])
-
-    assert info.get('pinterest_id') is None
-    assert info.get('username') == 'gergelysndorszendrenyi'
-    assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
-    assert info.get('type') is None
-    assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
-    assert info.get('country') == 'HU'
-    assert info.get('is_indexed') == 'True'
-    assert info.get('is_partner') is None
-    assert info.get('is_tastemaker') is None
-    assert info.get('is_indexed') == 'True'
-    assert info.get('is_website_verified') == 'False'
-    assert info.get('follower_count') == '2'
-    assert info.get('following_count') == '16'
-    assert info.get('board_count') == '11'
-    assert int(info.get('pin_count')) > 100
-
-
-@pytest.mark.skip(reason="broken")
-def test_pinterest_board():
-    info = extract(parse('https://www.pinterest.ru/gergelysndorszendrenyi/garden-ideas/')[0])
-
-    assert info.get('pinterest_id') == '730849983187756836'
-    assert info.get('pinterest_username') == 'gergelysndorszendrenyi'
-    assert info.get('fullname') == 'Gergely Sándor-Szendrenyi'
-    assert info.get('type') == 'user'
-    assert info.get('image') == 'https://s.pinimg.com/images/user/default_280.png'
-    assert info.get('country') == 'HU'
-    assert info.get('is_indexed') == 'True'
-    assert info.get('is_partner') == 'False'
-    assert info.get('is_tastemaker') == 'False'
-    assert info.get('locale') == 'hu-HU'
-
-
 def test_pinterest_account():
     """Pinterest profile/board page"""
     info = extract(parse('https://www.pinterest.com/melgaspar666/')[0])
@@ -768,6 +697,19 @@ def test_pinterest_account():
     assert 'follower_count' in info
     assert 'following_count' in info
     assert 'created_at' in info
+
+
+def test_pinterest_boards_page():
+    """Pinterest profile/board page, /boards/ URL variant"""
+    info = extract(parse('https://www.pinterest.com/pinterest/boards/')[0])
+
+    assert info.get('uid') == '424605208526455283'
+    assert info.get('username') == 'pinterest'
+    assert info.get('fullname') == 'Pinterest'
+    assert info.get('bio') == 'Find your reason to go offline. 📌'
+    assert info.get('is_partner') == 'True'
+    assert int(info.get('board_count')) > 0
+    assert int(info.get('follower_count')) > 100
 
 
 @pytest.mark.skip(reason="service no longer public")
@@ -1695,3 +1637,11 @@ def test_faceit_api():
     assert info.get('social_links') == "{'twitch': 'umarooff'}"
     assert 'faceit-cdn.net' in info.get('image', '')
     assert 'faceit-cdn.net' in info.get('image_bg', '')
+
+
+def test_fansly_api():
+    """Fansly API"""
+    info = extract(parse('https://apiv2.fansly.com/api/v1/account?usernames=karpathy')[0])
+
+    assert info.get('uid') == '913584311872020480'
+    assert info.get('username') == 'karpathy'
