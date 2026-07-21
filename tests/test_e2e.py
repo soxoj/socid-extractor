@@ -1390,6 +1390,7 @@ def test_chess_com_api_e2e():
     assert info.get('is_verified') == 'False'
 
 
+@pytest.mark.skip(reason="chess.com HTML endpoint times out from CI (2026)")
 def test_chess_com_html_e2e():
     """Chess.com HTML"""
     info = extract(parse('https://www.chess.com/member/john')[0])
