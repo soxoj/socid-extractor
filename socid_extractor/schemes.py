@@ -3353,7 +3353,6 @@ schemes = {
             'social_links': lambda x: _faceit_streaming_links(x),
         },
     },
-<<<<<<< HEAD
     'Fansly API': {
         'url_hints': ('apiv2.fansly.com', 'fansly.com'),
         'flags': ['"subscriberCount"', '"timelineStats"', '"accountMediaLikes"'],
@@ -3368,7 +3367,16 @@ schemes = {
             {
                 'from': r'https?://(?:www\.)?fansly\.com/(?P<username>[^/?#]+)',
                 'to': 'https://apiv2.fansly.com/api/v1/account?usernames={username}',
-=======
+            },
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('displayName') or None,
+            'follower_count': lambda x: x.get('followCount'),
+            'subscriber_count': lambda x: x.get('subscriberCount'),
+        },
+    },
     'Codewars API': {
         'url_hints': ('codewars.com',),
         # ponytail: structural keys only — no user-dependent values (see FIELDS/flags rule)
@@ -3379,17 +3387,11 @@ schemes = {
             {
                 'from': r'https?://(?:www\.)?codewars\.com/users/(?P<username>[^/?#]+).*',
                 'to': 'https://www.codewars.com/api/v1/users/{username}',
->>>>>>> origin/master
             },
         ],
         'fields': {
             'uid': lambda x: x.get('id'),
             'username': lambda x: x.get('username'),
-<<<<<<< HEAD
-            'fullname': lambda x: x.get('displayName') or None,
-            'follower_count': lambda x: x.get('followCount'),
-            'subscriber_count': lambda x: x.get('subscriberCount'),
-=======
             'fullname': lambda x: x.get('name') or None,
             'honor': lambda x: x.get('honor'),
             'clan': lambda x: x.get('clan') or None,
@@ -3565,7 +3567,6 @@ schemes = {
                 {"discord": x.get("discord")},
                 {"twitter/x": x.get("twitter")},
             ],
->>>>>>> origin/master
         },
     },
 }
