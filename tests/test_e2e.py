@@ -1608,7 +1608,7 @@ def test_instagram_graphql_e2e():
 
 
 def test_instagram_graphql_bio_links_and_tagged_usernames():
-    """Instagram GraphQL: bio_links, tagged usernames, post_count"""
+    """Instagram GraphQL"""
     body = json.dumps({
         'data': {
             'user': {

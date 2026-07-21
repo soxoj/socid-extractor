@@ -52,6 +52,7 @@ def revision():
 			d = d.strip()
 			if d not in methods:
 				print(f'Wrong method {d} in doc of test {t}!')
+				continue
 			methods_from_tests[d].append({
 				'test': tname,
 				'notes': notes,

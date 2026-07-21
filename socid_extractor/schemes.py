@@ -188,6 +188,28 @@ schemes = {
         'flags': ['abs.twimg.com', 'moreCSSBundles'],
         'regex': r'{&quot;id&quot;:(?P<uid>\d+),&quot;id_str&quot;:&quot;\d+&quot;,&quot;name&quot;:&quot;(?P<username>.*?)&quot;,&quot;screen_name&quot;:&quot;(?P<name>.*?)&quot;'
     },
+    # QQ Qzone portrait: users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg?uins={qq}
+    # JSONP array: ["<avatar_url>",<size>,...,"<nickname>",0]; empty nickname = no such account
+    'QQ Qzone portrait': {
+        'url_hints': ('qzone.qq.com', 'cgi_get_portrait'),
+        'flags': ['portraitCallBack('],
+        'regex': r'portraitCallBack\(\{"\d+":\["(?P<image>[^"]*)"(?:,-?\d+)+,"(?P<fullname>[^"]+)"',
+    },
+    # Bilibili user card: api.bilibili.com/x/web-interface/card?mid={uid}
+    'Bilibili card': {
+        'url_hints': ('api.bilibili.com', 'web-interface/card'),
+        'flags': ['"card":{', '"mid":'],
+        'regex': r'^({.+})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x['data']['card'].get('mid'),
+            'fullname': lambda x: x['data']['card'].get('name'),
+            'image': lambda x: x['data']['card'].get('face'),
+            'bio': lambda x: x['data']['card'].get('sign'),
+            'sex': lambda x: x['data']['card'].get('sex'),
+            'fans': lambda x: x['data']['card'].get('fans'),
+        },
+    },
     # https://shadowban.eu/.api/user
     # https://gist.github.com/superboum/ab31bc4c85c731b9e89ebda5eaed9a3a
     'Twitter Shadowban': {
