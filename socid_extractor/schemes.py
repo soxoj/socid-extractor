@@ -351,7 +351,7 @@ schemes = {
         'fields': {
             'links': lambda x: [a['url'] for a in x['accounts'] if a.get('url')] or None,
             'twitter_username': lambda x: _gh_handle_for(x['accounts'], 'twitter'),
-            'bluesky_username': lambda x: (_gh_handle_for(x['accounts'], 'bluesky') or '').removesuffix('.bsky.social') or None,
+            'bluesky_username': lambda x: _gh_handle_for(x['accounts'], 'bluesky'),
             'mastodon_username': lambda x: _gh_handle_for(x['accounts'], 'mastodon'),
             'linkedin_username': lambda x: _gh_handle_for(x['accounts'], 'linkedin'),
             'youtube_username': lambda x: _gh_handle_for(x['accounts'], 'youtube'),
