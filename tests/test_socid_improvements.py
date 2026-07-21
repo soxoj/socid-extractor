@@ -2457,7 +2457,7 @@ def test_github_social_accounts_api():
     info = extract(page)
     assert info.get('_extractor') == 'GitHub Social Accounts API'
     assert info.get('twitter_username') == 'sox0j'
-    assert info.get('bluesky_username') == 'soxoj.bsky.social'
+    assert info.get('bluesky_username') == 'soxoj'
     assert info.get('mastodon_username') == 'soxoj'
     assert info.get('linkedin_username') == 'soxoj'
     assert info.get('youtube_username') == 'soxoj'
@@ -2467,6 +2467,15 @@ def test_github_social_accounts_api():
     assert info.get('reddit_username') == 'soxoj'
     assert 'https://bsky.app/profile/soxoj.bsky.social' in info.get('links', '')
     assert 'https://infosec.exchange/@soxoj' in info.get('links', '')
+
+
+def test_github_social_accounts_api_keeps_bluesky_custom_domain():
+    """GitHub social accounts: custom Bluesky domains are preserved."""
+    page = json.dumps([
+        {"provider": "bluesky", "url": "https://bsky.app/profile/jay.bsky.team"},
+    ], separators=(',', ':'))
+    info = extract(page)
+    assert info.get('bluesky_username') == 'jay.bsky.team'
 
 
 def test_github_social_accounts_url_mutation():

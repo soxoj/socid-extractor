@@ -121,7 +121,10 @@ def _gh_handle_for(accounts, provider):
     for a in accounts:
         if a.get('provider') == provider:
             url = (a.get('url') or '').split('?')[0].split('#')[0].rstrip('/')
-            return url.rsplit('/', 1)[-1].lstrip('@') or None
+            handle = url.rsplit('/', 1)[-1].lstrip('@') or None
+            if provider == 'bluesky' and handle:
+                return handle.removesuffix('.bsky.social')
+            return handle
     return None
 
 
