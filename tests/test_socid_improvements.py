@@ -201,6 +201,210 @@ def test_chess_com_pub_api_json():
     assert info.get('latest_activity_at')
 
 
+def test_codewars_api_json():
+    """Codewars API: public `/api/v1/users/{user}` JSON (real live response for `soxoj`).
+
+    **Check:** `uid` (hex id), `username`, `honor`, `leaderboard_position`, `rank`,
+    `rank_score`, `languages` (sorted keys of `ranks.languages`), and
+    `challenges_completed` are extracted. The real API returns no avatar or join date,
+    so the scheme must not invent those fields.
+    """
+    body = (
+        '{"id":"59c27ad8aeb28451ce0000d2","username":"soxoj","name":"","honor":149,'
+        '"clan":"","leaderboardPosition":631632,"skills":[],'
+        '"ranks":{"overall":{"rank":-6,"name":"6 kyu","color":"yellow","score":135},'
+        '"languages":{"python":{"rank":-6,"name":"6 kyu","color":"yellow","score":135}}},'
+        '"codeChallenges":{"totalAuthored":0,"totalCompleted":12}}'
+    )
+    info = extract(body)
+    assert info.get('uid') == '59c27ad8aeb28451ce0000d2'
+    assert info.get('username') == 'soxoj'
+    assert info.get('fullname') is None  # empty `name` must not become an empty fullname
+    assert info.get('honor') == '149'
+    assert info.get('leaderboard_position') == '631632'
+    assert info.get('rank') == '6 kyu'
+    assert info.get('rank_score') == '135'
+    assert info.get('languages') == "['python']"
+    assert info.get('challenges_completed') == '12'
+    assert 'image' not in info  # API has no avatar; scheme must not fabricate one
+
+
+def test_minds_channel_api_json():
+    """Minds API: public `/api/v1/channel/{user}` JSON (real live response for `mark`).
+
+    **Check:** the `{"channel": {...}}` envelope is unwrapped; `uid` (guid), `username`,
+    `fullname`, `location` (city), `gender`, `website`, `created_at` (unix→date), a derived
+    `image` URL, and `social_links` (values from `social_profiles`) are extracted. Empty
+    strings and `website:false` must resolve to absent fields, not blanks.
+    """
+    body = (
+        '{"status":"success","channel":{"guid":"100000000000000063","type":"user",'
+        '"time_created":"1348141290","name":"Mark Harding","username":"mark","language":"en",'
+        '"icontime":"1771583437","banned":"no","website":"minds.com/mark","briefdescription":"",'
+        '"gender":"male","city":"Preston, England, United Kingdom","boostProPlus":false,'
+        '"verified":true,"social_profiles":['
+        '{"key":"instagram","value":"instagram.com/mark.e.harding"},'
+        '{"key":"github","value":"github.com/markharding"}]}}'
+    )
+    info = extract(body)
+    assert info.get('uid') == '100000000000000063'
+    assert info.get('username') == 'mark'
+    assert info.get('fullname') == 'Mark Harding'
+    assert info.get('location') == 'Preston, England, United Kingdom'
+    assert info.get('gender') == 'male'
+    assert info.get('website') == 'minds.com/mark'
+    assert info.get('is_verified') == 'True'
+    assert info.get('created_at')  # unix 1348141290 → formatted date
+    assert info.get('image') == 'https://www.minds.com/icon/100000000000000063/large/1771583437'
+    assert info.get('social_links') == "['instagram.com/mark.e.harding', 'github.com/markharding']"
+    assert 'bio' not in info  # empty briefdescription must not become a blank bio
+
+
+def test_hackernoon_profiles_api_json():
+    """HackerNoon API: Firebase `profilesApi/?handle={h}` JSON (real live shape for `natasha`).
+
+    **Check:** the `{"profile": {...}}` envelope is unwrapped; `uid`, `username` (handle),
+    `fullname`, `bio`, `email`, `image`, and `social_accounts` (platform:value pairs) are
+    extracted. The case-mismatch `{"redirect": {...}}` response must NOT match this scheme.
+    """
+    body = (
+        '{"profile":{"id":"HrzvBX6xNSVZBKImURJl23sRwcQ2",'
+        '"avatar":"https://cdn.hackernoon.com/images/avatars/HrzvBX6xNSVZBKImURJl23sRwcQ2.jpg",'
+        '"displayName":"Natasha Nel","handle":"natasha","email":"natasha@hackernoon.com",'
+        '"bio":"VP of Growth Marketing","allowSubscribers":true,'
+        '"socialMedia":{"github":"hackernoon","twitter":"natashanoon",'
+        '"instagram":"https://www.instagram.com/hackernoon/?hl=en"}},'
+        '"profileStories":[],"annotations":[]}'
+    )
+    info = extract(body)
+    assert info.get('uid') == 'HrzvBX6xNSVZBKImURJl23sRwcQ2'
+    assert info.get('username') == 'natasha'
+    assert info.get('fullname') == 'Natasha Nel'
+    assert info.get('bio') == 'VP of Growth Marketing'
+    assert info.get('email') == 'natasha@hackernoon.com'
+    assert info.get('image') == 'https://cdn.hackernoon.com/images/avatars/HrzvBX6xNSVZBKImURJl23sRwcQ2.jpg'
+    assert info.get('social_accounts') == (
+        "['github:hackernoon', 'twitter:natashanoon', "
+        "'instagram:https://www.instagram.com/hackernoon/?hl=en']"
+    )
+    # Case-mismatch redirect response must not be parsed as a profile.
+    redirect = extract('{"redirect":{"destination":"https://hackernoon.com/u/David","permanent":true}}')
+    assert redirect.get('_extractor') != 'HackerNoon API'
+
+
+def test_polar_org_api_json():
+    """Polar API: `/v1/customer-portal/organizations/{slug}` JSON (real live shape, `polarsource`)."""
+    body = (
+        '{"organization":{"created_at":"2023-04-20T10:01:30.383594Z",'
+        '"id":"058c300d-c2b1-4d2c-9aa7-e3644e93140c","name":"Polarsource","slug":"polarsource",'
+        '"avatar_url":"https://avatars.githubusercontent.com/u/105373340?v=4",'
+        '"bio":"Building a creator platform for developers","company":null,"blog":"https://polar.sh",'
+        '"location":"Sweden","twitter_username":"polar_sh","email":"support@polar.sh",'
+        '"website":"https://polar.sh","socials":[]}}'
+    )
+    info = extract(body)
+    assert info.get('uid') == '058c300d-c2b1-4d2c-9aa7-e3644e93140c'
+    assert info.get('username') == 'polarsource'
+    assert info.get('location') == 'Sweden'
+    assert info.get('twitter_username') == 'polar_sh'
+    assert info.get('email') == 'support@polar.sh'
+    assert info.get('github_uid') == '105373340'  # derived from avatar_url → GitHub API crosslink
+    assert 'company' not in info  # null company must not appear
+
+
+def test_thanks_dev_api_json():
+    """thanks.dev API: `/v1/profile/gh/{user}` JSON. Shadow profiles (name==`gh/{h}`) drop fullname."""
+    real = extract(
+        '{"git":{"ghgl":"gh","name":"frontendmasters"},"name":"Frontend Masters",'
+        '"bio":"The training platform","resume":null,"url":"https://FrontendMasters.com",'
+        '"li":null,"tw":"frontendmasters","dc":null,"bs":null,"isUser":false,"isTdUser":true}'
+    )
+    assert real.get('github_username') == 'frontendmasters'
+    assert real.get('fullname') == 'Frontend Masters'
+    assert real.get('twitter_username') == 'frontendmasters'
+    assert real.get('website') == 'https://FrontendMasters.com'
+    assert real.get('is_thanks_dev_user') == 'True'
+    # shadow profile: name is the literal `gh/torvalds` → must not surface as fullname
+    shadow = extract(
+        '{"git":{"ghgl":"gh","name":"torvalds"},"name":"gh/torvalds","bio":null,"resume":null,'
+        '"url":null,"li":null,"tw":null,"dc":null,"bs":null,"isUser":true,"isTdUser":false}'
+    )
+    assert shadow.get('github_username') == 'torvalds'
+    assert 'fullname' not in shadow
+
+
+def test_matrix_profile_api_json():
+    """Matrix federated profile API: displayname + mxc→https avatar transform."""
+    info = extract('{"displayname":"Soxoj","avatar_url":"mxc://matrix.org/EpRcnMLuQJfRavlJsqImrAei"}')
+    assert info.get('fullname') == 'Soxoj'
+    assert info.get('image') == (
+        'https://matrix-client.matrix.org/_matrix/client/v1/media/thumbnail/'
+        'matrix.org/EpRcnMLuQJfRavlJsqImrAei?width=512&height=512&method=scale'
+    )
+
+
+def test_substack_public_profile_extended_fields():
+    """Substack public profile API: created_at, twitter, and publication crosslinks (real `soxoj`)."""
+    body = (
+        '{"id":131049184,"handle":"soxoj","name":"Soxoj","bio":"x",'
+        '"photo_url":"https://example/a.jpg","profile_set_up_at":"2023-02-24T08:50:43.727Z",'
+        '"twitterAccount":{"screen_name":"Sox0j","twitter_id":"1031199669488177153"},'
+        '"publicationUsers":[{"publication":{"subdomain":"soxoj","name":"Soxoj on Substack",'
+        '"hero_text":"OSINT mindset, methods, and tools"}}]}'
+    )
+    info = extract(body)
+    assert info.get('username') == 'soxoj'
+    assert info.get('created_at') == '2023-02-24T08:50:43.727Z'
+    assert info.get('twitter_username') == 'Sox0j'
+    assert info.get('twitter_id') == '1031199669488177153'
+    assert info.get('publication_subdomain') == 'soxoj'
+    assert info.get('publication_name') == 'Soxoj on Substack'
+    assert info.get('publication_bio') == 'OSINT mindset, methods, and tools'
+
+
+def test_youtube_ytinitialdata_about_and_socials():
+    """YouTube ytInitialData (moved from plugin): channel metadata + redirect-derived social
+    usernames + aboutChannelViewModel fields (country/joined/subscriber/views/videos).
+
+    **Check:** the scheme that wins is the merged main-repo `YouTube ytInitialData` (not a
+    shadowed duplicate), an instagram redirect URL resolves to a handle, and the about-panel
+    string fields land on `location`, `created_at`, `follower_count`, `views_count`, `videos_count`.
+    """
+    yt = {
+        'metadata': {'channelMetadataRenderer': {
+            'externalId': 'UCX6OQ3DkcsbYNE6H8uQQuVA',
+            'title': 'MrBeast',
+            'description': 'SUBSCRIBE FOR A COOKIE!',
+            'vanityChannelUrl': 'http://www.youtube.com/@MrBeast',
+            'avatar': {'thumbnails': [{'url': 'https://yt3.ggpht.com/av.jpg'}]},
+            'isFamilySafe': True,
+            'facebookProfileId': 'MrBeast6000',  # non-numeric → facebook_username, not facebook_id
+        }},
+        'onResponseReceivedEndpoints': [{'panel': {'aboutChannelViewModel': {
+            'country': 'United States',
+            'joinedDateText': {'content': 'Joined Feb 19, 2012'},
+            'subscriberCountText': '508M subscribers',
+            'viewCountText': '133,717,699,032 views',
+            'videoCountText': '993 videos',
+        }}}],
+        'redirectLink': 'https://www.youtube.com/redirect?q=https%3A%2F%2Fwww.instagram.com%2Fmrbeast%2F',
+    }
+    html = 'var ytInitialData = ' + json.dumps(yt) + ';</script>'
+    info = extract(html)
+    assert info.get('_extractor') == 'YouTube ytInitialData'
+    assert info.get('youtube_channel_id') == 'UCX6OQ3DkcsbYNE6H8uQQuVA'
+    assert info.get('fullname') == 'MrBeast'
+    assert info.get('location') == 'United States'
+    # "Joined Feb 19, 2012" → strip prefix → a date postprocessor normalises it to ISO.
+    assert info.get('created_at') == '2012-02-19 00:00:00 UTC'
+    assert info.get('follower_count') == '508M subscribers'
+    assert info.get('views_count') == '133,717,699,032 views'
+    assert info.get('videos_count') == '993 videos'
+    assert info.get('instagram_username') == 'mrbeast'  # decoded from youtube.com/redirect?q=
+    assert info.get('facebook_username') == 'MrBeast6000'
+    assert 'facebook_id' not in info  # non-numeric profile id must not become facebook_id
+
+
 def test_roblox_user_api_json():
     """Roblox GET /v1/users/{id} envelope."""
     body = (

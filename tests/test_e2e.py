@@ -1639,9 +1639,21 @@ def test_faceit_api():
     assert 'faceit-cdn.net' in info.get('image_bg', '')
 
 
+<<<<<<< HEAD
 def test_fansly_api():
     """Fansly API"""
     info = extract(parse('https://apiv2.fansly.com/api/v1/account?usernames=karpathy')[0])
 
     assert info.get('uid') == '913584311872020480'
     assert info.get('username') == 'karpathy'
+=======
+def test_osu():
+    """osu!"""
+    info = extract(parse("https://osu.ppy.sh/users/peppy")[0])
+
+    assert info.get("uid") == "2"
+    assert info.get("username") == "peppy"
+    assert info.get("country") == "Australia"
+    assert info.get("country_code") == "AU"
+    assert info.get("created_at") == "2007-08-28T03:09:12+00:00"
+>>>>>>> origin/master
