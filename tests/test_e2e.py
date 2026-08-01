@@ -1657,3 +1657,30 @@ def test_osu():
     assert info.get("country") == "Australia"
     assert info.get("country_code") == "AU"
     assert info.get("created_at") == "2007-08-28T03:09:12+00:00"
+
+
+def test_lens_account():
+    """Lens (Hey/Orb/Buttrfly) account"""
+    # Real wire response from POST https://api.lens.xyz/graphql (compact JSON,
+    # no spaces after colons — Maigret feeds this body straight to extract()).
+    body = '{"data":{"account":{"address":"0x6a0DD735C2a2Ad6514E7dCBC854efC01228BeFE4","username":{"localName":"paulburke","namespace":"0x1aA55B9042f08f45825dC4b651B64c9F98Af4615"},"score":9996,"metadata":{"name":"Paul Burke","bio":"developer","picture":"https://ik.imagekit.io/lens/pic.webp","coverPicture":"https://ik.imagekit.io/lens/cover.png","attributes":[{"key":"location","value":"New York City","type":"STRING"},{"key":"website","value":"https://paulburke.co","type":"STRING"},{"key":"x","value":"ipaulpro","type":"STRING"},{"key":"timestamp","value":"2025-04-13T11:48:59.187Z","type":"STRING"}]},"createdAt":"2022-05-18T13:43:42+00:00"}}}'
+    info = extract(body)
+
+    assert info.get("uid") == "0x6a0DD735C2a2Ad6514E7dCBC854efC01228BeFE4"
+    assert info.get("username") == "paulburke"
+    assert info.get("lens_namespace") == "0x1aA55B9042f08f45825dC4b651B64c9F98Af4615"
+    assert info.get("fullname") == "Paul Burke"
+    assert info.get("bio") == "developer"
+    assert info.get("image") == "https://ik.imagekit.io/lens/pic.webp"
+    assert info.get("image_bg") == "https://ik.imagekit.io/lens/cover.png"
+    assert info.get("location") == "New York City"
+    assert info.get("website") == "https://paulburke.co"
+    assert info.get("twitter_username") == "ipaulpro"
+    assert info.get("lens_score") == "9996"
+    assert info.get("created_at") == "2022-05-18 13:43:42+00:00"
+
+
+def test_lens_account_absent():
+    """Lens (Hey/Orb/Buttrfly) account"""
+    # Missing account -> {"data":{"account":null}}; scheme must not fire.
+    assert extract('{"data":{"account":null}}') == {}
