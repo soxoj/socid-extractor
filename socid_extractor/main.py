@@ -71,7 +71,7 @@ def map_fields(scheme_data, transformed_data):
     return values
 
 
-def extract(page):
+def _extract_by_schemes(page):
     for scheme_name, scheme_data in schemes.items():
         flags = scheme_data['flags']
         found = all([flag in page for flag in flags])
@@ -162,3 +162,13 @@ def extract(page):
 
     # all schemes have been checked
     return {}
+
+
+def extract(page, use_ai_fallback=False):
+    result = _extract_by_schemes(page)
+    # A falsy result means no scheme matched, or one matched but extracted
+    # nothing (main.py's in-loop empty return) — both are fallback triggers.
+    if result or not use_ai_fallback:
+        return result
+    from .ai_fallback import extract_with_ai  # lazy: `openai` is an optional [ai] extra
+    return extract_with_ai(page)

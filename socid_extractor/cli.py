@@ -58,6 +58,11 @@ def run():
         help='skip HTTP request when the URL does not match any supported site hint (substring check; may skip generic engines)',
     )
     parser.add_argument('--json', action='store_true', help='output results as JSON')
+    parser.add_argument(
+        '--ai-fallback',
+        action='store_true',
+        help='use the OpenAI fallback extractor when no built-in scheme matches (needs the [ai] extra and OPENAI_API_KEY)',
+    )
 
     args = parser.parse_args()
 
@@ -85,7 +90,7 @@ def run():
     # load from file
     if args.file:
         page = open(args.file).read()
-        info = extract(page)
+        info = extract(page, use_ai_fallback=args.ai_fallback)
         if args.json:
             print(json.dumps(jsonify_info(info), ensure_ascii=False, indent=2, default=str))
         elif info:
@@ -112,7 +117,7 @@ def run():
                 continue
 
             page = get_site_response(url, cookies_str, url_headers)
-            info = extract(page)
+            info = extract(page, use_ai_fallback=args.ai_fallback)
             if args.json:
                 jsonified = jsonify_info(info)
                 if jsonified:
