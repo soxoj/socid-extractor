@@ -1440,6 +1440,9 @@ schemes = {
             'country_code': lambda x: x['country_code'],
             'bio': lambda x: x['description'],
             'created_at': lambda x: x['created_at'],
+            'updated_at': lambda x: x.get('last_modified'),
+            'comments_count': lambda x: x.get('comments_count'),
+            'likes_count': lambda x: x.get('likes_count')
         }
     },
     'TikTok': {
