@@ -1145,21 +1145,18 @@ def test_producthunt_profile_extraction():
 
 
 def test_threads_profile_extraction():
-    """Threads: extract fullname, username, follower/post counts, bio from OG tags."""
-    html = (
-        '<!DOCTYPE html><html><head>'
-        '<meta property="og:title" content="Mark Zuckerberg (&#064;zuck) &#x2022; Threads, Say more">'
-        '<meta property="og:description" content="12,500 Followers &#x2022; 340 Threads &#x2022; &quot;CEO of Meta&quot;. See the latest.">'
-        '</head><body>'
-        '<div class="barcelona">content</div>'
-        '</body></html>'
-    )
+    """Threads: meta tags for flags matching, info from json extracted from script tag"""
+    """Reference page: https://www.threads.com/@zuck"""
+    html = r'<meta property="al:android:package" content="com.instagram.barcelona"><meta property="og:title" content="Mark Zuckerberg (@zuck) • Threads, Say more">{"require":[["ScheduledServerJS","handle",null,[{"__bbox":{"require":[["RelayPrefetchedStreamCache","next",[],["adp_BarcelonaProfilePageDirectQueryRelayPreloader_6a6a63d9180cb2047895700",{"__bbox":{"complete":true,"result":{"data":{"user":{"profile_pic_url":"https:\/\/scontent-fco2-1.cdninstagram.com\/v\/t51.82787-19\/550174606_17925811725103224_8363667901743352243_n.jpg?stp=dst-jpg_s150x150_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-fco2-1.cdninstagram.com&_nc_cat=1&_nc_oc=Q6cZ2gEMkOHv7XIrcuKP2rmVA8iNXre2bDiMGH0Eci0gVMu8JtdfnQUNlPW3MeJsWSKawY8&_nc_ohc=vLH8jAZMCqoQ7kNvwHd8fK9&_nc_gid=PjgEQH13NsOtLYe04DBt4w&edm=APs17CUBAAAA&ccb=7-5&oh=00_AQC1i1A8NvOTFZ8seAvZw-OcQK4K9w8N1EqSO12dxh55Bg&oe=6A7024FE&_nc_sid=10d13b","friendship_status":null,"has_onboarded_to_text_post_app":true,"pk":"63055343223","text_post_app_is_private":false,"username":"zuck","text_post_app_remove_mention_entrypoint":null,"text_app_custom_feeds":null,"gating":null,"follower_count":5682725,"profile_context_facepile_users":null,"text_post_app_public_views":null,"hd_profile_pic_versions":[{"height":320,"url":"https:\/\/scontent-fco2-1.cdninstagram.com\/v\/t51.82787-19\/550174606_17925811725103224_8363667901743352243_n.jpg?stp=dst-jpg_s320x320_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-fco2-1.cdninstagram.com&_nc_cat=1&_nc_oc=Q6cZ2gEMkOHv7XIrcuKP2rmVA8iNXre2bDiMGH0Eci0gVMu8JtdfnQUNlPW3MeJsWSKawY8&_nc_ohc=vLH8jAZMCqoQ7kNvwHd8fK9&_nc_gid=PjgEQH13NsOtLYe04DBt4w&edm=APs17CUBAAAA&ccb=7-5&oh=00_AQAINYp3OxkUL11VXhgfJZ6aK7JN-NrY9HM02Wy6kbmuXw&oe=6A7024FE&_nc_sid=10d13b","width":320},{"height":640,"url":"https:\/\/scontent-fco2-1.cdninstagram.com\/v\/t51.82787-19\/550174606_17925811725103224_8363667901743352243_n.jpg?stp=dst-jpg_s640x640_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-fco2-1.cdninstagram.com&_nc_cat=1&_nc_oc=Q6cZ2gEMkOHv7XIrcuKP2rmVA8iNXre2bDiMGH0Eci0gVMu8JtdfnQUNlPW3MeJsWSKawY8&_nc_ohc=vLH8jAZMCqoQ7kNvwHd8fK9&_nc_gid=PjgEQH13NsOtLYe04DBt4w&edm=APs17CUBAAAA&ccb=7-5&oh=00_AQBNhNuXAjZJ55KPO-_ZpvN2UXEnXQ8Ix3kChz5OMpxwUQ&oe=6A7024FE&_nc_sid=10d13b","width":640}],"is_verified":true,"biography":"Mostly superintelligence and MMA takes","text_app_biography":{"text_fragments":{"fragments":[{"fragment_type":"plaintext","link_fragment":null,"mention_fragment":null,"plaintext":"Mostly superintelligence and MMA takes","inline_sticker_fragment":null,"linkified_web_url":null,"linkified_in_app_url":null,"styling_info":null}]}},"full_name":"Mark Zuckerberg","bio_links":[],"profile_tags":{"edges":[{"node":{"display_name":"AI Threads","name":"aithreads","id":"18399895213044171","is_community":false,"tag_cluster_name":"aithreads"}},{"node":{"display_name":"UFC Threads","name":"ufcthreads","id":"18398478472015746","is_community":false,"tag_cluster_name":"UFCThreads"}},{"node":{"display_name":"AI","name":"ai","id":"18392111818029156","is_community":false,"tag_cluster_name":"AI"}},{"node":{"display_name":"MMA","name":"mma","id":"18400625521011745","is_community":false,"tag_cluster_name":"mma"}},{"node":{"display_name":"memes","name":"memes","id":"18402364270062744","is_community":false,"tag_cluster_name":"memes"}}]},"transparency_label":null,"show_text_post_app_badge":true,"platform_podcast_info":null,"platform_podcast_episode_info":null,"id":"63055343223"}},"extensions":{"is_final":true}},"sequence_number":0}}]],["CometResourceScheduler","registerHighPriHashes",null,[["y9umSZA","1DFRiCY"]]]],"phd2_indexes":":454"}},{"__bbox":null},{"__bbox":null}]]]}'
+    
     info = extract(html)
-    assert info.get('fullname') == 'Mark Zuckerberg'
+    assert info.get('uid') == '63055343223'
     assert info.get('username') == 'zuck'
-    assert info.get('follower_count') == '12,500'
-    assert info.get('posts_count') == '340'
-    assert info.get('bio') == 'CEO of Meta'
+    assert info.get('fullname') == 'Mark Zuckerberg'
+    assert info.get('bio') == "Mostly superintelligence and MMA takes"
+    assert info.get('image', "").startswith('https://scontent')
+    assert int(info.get('follower_count', 0)) == 5682725
+    assert info.get('is_verified') == 'True'
 
 
 # ---------------------------------------------------------------------------
@@ -1632,78 +1629,6 @@ def test_taplink_nonexistent_user_not_matched():
     info = extract(html)
     # Should not match Taplink scheme — no "at Taplink" in og:title
     assert not info.get('username')
-
-
-def test_threads_profile():
-    """Threads: extract from OG tags with HTML entities (real SPA response format)."""
-    html = (
-        '<!DOCTYPE html><html><head>'
-        '<meta property="og:title" content="Marc Fuste&#xe9; (&#064;fusteee) &#x2022; Threads, Say more">'
-        '<meta property="og:description" content="33 Followers &#x2022; 0 Threads &#x2022; &quot;Regalame tus mejores noches&quot;. See the latest conversations with &#064;fusteee.">'
-        '</head><body>'
-        '<div class="barcelona">content</div>'
-        '</body></html>'
-    )
-    info = extract(html)
-    assert info.get('username') == 'fusteee'
-    assert info.get('fullname') == 'Marc Fusteé'
-    assert info.get('follower_count') == '33'
-    assert info.get('posts_count') == '0'
-    assert info.get('bio') == 'Regalame tus mejores noches'
-
-
-def test_threads_profile_no_bio():
-    """Threads: profile without bio should not capture HTML garbage."""
-    html = (
-        '<!DOCTYPE html><html><head>'
-        '<meta property="og:title" content="Alice (&#064;alice_test) &#x2022; Threads, Say more">'
-        '<meta property="og:description" content="5 Followers &#x2022; 0 Threads. See the latest conversations with &#064;alice_test.">'
-        '</head><body>'
-        '<div class="barcelona">content</div>'
-        '</body></html>'
-    )
-    info = extract(html)
-    assert info.get('username') == 'alice_test'
-    assert info.get('fullname') == 'Alice'
-    assert info.get('follower_count') == '5'
-    assert info.get('posts_count') == '0'
-    assert not info.get('bio')
-
-
-def test_threads_profile_unicode_name():
-    """Threads: fullname with unicode HTML entities should be decoded."""
-    html = (
-        '<!DOCTYPE html><html><head>'
-        '<meta property="og:title" content="&#x1d4d0;&#x1d4fb;&#x1d4fd; (&#064;bob_test) &#x2022; Threads, Say more">'
-        '<meta property="og:description" content="10 Followers &#x2022; 3 Threads &#x2022; &quot;hello&quot;. See the latest conversations.">'
-        '</head><body>'
-        '<div class="barcelona">content</div>'
-        '</body></html>'
-    )
-    info = extract(html)
-    assert info.get('username') == 'bob_test'
-    assert info.get('fullname') == '\U0001d4d0\U0001d4fb\U0001d4fd'
-    assert info.get('follower_count') == '10'
-    assert info.get('posts_count') == '3'
-    assert info.get('bio') == 'hello'
-
-
-def test_threads_profile_emoji_bio():
-    """Threads: emoji bio without quotes should be extracted, not lost."""
-    html = (
-        '<!DOCTYPE html><html><head>'
-        '<meta property="og:title" content="Eve (&#064;eve_test) &#x2022; Threads, Say more">'
-        '<meta property="og:description" content="21 Followers &#x2022; 4 Threads &#x2022; &#x1f92b;. See the latest conversations.">'
-        '</head><body>'
-        '<div class="barcelona">content</div>'
-        '</body></html>'
-    )
-    info = extract(html)
-    assert info.get('username') == 'eve_test'
-    assert info.get('follower_count') == '21'
-    assert info.get('posts_count') == '4'
-    assert info.get('bio') == '🤫'
-    assert not info.get('bio_raw')
 
 
 def test_chess_com_html_profile():
