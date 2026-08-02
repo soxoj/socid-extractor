@@ -100,6 +100,7 @@ module = [
     "requests.*",
     "dateutil.*",
     "bs4.*",
+    "openai.*",
 ]
 ignore_missing_imports = true
 
