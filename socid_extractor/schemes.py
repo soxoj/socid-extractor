@@ -2950,7 +2950,18 @@ schemes = {
     'Threads': {
         'url_hints': ('threads.net', 'threads.com'),
         'flags': ['Threads, Say more', 'barcelona'],
-        'regex': r'og:title" content="(?P<fullname>[^"]*?) \((?:@|&#064;)(?P<username>[^)]+)\)[^"]*Threads[\s\S]*?og:description" content="(?P<follower_count>[\d,]+) Followers[^"]*?(?P<posts_count>[\d,]+) Threads(?:[^"]*?(?:&#x2022;|\xb7) (?:&quot;(?P<bio>[^&]+)&quot;|(?P<bio_raw>[^".]*)\.))?',
+        'regex': r'(?:"data":{"user":)(.*)(?:},"extensions)',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('full_name'),
+            'bio': lambda x: x.get('biography'),
+            'image': lambda x: x.get('hd_profile_pic_versions', [{}])[-1].get('url'),
+            'follower_count': lambda x: x.get('follower_count'),
+            'is_verified': lambda x: x.get('is_verified'),
+            'links': lambda x: [entry.get('url') for entry in x.get('bio_links')],
+        }
     },
     'Smule': {
         'url_hints': ('smule.com',),
