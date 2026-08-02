@@ -1595,8 +1595,10 @@ def test_snapchat():
     assert info.get('fullname') == 'Катерина Иванова'
     assert info.get('bio') == 'Катерина Иванова is on Snapchat! (@ogovorka)'
     assert info.get('url') == 'https://www.snapchat.com/@ogovorka'
-    assert info.get(
-        'image') == 'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@ogovorka/preview/square.jpeg?xp_id=1'
+    assert info.get('image') in {
+        'https://www.snapchat.com/web-capture/www.snapchat.com/@ogovorka/preview/square.jpeg?xp_id=1',
+        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@ogovorka/preview/square.jpeg?xp_id=1',
+    }
     assert info.get(
         'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=ogovorka&type=SVG&bitmoji=enable'
     assert info.get('profile_type') == 'userInfo'
