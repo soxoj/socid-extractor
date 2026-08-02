@@ -218,6 +218,17 @@ def _yt_social_username(data, domain):
     return None
 
 
+def _lens_attr(attrs, *keys):
+    """Return the first Lens metadata attribute value whose key matches any of `keys`."""
+    if not attrs:
+        return None
+    wanted = {k.lower() for k in keys}
+    for a in attrs:
+        if isinstance(a, dict) and str(a.get('key', '')).lower() in wanted and a.get('value'):
+            return a['value']
+    return None
+
+
 schemes = {
     # IMPORTANT: extract() returns the FIRST matching scheme.
     # More specific schemes (more/stricter flags) must come BEFORE
@@ -3603,6 +3614,36 @@ schemes = {
                 {"discord": x.get("discord")},
                 {"twitter/x": x.get("twitter")},
             ],
+        },
+    },
+    # Lens Protocol account, shared by every Lens-built client (Hey, Orb,
+    # Buttrfly, Tape, ...). The web clients are static SPAs; real data comes
+    # from the Lens GraphQL API (POST https://api.lens.xyz/graphql). Maigret
+    # does the POST itself and feeds the response body to extract(), so the
+    # scheme matches by flags — no url_mutations (mutate_url can't POST).
+    'Lens (Hey/Orb/Buttrfly) account': {
+        'url_hints': ('api.lens.xyz', 'hey.xyz', 'orb.club', 'buttrfly.app'),
+        'flags': ['"account":{', '"localName":', '"namespace":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('data') or {}).get('account') or {},
+            json.dumps,
+        ],
+        'fields': {
+            'uid':              lambda x: x.get('address'),  # Ethereum wallet, reusable across Lens clients
+            'username':         lambda x: (x.get('username') or {}).get('localName'),
+            'lens_namespace':   lambda x: (x.get('username') or {}).get('namespace'),
+            'fullname':         lambda x: (x.get('metadata') or {}).get('name'),
+            'bio':              lambda x: (x.get('metadata') or {}).get('bio'),
+            'image':            lambda x: (x.get('metadata') or {}).get('picture'),
+            'image_bg':         lambda x: (x.get('metadata') or {}).get('coverPicture'),
+            'location':         lambda x: _lens_attr((x.get('metadata') or {}).get('attributes'), 'location'),
+            'website':          lambda x: _lens_attr((x.get('metadata') or {}).get('attributes'), 'website'),
+            'twitter_username': lambda x: _lens_attr((x.get('metadata') or {}).get('attributes'), 'x', 'twitter'),
+            'lens_score':       lambda x: x.get('score'),
+            'created_at':       lambda x: parse_datetime_str(x['createdAt']) if x.get('createdAt') else None,
         },
     },
 }
