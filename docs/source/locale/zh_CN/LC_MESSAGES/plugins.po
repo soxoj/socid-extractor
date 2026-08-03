@@ -1,0 +1,219 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/plugins.rst:4 7df6f572d0dc46899d09a9c4901f04e6
+msgid "Plugins"
+msgstr "插件"
+
+#: ../../source/plugins.rst:6 c16349adccde4156b1b3678e6ca6fbfa
+msgid ""
+"socid_extractor can load additional extraction schemes from plugins. A "
+"plugin scheme uses the **exact same format** as the built-in schemes — the "
+"same ``flags``, ``regex``, ``fields`` and other keys documented in "
+":doc:`adding-a-scheme`. Once loaded, plugin schemes are merged into the same"
+" scheme dictionary the library iterates over, so ``extract()`` treats them "
+"identically to the built-ins (see :doc:`how-extraction-works`)."
+msgstr ""
+"socid_extractor 可以从插件加载额外的提取方案。插件方案使用与内置方案 **完全相同的格式** —— 即 :doc:`adding-a-"
+"scheme` 中记录的相同的 ``flags``\\ 、\\ ``regex``\\ 、\\ ``fields`` "
+"及其他键。加载后，插件方案会被合并到库所遍历的同一个方案字典中，因此 ``extract()`` 对它们的处理与内置方案完全一致（参见 "
+":doc:`how-extraction-works`）。"
+
+#: ../../source/plugins.rst:13 e8fc7ea9469241bcb3676426f3e16f45
+msgid "There are two ways to ship a plugin:"
+msgstr "有两种发布插件的方式："
+
+#: ../../source/plugins.rst:15 0ff9aee81ea24244b78f79373f0a892b
+msgid ""
+"**Directory-based** — drop ``.py`` files into "
+"``~/.socid_extractor/plugins/``."
+msgstr "**基于目录** —— 将 ``.py`` 文件放入 ``~/.socid_extractor/plugins/``\\ 。"
+
+#: ../../source/plugins.rst:16 c5271852e8ad4d909dc8341d2c6ca7fa
+msgid "**Pip-installable** — publish a package that registers an entry point."
+msgstr "**可通过 Pip 安装** —— 发布一个注册了入口点（entry point）的软件包。"
+
+#: ../../source/plugins.rst:18 0759ece2796d47d78035db44d234227f
+msgid ""
+"Both mechanisms simply contribute a ``schemes`` dict; nothing else about the"
+" extraction pipeline changes."
+msgstr "两种机制都只是贡献一个 ``schemes`` 字典；提取流程的其他部分不会有任何变化。"
+
+#: ../../source/plugins.rst:22 f37fff1a69804e2482e87608a0e1346a
+msgid "Directory-based plugins"
+msgstr "基于目录的插件"
+
+#: ../../source/plugins.rst:24 98ea75e6f696493bb15451f1e424ad4f
+msgid "Place ``.py`` files in ``~/.socid_extractor/plugins/``::"
+msgstr "将 ``.py`` 文件放入 ``~/.socid_extractor/plugins/``::"
+
+#: ../../source/plugins.rst:30 836ab5f09f9944d3a9ee604d02428424
+msgid "Each file must export a module-level ``schemes`` dict:"
+msgstr "每个文件都必须导出一个模块级的 ``schemes`` 字典："
+
+#: ../../source/plugins.rst:48 5a223eba0339459899c0dd6e3cbe85ee
+msgid ""
+"The scheme structure is identical to the built-ins; see :doc:`adding-a-"
+"scheme` for the full set of supported keys, and "
+"``examples/example_plugin.py`` in the repository for a complete template."
+msgstr ""
+"方案结构与内置方案完全相同；完整的受支持键集合请参见 :doc:`adding-a-scheme`，完整的模板请参见仓库中的 "
+"``examples/example_plugin.py``\\ 。"
+
+#: ../../source/plugins.rst:53 02d3b0803ad14345b5c7c7f30092620e
+msgid "Priority"
+msgstr "优先级"
+
+#: ../../source/plugins.rst:55 f843fe9034a74178a5d262b2a4aa3100
+msgid ""
+"Plugin schemes are inserted **before** the built-in schemes. Because "
+"``extract()`` returns the first matching scheme, this has three "
+"consequences:"
+msgstr "插件方案会被插入到内置方案 **之前**\\ 。由于 ``extract()`` 返回第一个匹配的方案，这会带来三个影响："
+
+#: ../../source/plugins.rst:61 9205f14f93c04398b2fd6fcc4cc74f2d
+msgid "Rule"
+msgstr "规则"
+
+#: ../../source/plugins.rst:62 47cf61d7ba0c4717a001ec0997aad994
+msgid "Behaviour"
+msgstr "行为"
+
+#: ../../source/plugins.rst:63 a147dd55c9584a309cdf1be9dcc2048f
+msgid "Plugins first"
+msgstr "插件优先"
+
+#: ../../source/plugins.rst:64 696ac87bae654e3c9b955a0f557465ad
+msgid ""
+"Plugin schemes are checked before built-ins, so a plugin match wins over a "
+"built-in match on the same page."
+msgstr "插件方案会先于内置方案进行检查，因此在同一页面上，插件的匹配会优先于内置方案的匹配。"
+
+#: ../../source/plugins.rst:66 20ee856c367a44589c86e8e24f51982d
+msgid "Same-name override"
+msgstr "同名覆盖"
+
+#: ../../source/plugins.rst:67 d3556d1cfb0a4b6783a1254539aecafe
+msgid ""
+"If a plugin defines a scheme with the same name as a built-in, the plugin "
+"version replaces the built-in one (a warning is logged)."
+msgstr "如果插件定义了与内置方案同名的方案，则插件版本会替换内置版本（并记录一条警告）。"
+
+#: ../../source/plugins.rst:69 84bc395e41d7444998c84b02835975a1
+msgid "Alphabetical load order"
+msgstr "按字母顺序加载"
+
+#: ../../source/plugins.rst:70 baa52b97e2d04bb8bdd518a2b8180647
+msgid ""
+"Directory files are loaded in sorted filename order, so ``00_high.py`` loads"
+" before ``50_normal.py``. Use numeric prefixes to control which plugin wins "
+"when two of them define the same scheme name."
+msgstr ""
+"目录中的文件按文件名排序顺序加载，因此 ``00_high.py`` 会先于 ``50_normal.py`` "
+"加载。当两个插件定义了相同的方案名时，可使用数字前缀来控制哪个插件胜出。"
+
+#: ../../source/plugins.rst:75 d29799647ae140348d77c61e597f2608
+msgid "Available imports"
+msgstr "可用的导入"
+
+#: ../../source/plugins.rst:77 294eab115fbb44c8a5f927fbc284833a
+msgid ""
+"A plugin file is an ordinary Python module, so it can import any installed "
+"package. Common imports include the standard library and socid_extractor's "
+"own helpers:"
+msgstr ""
+"插件文件是一个普通的 Python 模块，因此它可以导入任何已安装的软件包。常见的导入包括标准库以及 socid_extractor 自带的辅助函数："
+
+#: ../../source/plugins.rst:87 0dd6ee60f68a408db85b342b805653ef
+msgid "Error handling"
+msgstr "错误处理"
+
+#: ../../source/plugins.rst:89 e843b0b397c04e6eb55e867de4101e7f
+msgid ""
+"Plugin loading never aborts the run — a broken plugin is skipped and the "
+"rest continue:"
+msgstr "插件加载绝不会中断运行 —— 有问题的插件会被跳过，其余插件继续加载："
+
+#: ../../source/plugins.rst:95 0fce0b59764d4d5e9eb34f45f0e20a98
+msgid "Situation"
+msgstr "情形"
+
+#: ../../source/plugins.rst:96 d836d9b18e8a4f74b4f4f11a971d4688
+msgid "Result"
+msgstr "结果"
+
+#: ../../source/plugins.rst:97 3887ad2f9918436ab882e44e866c8ddd
+msgid "``~/.socid_extractor/plugins/`` does not exist"
+msgstr "``~/.socid_extractor/plugins/`` 不存在"
+
+#: ../../source/plugins.rst:98 bdaa484766414c1b8e9ae1902ebb4bb0
+msgid "Silently skipped."
+msgstr "静默跳过。"
+
+#: ../../source/plugins.rst:99 fadfe85e151e49028760ab8c3b236650
+msgid "Syntax error or exception while importing a file"
+msgstr "导入文件时出现语法错误或异常"
+
+#: ../../source/plugins.rst:100 ../../source/plugins.rst:102
+#: 0d2a9620884c46d0a79531abd661a55f 6766bb407adb4f298abf3cdd35d2cfd6
+msgid "Warning logged, that file skipped."
+msgstr "记录警告，跳过该文件。"
+
+#: ../../source/plugins.rst:101 c4e3cd7eda0e4c46abad7bb8adb27ff5
+msgid "File does not export a ``schemes`` dict"
+msgstr "文件未导出 ``schemes`` 字典"
+
+#: ../../source/plugins.rst:104 417c44a5faaf49dcb3bfc133203171f7
+msgid ""
+"To see which plugins were loaded and which were skipped, enable debug "
+"logging:"
+msgstr "要查看哪些插件已加载、哪些被跳过，请启用调试日志："
+
+#: ../../source/plugins.rst:112 f1d1ff2b2b5b4e548f885125647a8058
+msgid "Pip-installable plugins"
+msgstr "可通过 Pip 安装的插件"
+
+#: ../../source/plugins.rst:114 88d1f5227a584da6becde1f81d241b1a
+msgid ""
+"A third-party package can register schemes through the "
+"``socid_extractor.plugins`` entry point group. Point the entry point at a "
+"module attribute that is a ``schemes`` dict:"
+msgstr ""
+"第三方软件包可以通过 ``socid_extractor.plugins`` 入口点组来注册方案。将入口点指向一个作为 ``schemes`` "
+"字典的模块属性："
+
+#: ../../source/plugins.rst:123 deb0ceab1baa46108b48cb7771e19bf9
+msgid ""
+"Here ``my_package/extractors.py`` exports a ``schemes`` dict in the same "
+"format as a directory-based plugin. Once the package is installed, its "
+"schemes are discovered and loaded automatically — no configuration or "
+"directory setup required:"
+msgstr ""
+"这里 ``my_package/extractors.py`` 导出一个 ``schemes`` "
+"字典，其格式与基于目录的插件相同。软件包安装后，其方案会被自动发现并加载 —— 无需任何配置或目录设置："
+
+#: ../../source/plugins.rst:132 54fee3d8a8cb4d2086e6a7b9ea106143
+msgid ""
+"Entry-point schemes follow the same priority rules as directory plugins: "
+"they are inserted before the built-ins, and a same-name scheme overrides the"
+" built-in one."
+msgstr "入口点方案遵循与目录插件相同的优先级规则：它们会被插入到内置方案之前，且同名方案会覆盖内置方案。"

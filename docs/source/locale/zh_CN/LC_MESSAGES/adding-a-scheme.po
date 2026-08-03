@@ -1,0 +1,595 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/adding-a-scheme.rst:4 c32d7560b1bc4d5d84ab6b825ec534ef
+msgid "Adding a scheme"
+msgstr "添加提取方案"
+
+#: ../../source/adding-a-scheme.rst:6 82721c9652c94c2eb5ae2d89323638e6
+msgid ""
+"Adding a new site is intentionally low-friction: most schemes are 5–15 lines"
+" of declarative config plus one end-to-end test. A scheme declares which "
+"response bodies it recognises (``flags``), how to pull structured data out "
+"of them (``regex`` or ``extract_json``), and how to name the values it "
+"produces (``fields``). Nothing is compiled or registered by hand — you add a"
+" dict entry and a test, and the extractor picks it up."
+msgstr ""
+"添加一个新站点特意做得非常轻量：大多数提取方案只需 5–15 行声明式配置外加一个端到端测试。一个提取方案声明它能识别哪些响应体（\\ "
+"``flags``\\ ）、如何从中提取结构化数据（\\ ``regex`` 或 ``extract_json``\\ ），以及如何命名它产出的值（\\"
+" ``fields``\\ ）。无需手动编译或注册——你只要添加一个字典条目和一个测试，提取器就会自动识别它。"
+
+#: ../../source/adding-a-scheme.rst:13 f3438e61aebc481884d6712503d4c5a5
+msgid ""
+"If you would rather ship your scheme outside the main repository, see "
+":doc:`plugins`. For the surrounding pipeline (how ``parse``, ``mutate_url`` "
+"and ``extract`` fit together), see :doc:`how-extraction-works`."
+msgstr ""
+"如果你更愿意在主仓库之外发布你的提取方案，请参阅 :doc:`plugins`。关于整个流水线（\\ ``parse``\\ 、\\ "
+"``mutate_url`` 和 ``extract`` 如何协同工作），请参阅 :doc:`how-extraction-works`。"
+
+#: ../../source/adding-a-scheme.rst:18 173a5103ad1044488999163feab7d2f7
+msgid "TL;DR"
+msgstr "速览"
+
+#: ../../source/adding-a-scheme.rst:20 6b22736afebd4daf92776c14a68f89c6
+msgid "Add a scheme to ``socid_extractor/schemes.py`` (regex- or JSON-based)."
+msgstr "在 ``socid_extractor/schemes.py`` 中添加一个提取方案（基于 regex 或 JSON）。"
+
+#: ../../source/adding-a-scheme.rst:21 67a8af8da46b4e748ce64fbb0e3f5c82
+msgid ""
+"Use field names from the ontology (see :doc:`ontology`) — do not invent new "
+"ones if a standard exists."
+msgstr "使用字段本体中的字段名（参阅 :doc:`ontology`）——如果已有标准名称，不要新造。"
+
+#: ../../source/adding-a-scheme.rst:23 9f089a70fbad4129930bfe9c1e8b186c
+msgid "Write a real-URL e2e test in ``tests/test_e2e.py``."
+msgstr "在 ``tests/test_e2e.py`` 中编写一个针对真实 URL 的端到端测试。"
+
+#: ../../source/adding-a-scheme.rst:24 35db4265045846b09af5f4785a35e443
+msgid "Run ``./revision.py`` to regenerate ``METHODS.md``."
+msgstr "运行 ``./revision.py`` 以重新生成 ``METHODS.md``\\ 。"
+
+#: ../../source/adding-a-scheme.rst:25 152d94bc55bf4935af04e07873a42f23
+msgid "Open a PR."
+msgstr "提交一个 PR。"
+
+#: ../../source/adding-a-scheme.rst:28 15a3a1f9332c4d85b10e171a3eba5611
+msgid "Add a scheme"
+msgstr "添加提取方案"
+
+#: ../../source/adding-a-scheme.rst:30 d23d36459ebc4f378a10e05ac3b2b85b
+msgid ""
+"Schemes live in ``socid_extractor/schemes.py`` as entries in the ``schemes``"
+" dict. Each entry has at minimum:"
+msgstr ""
+"提取方案位于 ``socid_extractor/schemes.py`` 中，作为 ``schemes`` 字典的条目存在。每个条目至少包含："
+
+#: ../../source/adding-a-scheme.rst:37 a19d67d679dd4d4ba150365d138db1f8
+msgid "Key"
+msgstr "键"
+
+#: ../../source/adding-a-scheme.rst:38 510b20c96fdc459eb4022cc74d5499d8
+msgid "Required"
+msgstr "是否必需"
+
+#: ../../source/adding-a-scheme.rst:39 3b4118ca57f345d7a47ad5735f4d9233
+msgid "Purpose"
+msgstr "用途"
+
+#: ../../source/adding-a-scheme.rst:40 9ddae4617efc47098d646b96fc61adcd
+msgid "``flags``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:41 ../../source/adding-a-scheme.rst:45
+#: ../../source/adding-a-scheme.rst:48 0e329c7d2e6247a8b8f5b6a802edb32c
+#: dc689c60d0a444fb801f3166440dddc1 f8ab6d00ae1147f1a7c933685445ca67
+msgid "yes"
+msgstr "是"
+
+#: ../../source/adding-a-scheme.rst:42 4d05c2761b0d4b458c95cc21ce74d2b1
+msgid ""
+"Substrings that **all** must appear in the response body for this scheme to "
+"match. The only gate — there is no URL check at extraction time."
+msgstr "必须\\ **全部**\\ 出现在响应体中、此提取方案才会匹配的子字符串。这是唯一的门槛——在提取时不会检查 URL。"
+
+#: ../../source/adding-a-scheme.rst:44 da708f9e5fca4f75a92ecfcf2b355be8
+msgid "``regex`` **or** ``extract_json``"
+msgstr "``regex`` **或** ``extract_json``"
+
+#: ../../source/adding-a-scheme.rst:46 8669adf2d1d641b8b52e4388822bf855
+msgid "How to pull data from the matched body."
+msgstr "如何从匹配到的响应体中提取数据。"
+
+#: ../../source/adding-a-scheme.rst:47 a5e97caa78ca45eb935134683b638d81
+msgid "``fields``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:49 9e703962afe44dc5987892900a20711f
+msgid "Mapping of output field names → lambdas that compute the value."
+msgstr "输出字段名 → 计算其值的 lambda 之间的映射。"
+
+#: ../../source/adding-a-scheme.rst:50 a170f1c1b31a43a0bb8200e6deebfc5c
+msgid "``url_hints``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:51 ba7e1b18acfa44a385b0aa35202b7523
+msgid "recommended"
+msgstr "推荐"
+
+#: ../../source/adding-a-scheme.rst:52 20d512ade1ad4365a667dfbbc4e34ac3
+msgid ""
+"Tuple of URL substrings. Used by the CLI flag ``--skip-fetch-if-no-url-"
+"hint`` so batch users don't pay the HTTP cost on URLs that obviously can't "
+"match. Add this for any scheme whose target domain isn't already obvious "
+"from the scheme name."
+msgstr ""
+"URL 子字符串组成的元组。供 CLI 标志 ``--skip-fetch-if-no-url-hint`` 使用，这样批量用户就不必为明显无法匹配的 "
+"URL 付出 HTTP 开销。对于目标域名无法从提取方案名称一眼看出的任何方案，都应添加它。"
+
+#: ../../source/adding-a-scheme.rst:57 67ac6d6cf6524e93bd3b24cdab5a1006
+msgid ""
+"Look at neighbouring schemes (GitHub, GitLab, Facebook group) for concrete "
+"templates."
+msgstr "可参考相邻的提取方案（GitHub、GitLab、Facebook group）作为具体模板。"
+
+#: ../../source/adding-a-scheme.rst:61 4c249e1ae3e9418594a13661e8a53331
+msgid "A full annotated scheme"
+msgstr "一个完整的带注释提取方案"
+
+#: ../../source/adding-a-scheme.rst:63 84c36d0bf68f446a9c442a0b33be1ece
+#, python-brace-format
+msgid ""
+"The GitHub API scheme is a compact, complete example. It fetches "
+"``https://api.github.com/users/{username}``, treats the body as JSON, and "
+"maps the JSON keys onto ontology field names:"
+msgstr ""
+"GitHub API 提取方案是一个紧凑而完整的示例。它抓取 ``https://api.github.com/users/{username}``\\"
+" ，将响应体视为 JSON，并把 JSON 的键映射到字段本体的字段名上："
+
+#: ../../source/adding-a-scheme.rst:115 fa68cbcf8d624d9b84d9a8abfeabe9c0
+msgid ""
+"When ``extract_json`` is set, the ``regex`` captures the JSON text, it is "
+"parsed once, and every ``fields`` lambda receives the resulting object. When"
+" it is **not** set, the body is matched with a named-group regex and each "
+"lambda receives the ``re.Match`` group dict instead. The neighbouring "
+"*Facebook group* scheme is the regex-with-named-groups variant — it has no "
+"``extract_json`` and pulls ``username`` and ``uid`` straight out of the "
+"pattern:"
+msgstr ""
+"当设置了 ``extract_json`` 时，\\ ``regex`` 会捕获 JSON 文本，它被解析一次，随后每个 ``fields`` "
+"lambda 都会收到解析得到的对象。当\\ **未**\\ 设置它时，响应体会用带命名分组的正则进行匹配，每个 lambda 收到的则是 "
+"``re.Match`` 的分组字典。相邻的 *Facebook group* 提取方案就是带命名分组的正则变体——它没有 "
+"``extract_json``\\ ，而是直接从模式中提取 ``username`` 和 ``uid``\\ ："
+
+#: ../../source/adding-a-scheme.rst:132 8852615868ba43189995c4526e776c14
+msgid ""
+"``url_mutations`` (URL rewriting) is a CLI convenience only. Library and "
+"Maigret callers pass an already-fetched page straight to ``extract()`` and "
+"never trigger the rewrite. Do not rely on it in a scheme that must work when"
+" called as a library."
+msgstr ""
+"``url_mutations``\\ （URL 改写）仅是一项 CLI 便利功能。库调用方和 Maigret 调用方会把已经抓取好的页面直接传给 "
+"``extract()``\\ ，永远不会触发改写。在必须能作为库被调用的提取方案中，不要依赖它。"
+
+#: ../../source/adding-a-scheme.rst:138 025847a9984848fb83757749eef56291
+msgid "Writing robust flags"
+msgstr "编写健壮的 flags"
+
+#: ../../source/adding-a-scheme.rst:140 f56f0e7b0287427dbc734d136800f06b
+msgid ""
+"``flags`` are the only thing standing between your scheme and false "
+"positives on unrelated sites. ``extract()`` returns on the **first** "
+"matching scheme, so a too-generic flag can shadow the correct one and "
+"produce garbage output."
+msgstr ""
+"``flags`` 是你的提取方案与在无关站点上产生误报之间唯一的屏障。\\ ``extract()`` 会在\\ **第一个**\\ "
+"匹配的提取方案处返回，因此过于宽泛的 flag 可能会遮蔽正确的方案并产出垃圾输出。"
+
+#: ../../source/adding-a-scheme.rst:144 4103aaf90cba4121952f1afffd8aa107
+msgid "**Rules:**"
+msgstr "**规则：**"
+
+#: ../../source/adding-a-scheme.rst:146 d0e1dbf502f44a25b64599c4426bf46d
+msgid ""
+"**At least one flag must be unique to the platform.** Good: "
+"``'OK.startupData'``, ``'canonicalPeriscopeUrl'``, ``'data-initial-data='``."
+" Bad: ``'\"data\"'``, ``'\"user\"'``, ``'\"username\"'`` — match any JSON "
+"API."
+msgstr ""
+"**至少要有一个 flag 是该平台独有的。** 好的：\\ ``'OK.startupData'``\\ 、\\ "
+"``'canonicalPeriscopeUrl'``\\ 、\\ ``'data-initial-data='``\\ 。坏的：\\ "
+"``'\"data\"'``\\ 、\\ ``'\"user\"'``\\ 、\\ ``'\"username\"'``——它们会匹配任何 JSON "
+"API。"
+
+#: ../../source/adding-a-scheme.rst:150 a3d8321ab4f044c4bb939c8100a2bf4a
+msgid ""
+"**Prefer structural API field names** that only this site returns: "
+"``'\"allowCrawler\"'`` (Wattpad), ``'\"dateJoined\"'`` + "
+"``'\"socialMediaLinks\"'`` (Hashnode), ``'\"creatorTraders\"'`` (Manifold). "
+"These survive redesigns."
+msgstr ""
+"**优先使用只有该站点才会返回的、结构性的 API 字段名**\\ ：\\ ``'\"allowCrawler\"'``\\ （Wattpad）、\\ "
+"``'\"dateJoined\"'`` + ``'\"socialMediaLinks\"'``\\ （Hashnode）、\\ "
+"``'\"creatorTraders\"'``\\ （Manifold）。这些能在站点改版后依然有效。"
+
+#: ../../source/adding-a-scheme.rst:153 25bc74d1950b4dbfba47dec0bfb418b9
+msgid ""
+"**Never use a single short JSON key as the only flag.** "
+"``'{\"username\":\"'`` alone matches dozens of APIs — always pair it with a "
+"second platform-specific flag."
+msgstr ""
+"**切勿把单个短小的 JSON 键作为唯一的 flag。** 仅 ``'{\"username\":\"'`` 就能匹配数十个 "
+"API——务必再搭配第二个平台专属的 flag。"
+
+#: ../../source/adding-a-scheme.rst:156 ab80d60230ed41a4abefbadccaba55cc
+msgid ""
+"**For HTML pages, use CSS class names or page-specific markers** instead of "
+"generic tags: ``'osu-layout'``, ``'ProfileHeader_lblMemberName'``, "
+"``'Aedu.User.set_viewed('``."
+msgstr ""
+"**对于 HTML 页面，请使用 CSS 类名或页面专属的标记**\\ ，而非通用标签：\\ ``'osu-layout'``\\ 、\\ "
+"``'ProfileHeader_lblMemberName'``\\ 、\\ ``'Aedu.User.set_viewed('``\\ 。"
+
+#: ../../source/adding-a-scheme.rst:159 8e926f6c68f047bb82ae96f1ec27a772
+msgid ""
+"**For RSC / escaped JSON**, remember flags check the raw response body. "
+"Strings appear as ``\\\"field_name\\\"``, not ``\"field_name\"``. Prefer "
+"unescaped markers from the surrounding HTML (``'op.gg/lol/summoners/'``)."
+msgstr ""
+"**对于 RSC / 转义后的 JSON**\\ ，请记住 flags 检查的是原始响应体。字符串会呈现为 "
+"``\\\"field_name\\\"``\\ ，而非 ``\"field_name\"``\\ 。优先选用周围 HTML 中未转义的标记（\\ "
+"``'op.gg/lol/summoners/'``\\ ）。"
+
+#: ../../source/adding-a-scheme.rst:162 02e8c314ec844738818507ddf7d26fd6
+msgid ""
+"**Flags must not depend on user data.** Don't use the username, display "
+"name, or any value that varies between accounts — use structural API keys / "
+"HTML markers instead."
+msgstr ""
+"**flags 不得依赖用户数据。** 不要使用用户名、显示名或任何在不同账户间会变化的值——请改用结构性的 API 键 / HTML 标记。"
+
+#: ../../source/adding-a-scheme.rst:165 3584b167c4264c89a277cd653b599d46
+msgid ""
+"**Test against 5–10 unrelated sites' responses** before submitting. Run "
+"``maigret USER --site \"YourSite\" -vvv`` and check ``debug.log`` for false "
+"triggers. A scheme that fires once for its target and zero times for others "
+"is correct."
+msgstr ""
+"在提交前\\ **针对 5–10 个无关站点的响应进行测试**\\ 。运行 ``maigret USER --site \"YourSite\" "
+"-vvv`` 并检查 ``debug.log`` 中有无误触发。一个对其目标只触发一次、对其他站点触发零次的提取方案才是正确的。"
+
+#: ../../source/adding-a-scheme.rst:174 9289097d41e64429b5e20dcc9f1af895
+msgid "Good flag"
+msgstr "好的 flag"
+
+#: ../../source/adding-a-scheme.rst:175 8094a1f194aa4ecca2979316c430b71d
+msgid "Why"
+msgstr "原因"
+
+#: ../../source/adding-a-scheme.rst:176 bda3f7ff0410497e9d44c520894bfd5e
+msgid "``'data-initial-data='``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:177 b1fa6788a1ae441681cb5698b94b060d
+msgid "HTML attribute unique to osu!"
+msgstr "osu! 独有的 HTML 属性"
+
+#: ../../source/adding-a-scheme.rst:178 86694e1b3ead4ea8b6cf5b109571b1dd
+msgid "``'\"profilesData.profileUser\"'``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:179 80f10a67666644e598ab21c13c9f702d
+msgid "JS variable unique to GOG"
+msgstr "GOG 独有的 JS 变量"
+
+#: ../../source/adding-a-scheme.rst:180 68743f9699894c719171612ff86cc2d9
+msgid "``'\"allowCrawler\"'``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:181 535d61ed2340451e95d2e992b131c708
+msgid "JSON field unique to Wattpad"
+msgstr "Wattpad 独有的 JSON 字段"
+
+#: ../../source/adding-a-scheme.rst:182 577997516c744076a604daa9529f7aa4
+msgid "``'\"dateJoined\"', '\"socialMediaLinks\"'``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:183 fc1fa7618e074781b0c817491e968c39
+msgid "Two fields unique to Hashnode"
+msgstr "Hashnode 独有的两个字段"
+
+#: ../../source/adding-a-scheme.rst:184 81da078c98d240dbad73a25a26c81217
+msgid "``'Music Profile | Last.fm</title>'``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:185 eb2a6fdc65ea47c089911c90eb1e92d6
+msgid "Title tag with site name"
+msgstr "带站点名称的 title 标签"
+
+#: ../../source/adding-a-scheme.rst:191 3740b37af36c49d69b96c637d8933c82
+msgid "Bad flag"
+msgstr "差的 flag"
+
+#: ../../source/adding-a-scheme.rst:192 2a235bbb2c7c40299631743bd514c3cf
+msgid "Problem"
+msgstr "问题"
+
+#: ../../source/adding-a-scheme.rst:193 2fcd3d2ab3c74246a3d1cc7edc1bc878
+msgid "``'\"data\"'``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:194 f2f42714bc394977928062c3331f5371
+msgid "Matches any JSON"
+msgstr "匹配任何 JSON"
+
+#: ../../source/adding-a-scheme.rst:195 d4dea362c98b4b8eafe2f13d8f807926
+msgid "``'\"user\"'``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:196 9575abdb28f14b31b4bc7d53a059fe2b
+msgid "Matches any user API"
+msgstr "匹配任何用户 API"
+
+#: ../../source/adding-a-scheme.rst:197 5ea2c212f4f8449e95b4e4268d6101f2
+msgid "``'{\"username\":\"'``"
+msgstr ""
+
+#: ../../source/adding-a-scheme.rst:198 3d042c2ac16745c29fe6feb429da58c2
+msgid "Matches any JSON with username"
+msgstr "匹配任何带 username 的 JSON"
+
+#: ../../source/adding-a-scheme.rst:199 fd37945bb5ab4aceae72f7f748399699
+msgid "``'__NEXT_DATA__'`` (alone)"
+msgstr "``'__NEXT_DATA__'``\\ （单独使用）"
+
+#: ../../source/adding-a-scheme.rst:200 7dcf031630f84de79631022a86a823f2
+msgid "Matches any Next.js site"
+msgstr "匹配任何 Next.js 站点"
+
+#: ../../source/adding-a-scheme.rst:203 b856b55b90f84eba97e232757e019a10
+msgid "Field naming"
+msgstr "字段命名"
+
+#: ../../source/adding-a-scheme.rst:205 6c0002bf9731491286093b942d8a8d84
+msgid ""
+"Field names come from the project's field ontology — the standard names "
+"(``username``, ``fullname``, ``created_at``, ``is_verified``, "
+"``follower_count``, …) used across all schemes so downstream pipelines don't"
+" need one mapping per site. Read :doc:`ontology` before naming fields."
+msgstr ""
+"字段名来自本项目的字段本体——即在所有提取方案中通用的标准名称（\\ ``username``\\ 、\\ ``fullname``\\ 、\\ "
+"``created_at``\\ 、\\ ``is_verified``\\ 、\\ "
+"``follower_count``……），这样下游流水线就不必为每个站点各写一套映射。在命名字段前请阅读 :doc:`ontology`。"
+
+#: ../../source/adding-a-scheme.rst:210 afb56a6b68564d668347c8e3038cc126
+msgid ""
+"Use the existing standard name when one fits — do **not** invent variants. "
+"Common mistakes: ``verified`` → use ``is_verified``; ``joined`` / "
+"``registration`` → use ``created_at``; ``followers_count`` → use "
+"``follower_count`` (singular noun + ``_count``)."
+msgstr ""
+"当已有合适的标准名称时就使用它——**不要**\\ 自造变体。常见错误：\\ ``verified`` → 应用 ``is_verified``\\ "
+"；\\ ``joined`` / ``registration`` → 应用 ``created_at``\\ ；\\ "
+"``followers_count`` → 应用 ``follower_count``\\ （单数名词 + ``_count``\\ ）。"
+
+#: ../../source/adding-a-scheme.rst:214 e1c086df5b784877a96269fdc41906b4
+msgid ""
+"The ``name`` API field is ambiguous — map it to ``fullname`` if it's a "
+"display name, or ``username`` if it's a handle."
+msgstr ""
+"``name`` 这个 API 字段含义不明确——如果它是显示名，就映射到 ``fullname``\\ ；如果它是账号标识（handle），就映射到 "
+"``username``\\ 。"
+
+#: ../../source/adding-a-scheme.rst:216 5502316e779e42708436ef1a71a5ca2c
+msgid ""
+"Only create a platform-specific field (with a prefix like ``osu_pp``, "
+"``gog_games_owned``) when the data genuinely doesn't fit any standard "
+"category."
+msgstr ""
+"只有当数据确实不属于任何标准类别时，才创建平台专属字段（使用如 ``osu_pp``\\ 、\\ ``gog_games_owned`` 之类的前缀）。"
+
+#: ../../source/adding-a-scheme.rst:219 339ad4cd0a654046bcbfe1050b0f2f3e
+msgid ""
+"Boolean flags use the ``is_*`` prefix and are stringified (``'True'`` / "
+"``'False'``)."
+msgstr "布尔标志使用 ``is_*`` 前缀，并以字符串形式表示（\\ ``'True'`` / ``'False'``\\ ）。"
+
+#: ../../source/adding-a-scheme.rst:222 671bf632cbe64a1f91a31c435b4081db
+msgid ""
+"If you think a new standard field is warranted, propose adding it to the "
+"ontology in the same PR."
+msgstr "如果你认为有必要新增一个标准字段，请在同一个 PR 中提议将其加入字段本体。"
+
+#: ../../source/adding-a-scheme.rst:226 c0830f6157d2464f8a6f98d87bc048a0
+msgid "Write the e2e test"
+msgstr "编写端到端测试"
+
+#: ../../source/adding-a-scheme.rst:228 d630a6e64aae4b5084d8c4d82e50c823
+msgid ""
+"Every new scheme requires at least one e2e test in ``tests/test_e2e.py`` "
+"against a real URL or API response. Unit tests with inline fixtures (in "
+"``tests/test_socid_improvements.py``) are also welcome but do not replace "
+"e2e coverage."
+msgstr ""
+"每个新的提取方案都需要在 ``tests/test_e2e.py`` 中至少有一个针对真实 URL 或 API "
+"响应的端到端测试。带内联夹具的单元测试（位于 ``tests/test_socid_improvements.py``\\ "
+"）也很受欢迎，但不能替代端到端测试的覆盖。"
+
+#: ../../source/adding-a-scheme.rst:234 7bfdff21b9c24546a29364f0155fd16e
+msgid "Workflow"
+msgstr "工作流程"
+
+#: ../../source/adding-a-scheme.rst:236 578659408fa14f00ad9b99873bf1097f
+msgid ""
+"Run the extractor against the target URL and capture its output. The output "
+"is one ``field: value`` per line:"
+msgstr "针对目标 URL 运行提取器并捕获其输出。输出为每行一个 ``field: value``\\ ："
+
+#: ../../source/adding-a-scheme.rst:243 e6713b8d315243eab19fa87e7be9df70
+msgid ""
+"Add a new test function to ``tests/test_e2e.py`` and paste those lines into "
+"its body:"
+msgstr "在 ``tests/test_e2e.py`` 中添加一个新的测试函数，并把那些行粘贴到函数体中："
+
+#: ../../source/adding-a-scheme.rst:253 b92dfe2b29f046bfaf564a5f08327197
+msgid ""
+"Convert the pasted lines into assertions. ``reformat.sh`` rewrites each "
+"``field: value`` line into ``assert info.get(\"field\") == \"value\"``:"
+msgstr ""
+"把粘贴的行转换为断言。\\ ``reformat.sh`` 会将每一行 ``field: value`` 改写为 ``assert "
+"info.get(\"field\") == \"value\"``\\ ："
+
+#: ../../source/adding-a-scheme.rst:260 991bf75979804395a7ee4b3cd3db6b14
+msgid "Run the test:"
+msgstr "运行测试："
+
+#: ../../source/adding-a-scheme.rst:267 54bba63770324c2090530f7209884689
+msgid "Test docstring — used by ``revision.py``"
+msgstr "测试的 docstring——供 ``revision.py`` 使用"
+
+#: ../../source/adding-a-scheme.rst:269 a9c0eb4b013943539df4d9cdf1d76a1c
+msgid ""
+"Put the **scheme name(s)** from ``schemes.py`` in the test docstring, one "
+"per line. ``revision.py`` matches tests to schemes via this docstring to "
+"generate ``METHODS.md``. If a single test covers two schemes (e.g. an HTML "
+"page plus the JSON API for the same site), list both:"
+msgstr ""
+"把 ``schemes.py`` 中的\\ **提取方案名称**\\ 写入测试的 docstring，每行一个。\\ ``revision.py`` "
+"通过这个 docstring 将测试与提取方案对应起来，从而生成 ``METHODS.md``\\ 。如果单个测试覆盖了两个提取方案（例如同一站点的 "
+"HTML 页面加上 JSON API），就把两个都列出："
+
+#: ../../source/adding-a-scheme.rst:284 729e66d4646246a38f3f568070288285
+msgid "Test fixtures with HTML"
+msgstr "带 HTML 的测试夹具"
+
+#: ../../source/adding-a-scheme.rst:286 f7f2468091554d6e8e096837dce601bd
+msgid ""
+"If your test asserts against parsed HTML (display names, bios containing "
+"punctuation), copy the **exact** characters from the real response — "
+"including HTML entities like ``&#064;`` instead of ``@``. Tests that "
+"silently \"fix\" entities pass against fixtures and fail against the live "
+"site."
+msgstr ""
+"如果你的测试是针对解析后的 HTML 进行断言（显示名、含标点的简介），请从真实响应中复制\\ **完全一致**\\ 的字符——包括像 "
+"``&#064;`` 这样的 HTML 实体，而不是 ``@``\\ 。悄悄“修正”实体的测试对夹具能通过，但对线上站点会失败。"
+
+#: ../../source/adding-a-scheme.rst:292 df5b921d82894fd6a3f2a325969aa2e5
+msgid "Flaky / blocked sites"
+msgstr "不稳定 / 被封锁的站点"
+
+#: ../../source/adding-a-scheme.rst:294 1078ec59f893403aa03312f2b44b94e7
+msgid "If the site is unreliable from CI, mark the test:"
+msgstr "如果该站点在 CI 中不可靠，请给测试打上标记："
+
+#: ../../source/adding-a-scheme.rst:296 4da91b618cc14b0a9166f29b231a26eb
+msgid ""
+"``@pytest.mark.github_failed`` — GitHub Actions IPs are blocked by the site."
+msgstr "``@pytest.mark.github_failed``——GitHub Actions 的 IP 被该站点封锁。"
+
+#: ../../source/adding-a-scheme.rst:297 5c63ab839b334bfb9d3e43a5bed48a0a
+msgid "``@pytest.mark.rate_limited`` — anti-bot / captcha / rate limiting."
+msgstr "``@pytest.mark.rate_limited``——反机器人 / 验证码 / 限速。"
+
+#: ../../source/adding-a-scheme.rst:298 9556d1c8b9cd4334a03ead8404210f70
+msgid ""
+"``@pytest.mark.requires_cookies`` — cookies are required to get content."
+msgstr "``@pytest.mark.requires_cookies``——需要 cookies 才能获取内容。"
+
+#: ../../source/adding-a-scheme.rst:301 926721984687406a9cd345ad1326e3ed
+msgid "Running the suite"
+msgstr "运行测试套件"
+
+#: ../../source/adding-a-scheme.rst:303 7f664c3c566445a9a9831eeffc5794eb
+msgid ""
+"First install the test extras (or ``[dev]`` for the full set used by CI):"
+msgstr "首先安装测试相关的额外依赖（或使用 CI 所用的完整集合 ``[dev]``\\ ）："
+
+#: ../../source/adding-a-scheme.rst:309 65c72670e5fd43d38fc0eea50bb3e190
+msgid "Then:"
+msgstr "然后："
+
+#: ../../source/adding-a-scheme.rst:316 cd4a128b192040f9b2b764592331ab9c
+msgid "Update METHODS.md"
+msgstr "更新 METHODS.md"
+
+#: ../../source/adding-a-scheme.rst:318 21c762b70aa44b6b91293e5c6d044aa1
+msgid ""
+"After your scheme and test are in, regenerate the public methods table and "
+"commit the result in the same PR:"
+msgstr "在你的提取方案和测试就位后，重新生成公开的方法表，并在同一个 PR 中提交结果："
+
+#: ../../source/adding-a-scheme.rst:326 b311f3268d3246b89d3d6241fec55e32
+msgid "PR checklist"
+msgstr "PR 检查清单"
+
+#: ../../source/adding-a-scheme.rst:328 b270fcceef024458a3bb39fcd52dc8ce
+msgid ""
+"[ ] Scheme added to ``socid_extractor/schemes.py`` with ``url_hints`` if "
+"applicable."
+msgstr "[ ] 已将提取方案加入 ``socid_extractor/schemes.py``\\ ，如适用则附带 ``url_hints``\\ 。"
+
+#: ../../source/adding-a-scheme.rst:330 874292ad18e94c8591fa0255b7cb47e4
+msgid ""
+"[ ] Flags are platform-specific (passes the false-positive test against "
+"unrelated sites)."
+msgstr "[ ] flags 是平台专属的（通过针对无关站点的误报测试）。"
+
+#: ../../source/adding-a-scheme.rst:332 c8a500089a1c4b3099a3cc8b0f47ff9a
+msgid ""
+"[ ] Field names follow the ontology; platform-specific fields use a prefix."
+msgstr "[ ] 字段名遵循字段本体；平台专属字段使用前缀。"
+
+#: ../../source/adding-a-scheme.rst:333 eb93c8bf03c748c4b7f698d8bba49062
+msgid "[ ] e2e test added to ``tests/test_e2e.py`` hitting a real URL/API."
+msgstr "[ ] 已在 ``tests/test_e2e.py`` 中添加一个访问真实 URL/API 的端到端测试。"
+
+#: ../../source/adding-a-scheme.rst:334 5a18c2bad7f8486d94f33df51673f21e
+msgid "[ ] Test docstring lists the scheme name(s)."
+msgstr "[ ] 测试的 docstring 列出了提取方案名称。"
+
+#: ../../source/adding-a-scheme.rst:335 0561aebcad224ff098907980f7a2b7c9
+msgid "[ ] ``./revision.py`` re-run and ``METHODS.md`` updated."
+msgstr "[ ] 已重新运行 ``./revision.py`` 并更新 ``METHODS.md``\\ 。"
+
+#: ../../source/adding-a-scheme.rst:336 0910a062f8384a7c902739e0f2fc4795
+msgid "[ ] Test passes locally: ``pytest tests/test_e2e.py -k <your_test>``."
+msgstr "[ ] 测试在本地通过：\\ ``pytest tests/test_e2e.py -k <your_test>``\\ 。"
+
+#: ../../source/adding-a-scheme.rst:339 e0fa02dcbf0a4c2ebe250ad1dab282eb
+msgid "See also"
+msgstr "另请参阅"
+
+#: ../../source/adding-a-scheme.rst:341 2e0e1a98e5014d719d5bcad539187b2d
+msgid ":doc:`ontology` — standard field names; read before naming fields."
+msgstr ":doc:`ontology`——标准字段名；在命名字段前请先阅读。"
+
+#: ../../source/adding-a-scheme.rst:342 50ebe657d39e478c8eb2a77210483f68
+msgid ":doc:`how-extraction-works` — the pipeline your scheme plugs into."
+msgstr ":doc:`how-extraction-works`——你的提取方案接入的流水线。"
+
+#: ../../source/adding-a-scheme.rst:343 0caf27c256604fe8bcd4bedc67d4b968
+msgid ":doc:`plugins` — shipping schemes via the external plugins repo."
+msgstr ":doc:`plugins`——通过外部插件仓库发布提取方案。"
+
+#: ../../source/adding-a-scheme.rst:344 2bcbc727af34464591687068980e8b59
+msgid ":doc:`development` — environment setup, tests, and CI."
+msgstr ":doc:`development`——环境搭建、测试与 CI。"

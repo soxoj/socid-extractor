@@ -1,0 +1,498 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/how-extraction-works.rst:4 4224d0dcc7db4c69a5d494cf42ad1be0
+msgid "How extraction works"
+msgstr "提取的工作原理"
+
+#: ../../source/how-extraction-works.rst:6 513a4b7566104869a59d3a36fa9bdeb3
+msgid ""
+"This page explains the extractor principle: how a raw page body is turned "
+"into a flat dictionary of fields, and how the core loop in "
+"``socid_extractor/main.py`` decides which scheme to apply."
+msgstr ""
+"本页说明提取器的原理：原始页面内容如何被转换成扁平的字段字典，以及 ``socid_extractor/main.py`` "
+"中的核心循环如何决定应用哪个提取方案。"
+
+#: ../../source/how-extraction-works.rst:11 35b4655aae7043fe8b9f5e986fdd02a6
+msgid "Overview"
+msgstr "概述"
+
+#: ../../source/how-extraction-works.rst:13 39f8b7b9d01c43a898f5376ec48f95bc
+msgid ""
+"``socid_extractor`` takes a page body — HTML, or JSON embedded in text — and"
+" turns it into a flat dictionary of string fields (IDs, usernames, links, "
+"dates, and so on). All matching is driven by a single large dictionary named"
+" ``schemes`` in ``socid_extractor/schemes.py``. Each entry describes one "
+"site (or one response shape for a site): what substrings prove the page "
+"belongs to it, and how to pull fields out of it."
+msgstr ""
+"``socid_extractor`` 接收页面内容——HTML，或嵌入在文本中的 "
+"JSON——并将其转换成扁平的字符串字段字典（ID、用户名、链接、日期等等）。所有匹配都由 ``socid_extractor/schemes.py``"
+" 中一个名为 ``schemes`` 的大字典驱动。每个条目描述一个站点（或站点的一种响应形态）：哪些子串可以证明该页面属于它，以及如何从中提取字段。"
+
+#: ../../source/how-extraction-works.rst:20 fe0bafc6fee44bb4918b6fe76e210cc4
+#, python-brace-format
+msgid ""
+"The core loop lives in ``socid_extractor/main.py``. It walks ``schemes``, "
+"finds the first entry that fits the page, runs that entry's extraction path,"
+" applies a few post-processors, and returns the resulting dict. If no scheme"
+" fits, it returns ``{}``."
+msgstr ""
+"核心循环位于 ``socid_extractor/main.py`` 中。它遍历 ``schemes``\\ "
+"，找到第一个与页面匹配的条目，运行该条目的提取路径，应用若干后处理器，并返回最终的字典。如果没有任何提取方案匹配，它返回 ``{}``\\ 。"
+
+#: ../../source/how-extraction-works.rst:25 b8c9e926e07f451895b765f256667aca
+msgid ""
+"To add your own site, see :doc:`adding-a-scheme`. For the naming rules the "
+"output fields follow, see :doc:`ontology`."
+msgstr ""
+"要添加你自己的站点，请参见 :doc:`adding-a-scheme`。关于输出字段所遵循的命名规则，请参见 :doc:`ontology`。"
+
+#: ../../source/how-extraction-works.rst:29 8da7a1fb8dcd49b2b42fffcea85634a0
+msgid "Data flow"
+msgstr "数据流"
+
+#: ../../source/how-extraction-works.rst:31 3ca335ced2f24d3ea969aabffb0b4a26
+msgid ""
+"There are three top-level functions, and only one of them touches the "
+"network:"
+msgstr "共有三个顶层函数，其中只有一个会访问网络："
+
+#: ../../source/how-extraction-works.rst:36 6d680ee0ac4b4f2b8a150768afc618b6
+msgid "Function"
+msgstr "函数"
+
+#: ../../source/how-extraction-works.rst:37
+#: ../../source/how-extraction-works.rst:67 211f7fa2e3184b91aeadae4ba5f156e2
+#: c041756701ba4237a7134d10d7d71ada
+msgid "Role"
+msgstr "作用"
+
+#: ../../source/how-extraction-works.rst:38 27a58fb0b5e145209caff34bd143df6b
+#, python-brace-format
+msgid "``parse(url, cookies_str='', timeout=3, headers={})``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:39 c749ee2291e1440f972aa2f09643daac
+msgid ""
+"Performs an HTTP GET with browser-like ``HEADERS``, optional cookies, "
+"optional extra headers, and a timeout. Returns ``(page_text, status_code)``."
+" This is the only network step."
+msgstr ""
+"使用类似浏览器的 ``HEADERS``\\ 、可选的 cookies、可选的额外请求头以及超时时间执行一次 HTTP GET。返回 "
+"``(page_text, status_code)``\\ 。这是唯一的网络步骤。"
+
+#: ../../source/how-extraction-works.rst:42 7342020721004cea9f270720c170180c
+msgid "``mutate_url(url)``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:43 a5d30b449b974aa2a7d0daca12c62397
+msgid ""
+"Optional, CLI-only. Scans every scheme's ``url_mutations`` list; for each "
+"mutation whose ``from`` regex matches the URL, produces a new request URL "
+"from the ``to`` format string, together with any per-mutation headers. "
+"Returns a list of ``(url, headers)`` pairs."
+msgstr ""
+"可选，仅用于 CLI。扫描每个提取方案的 ``url_mutations`` 列表；对于其 ``from`` 正则表达式与该 URL 匹配的每个变体，从"
+" ``to`` 格式字符串生成一个新的请求 URL，并附带该变体的任何请求头。返回一个 ``(url, headers)`` 对的列表。"
+
+#: ../../source/how-extraction-works.rst:47 73f7815390ef4086a9dc64a0c674cde2
+msgid "``extract(page, use_ai_fallback=False)``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:48 ea4ffe54cc594c9ea7f1f8c98b016111
+msgid ""
+"Pure over the page string — it does no HTTP fetch of its own. It runs the "
+"scheme matching loop against the in-memory body and returns the field dict."
+msgstr "对页面字符串是纯函数——它自身不做任何 HTTP 抓取。它针对内存中的内容运行方案匹配循环，并返回字段字典。"
+
+#: ../../source/how-extraction-works.rst:52 f55ad9ba6bb44e02a3d58fc5b534edf7
+msgid ""
+"A typical call sequence is ``parse()`` to fetch the body, optionally "
+"``mutate_url()`` to derive additional request URLs, then ``extract()`` on "
+"each fetched body. Library callers that already have a page body can call "
+"``extract()`` directly. See :doc:`library-usage` for examples."
+msgstr ""
+"典型的调用顺序是：用 ``parse()`` 抓取内容，可选地用 ``mutate_url()`` 派生出额外的请求 URL，然后对每个抓取到的内容调用"
+" ``extract()``\\ 。已经持有页面内容的库调用方可以直接调用 ``extract()``\\ 。示例参见 :doc:`library-"
+"usage`。"
+
+#: ../../source/how-extraction-works.rst:58 ea70c613702a4ccf9c99d6b323c721e3
+msgid "Scheme anatomy"
+msgstr "提取方案剖析"
+
+#: ../../source/how-extraction-works.rst:60 79d438391c0c43569fe334af7d98cddc
+msgid ""
+"Each scheme is a Python dict. Only ``flags`` is always required; the "
+"remaining keys select and configure the extraction path."
+msgstr "每个提取方案都是一个 Python 字典。只有 ``flags`` 是始终必需的；其余的键用于选择和配置提取路径。"
+
+#: ../../source/how-extraction-works.rst:66 4c5f795edb6e4088b1d4a58c4fa3140c
+msgid "Key"
+msgstr "键"
+
+#: ../../source/how-extraction-works.rst:68 f782ece2891246b38d5c616d48363ac5
+msgid "``flags``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:69 5f78f92da6bb486798a2111d9996683e
+msgid ""
+"**Required.** A list of substrings that must *all* appear in the page for "
+"the scheme to be considered. Acts as a cheap detection gate."
+msgstr "**必需。** 一个子串列表，这些子串必须*全部*出现在页面中，该提取方案才会被考虑。充当一个低成本的检测门槛。"
+
+#: ../../source/how-extraction-works.rst:71 dd91eab712584a4fb189c917db2b0080
+msgid "``regex``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:72 6b83876d8af64d85ad05a74421e94938
+msgid ""
+"Optional. A pattern searched with ``re.search(..., page, re.MULTILINE)``. "
+"Selects the regexp extraction branch."
+msgstr "可选。用 ``re.search(..., page, re.MULTILINE)`` 搜索的模式。选择正则表达式提取分支。"
+
+#: ../../source/how-extraction-works.rst:74 15194965874c44b6a5c363a5a13b2985
+msgid "``extract_json``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:75 18e31d30a0264fc8a43fd5675ae4c454
+msgid ""
+"Optional flag. When true, the regex's first capture group is treated as a "
+"JSON string: it is transformed, then ``json.loads``-ed, and the parsed "
+"object is fed to the ``fields`` callables."
+msgstr ""
+"可选标志。为真时，正则表达式的第一个捕获组会被当作 JSON 字符串处理：先经过转换，然后用 ``json.loads`` 解析，解析后的对象被送入 "
+"``fields`` 中的可调用对象。"
+
+#: ../../source/how-extraction-works.rst:78 739b3b8d38d443e0b3bddfbd283ceaf1
+msgid "``transforms``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:79 f65ea95bf8ec46038f28799d3dac6bfd
+msgid ""
+"Optional list of callables applied in order to the captured string, before "
+"``json.loads`` (JSON path) or before ``fields`` (plain path)."
+msgstr ""
+"可选的可调用对象列表，按顺序作用于捕获到的字符串，在 ``json.loads``\\ （JSON 路径）之前，或在 ``fields``\\ "
+"（普通路径）之前。"
+
+#: ../../source/how-extraction-works.rst:81 e6fcc9c3189a49199c51eaecd2e65589
+msgid "``fields``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:82 f3372df25eec432893914c9c018c4f49
+msgid ""
+"Dict mapping output field names to callables. On the JSON path each callable"
+" receives the parsed object (``lambda obj: ...``); on the HTML path each "
+"receives the parsed soup (``lambda soup: ...``)."
+msgstr ""
+"将输出字段名映射到可调用对象的字典。在 JSON 路径上，每个可调用对象接收解析后的对象（\\ ``lambda obj: ...``\\ ）；在 "
+"HTML 路径上，每个接收解析后的 soup（\\ ``lambda soup: ...``\\ ）。"
+
+#: ../../source/how-extraction-works.rst:85 2a56f9bb35a140a397c2d72647442f9b
+msgid "``bs`` / ``parser_type``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:86 8e656e2a98c2424ebb9d416655dba92f
+msgid ""
+"When ``bs`` is present, the page is parsed with BeautifulSoup and each "
+"``fields`` callable runs against the soup. ``parser_type`` picks the parser "
+"and defaults to ``html.parser``."
+msgstr ""
+"当存在 ``bs`` 时，页面会用 BeautifulSoup 解析，每个 ``fields`` 可调用对象都针对该 soup 运行。\\ "
+"``parser_type`` 用于选择解析器，默认为 ``html.parser``\\ 。"
+
+#: ../../source/how-extraction-works.rst:89 ece7334358794dccbdfe5a8b52e63427
+msgid "``url_mutations``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:90 b9348874134a4763b37abbc7a8ab0b9f
+msgid "Consumed only by ``mutate_url`` (CLI). Ignored inside ``extract``."
+msgstr "仅由 ``mutate_url``\\ （CLI）使用。在 ``extract`` 内部被忽略。"
+
+#: ../../source/how-extraction-works.rst:91 22dc27491a8d4e1ebbe8366044ccd852
+msgid "``url_hints``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:92 974ad1ac23404b208c200b7982a2c4ec
+msgid ""
+"Optional substrings used only by the CLI's ``check_url_relevance`` URL pre-"
+"check (see ``url_relevance.py``). Ignored inside ``extract``. Useful when "
+"the site's domain is not obvious from the scheme name."
+msgstr ""
+"可选的子串，仅由 CLI 的 ``check_url_relevance`` URL 预检查使用（参见 ``url_relevance.py``\\ "
+"）。在 ``extract`` 内部被忽略。当站点的域名无法从提取方案名称明显看出时很有用。"
+
+#: ../../source/how-extraction-works.rst:95 f6cdd7bedbd047a589d38e9ca3d79ab4
+msgid "``message``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:96 36cd3dd9253a4177aa295d9fc32d4cd1
+msgid "Optional line logged when the scheme is detected."
+msgstr "可选。当检测到该提取方案时记录的一行日志。"
+
+#: ../../source/how-extraction-works.rst:99 f1fe32a71e8c404f9a7e7324b056f1fc
+msgid "The matching loop"
+msgstr "匹配循环"
+
+#: ../../source/how-extraction-works.rst:101 549851248c574a0f8f72ef12b8521e04
+msgid ""
+"``_extract_by_schemes(page)`` walks ``schemes`` in **dict iteration order** "
+"and applies this logic to each entry:"
+msgstr ""
+"``_extract_by_schemes(page)`` 按\\ **字典迭代顺序**\\ 遍历 ``schemes``\\ "
+"，并对每个条目应用以下逻辑："
+
+#: ../../source/how-extraction-works.rst:104 4822319a0c67420a85cbb12f85750d24
+msgid ""
+"**Flags are a substring gate.** ``all(flag in page for flag in flags)`` must"
+" be true. If any flag is missing, the scheme is skipped immediately."
+msgstr ""
+"**Flags 是一个子串门槛。** ``all(flag in page for flag in flags)`` 必须为真。如果缺少任何一个 "
+"flag，该提取方案会被立即跳过。"
+
+#: ../../source/how-extraction-works.rst:106 3b0facec65dc4d869b57b6180bf7f4cf
+msgid ""
+"**First complete match wins.** When the flags match, the scheme's extraction"
+" path runs. The **first** scheme whose flags match *and* whose extraction "
+"completes is returned."
+msgstr ""
+"**第一个完整匹配者胜出。** 当 flags 匹配时，该提取方案的提取路径会运行。返回\\ **第一个** flags "
+"匹配*且*提取成功完成的提取方案。"
+
+#: ../../source/how-extraction-works.rst:109 a220df0a78cc48e69df712ef9fffe3c5
+#, python-brace-format
+msgid ""
+"**Failed extraction skips the scheme.** If the flags match but the regex "
+"fails to find anything (or JSON parsing yields ``{}``), that scheme is "
+"abandoned and the loop moves on to the next one — a flag match alone is not "
+"enough to stop the search."
+msgstr ""
+"**提取失败会跳过该方案。** 如果 flags 匹配但正则表达式没有找到任何内容（或 JSON 解析结果为 ``{}``\\ "
+"），该方案会被放弃，循环继续处理下一个——仅 flag 匹配不足以停止搜索。"
+
+#: ../../source/how-extraction-works.rst:113 2fb31d8c6f664104bf15adcf81a0adb3
+#, python-brace-format
+msgid ""
+"**Nothing matches → ``{}``.** If the loop reaches the end without a scheme "
+"completing, ``extract`` returns an empty dict."
+msgstr "**没有任何匹配 → ``{}``\\ 。** 如果循环走到末尾都没有任何方案成功完成，\\ ``extract`` 返回一个空字典。"
+
+#: ../../source/how-extraction-works.rst:116 07fab86e0a314179a94f24db8a7c741e
+msgid ""
+"Because matching is ordered and first-wins, more specific schemes should "
+"appear before more generic ones in ``schemes.py``."
+msgstr "由于匹配是有序的且先匹配者胜出，更具体的提取方案应在 ``schemes.py`` 中排在更通用的方案之前。"
+
+#: ../../source/how-extraction-works.rst:120 9927510a68d34c569eee4e3e8e101115
+msgid "The regexp branch"
+msgstr "正则表达式分支"
+
+#: ../../source/how-extraction-works.rst:122 4ca3c380419c4beaba5d8ed7b0826e65
+msgid ""
+"Selected when the scheme has a ``regex`` key. The pattern is searched with "
+"``re.MULTILINE``. If there is no match, the scheme is skipped."
+msgstr "当提取方案具有 ``regex`` 键时选择此分支。模式以 ``re.MULTILINE`` 进行搜索。如果没有匹配，该方案会被跳过。"
+
+#: ../../source/how-extraction-works.rst:125 975cc3e4074848adafc19820f40ed10d
+msgid ""
+"**Named groups.** If the match has named groups (a non-empty ``groupdict``),"
+" those names and values populate the ``values`` dict directly — no "
+"``fields`` mapping is used. A named group ending in ``_raw`` is written to "
+"the field with the suffix stripped (group ``foo_raw`` populates field "
+"``foo``). Existing values are not overwritten, so an already-set field keeps"
+" its first value."
+msgstr ""
+"**命名组。** 如果匹配包含命名组（非空的 ``groupdict``\\ ），这些名称和值会直接填充 ``values`` 字典——不使用 "
+"``fields`` 映射。以 ``_raw`` 结尾的命名组会去掉后缀后写入相应字段（组 ``foo_raw`` 填充字段 ``foo``\\ "
+"）。已有的值不会被覆盖，因此已设置的字段保留其第一个值。"
+
+#: ../../source/how-extraction-works.rst:131 c8129afd72c24172ae89a62dd3fa4b77
+msgid ""
+"**Single group + fields.** If there are no named groups, capture "
+"``group(1)`` is passed through ``transforms`` and then ``map_fields`` maps "
+"it onto ``fields``."
+msgstr ""
+"**单个组 + fields。** 如果没有命名组，捕获的 ``group(1)`` 会经过 ``transforms`` 处理，然后由 "
+"``map_fields`` 将其映射到 ``fields`` 上。"
+
+#: ../../source/how-extraction-works.rst:134 fd151d731f3244a3b86a46403d3533fe
+#, python-brace-format
+msgid ""
+"**JSON.** With ``extract_json`` set, ``group(1)`` is transformed, parsed "
+"with ``json.loads``, and the resulting object is passed to ``map_fields``. A"
+" parse result of ``{}`` causes the scheme to be skipped."
+msgstr ""
+"**JSON。** 当设置了 ``extract_json`` 时，\\ ``group(1)`` 会被转换、用 ``json.loads`` "
+"解析，得到的对象被传给 ``map_fields``\\ 。解析结果为 ``{}`` 会导致该方案被跳过。"
+
+#: ../../source/how-extraction-works.rst:139 d432a2e51a3647769d5f70381ef3c44a
+msgid "The HTML branch"
+msgstr "HTML 分支"
+
+#: ../../source/how-extraction-works.rst:141 7c7eb42cd2f347d685f08e981f286360
+msgid ""
+"Selected when the scheme has a ``bs`` key. The page is parsed once with "
+"``BeautifulSoup(page, parser_type)`` and each ``fields[name](soup)`` "
+"callable runs against the soup, writing its return value into ``values``."
+msgstr ""
+"当提取方案具有 ``bs`` 键时选择此分支。页面会用 ``BeautifulSoup(page, parser_type)`` 解析一次，每个 "
+"``fields[name](soup)`` 可调用对象都针对该 soup 运行，将其返回值写入 ``values``\\ 。"
+
+#: ../../source/how-extraction-works.rst:145 a065ded64fa94c27a68a7e97c007fc04
+msgid ""
+"The HTML branch runs **after** the regexp branch within the same scheme, so "
+"a scheme that declares both a ``regex`` and ``bs`` can have both branches "
+"contribute to the same ``values`` dict."
+msgstr ""
+"在同一个提取方案中，HTML 分支在正则表达式分支\\ **之后**\\ 运行，因此同时声明 ``regex`` 和 ``bs`` "
+"的方案可以让两个分支都向同一个 ``values`` 字典贡献内容。"
+
+#: ../../source/how-extraction-works.rst:150 3b4d13eb2b7d47afb8adbdd24177fa02
+msgid "Post-processing"
+msgstr "后处理"
+
+#: ../../source/how-extraction-works.rst:152 54cb22b3e64e4e60bba1de2354d506f6
+msgid ""
+"After ``values`` is built, every class in ``POSTPROCESSORS`` (from "
+"``socid_extractor/postprocessor.py``) is instantiated with ``values`` and "
+"its ``process()`` method is called; the returned dict is merged back into "
+"``values``. The processors run in list order:"
+msgstr ""
+"在 ``values`` 构建完成后，\\ ``POSTPROCESSORS``\\ （来自 "
+"``socid_extractor/postprocessor.py``\\ ）中的每个类都会用 ``values`` 实例化，并调用其 "
+"``process()`` 方法；返回的字典会被合并回 ``values``\\ 。这些处理器按列表顺序运行："
+
+#: ../../source/how-extraction-works.rst:160 e494f8224ec34527943c8e930cd2e4f2
+msgid "Post-processor"
+msgstr "后处理器"
+
+#: ../../source/how-extraction-works.rst:161 ad1c0185d3884b3fbd895b687ee44ef1
+msgid "What it adds or fixes"
+msgstr "它添加或修复的内容"
+
+#: ../../source/how-extraction-works.rst:162 b6d3e3e4374c48a5a4de0c49f3edde7c
+msgid "``StripInvalidGravatarUrls``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:163 820bf5b2b93d41a6969abf6524446e3a
+msgid "Blanks bare ``gravatar.com`` homepage URLs mistaken for avatars."
+msgstr "将被误当作头像的裸 ``gravatar.com`` 主页 URL 清空。"
+
+#: ../../source/how-extraction-works.rst:164 d901c19b681f4692aa6032aa3652fdf8
+msgid "``Gravatar``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:165 467e9d74397b45ab8d0108047c68e14e
+msgid ""
+"Derives ``gravatar_url``, ``gravatar_username`` and "
+"``gravatar_email_md5_hash`` from an ``image`` field."
+msgstr ""
+"从 ``image`` 字段派生出 ``gravatar_url``\\ 、\\ ``gravatar_username`` 和 "
+"``gravatar_email_md5_hash``\\ 。"
+
+#: ../../source/how-extraction-works.rst:167 9d25f4c09c5a4ce2b91fab9a1d45c319
+msgid "``EmailToUsername``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:168 9cb75d6231bb496fbac86151fa1fe890
+msgid ""
+"For any ``*email*`` field containing ``@``, adds a ``*_username`` field from"
+" the local part."
+msgstr "对于任何包含 ``@`` 的 ``*email*`` 字段，根据其本地部分添加一个 ``*_username`` 字段。"
+
+#: ../../source/how-extraction-works.rst:170 ad15dc5da7ba499bb3bc952100a0a245
+msgid "``YandexUsernameToEmail``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:171 73b44bc2efee4317be5169ce34aded25
+msgid "When a Yandex id and a ``username`` are present, derives an ``email``."
+msgstr "当存在 Yandex id 和 ``username`` 时，派生出一个 ``email``\\ 。"
+
+#: ../../source/how-extraction-works.rst:172 20a56fb8b6d64e5e9b2530aa9818a3e0
+msgid "``NormalizeDates``"
+msgstr ""
+
+#: ../../source/how-extraction-works.rst:173 d58a8739e2c0420e93c584d2bc46f268
+msgid "Converts human-readable date fields to ``YYYY-MM-DD HH:MM:SS UTC``."
+msgstr "将人类可读的日期字段转换为 ``YYYY-MM-DD HH:MM:SS UTC``\\ 。"
+
+#: ../../source/how-extraction-works.rst:175 7a9a3c0f8a094c39ac7c8b1798e30f58
+msgid ""
+"Errors raised inside transforms, field callables, or post-processors are "
+"caught against ``PROCESS_ERRORS`` (``AttributeError``, ``KeyError``, "
+"``IndexError``, ``TypeError``), logged at debug level, and skipped — a "
+"single failing field does not abort the whole extraction."
+msgstr ""
+"在 transforms、字段可调用对象或后处理器内部抛出的错误会按 ``PROCESS_ERRORS``\\ （\\ "
+"``AttributeError``\\ 、\\ ``KeyError``\\ 、\\ ``IndexError``\\ 、\\ "
+"``TypeError``\\ ）捕获，以 debug 级别记录，然后跳过——单个字段失败不会中止整个提取过程。"
+
+#: ../../source/how-extraction-works.rst:181 af1235ec9d7c40a284bc88e0303aa1c6
+msgid "Final shaping"
+msgstr "最终整形"
+
+#: ../../source/how-extraction-works.rst:183 6628ce34fa4345309e2aec5aa7ce09b7
+msgid "Before returning, the ``values`` dict is filtered and cleaned:"
+msgstr "在返回之前，\\ ``values`` 字典会经过过滤和清理："
+
+#: ../../source/how-extraction-works.rst:190 36e8d87b886b4def958c2b509dfa5e0a
+msgid ""
+"Empty values are dropped, **unless** the value is a ``bool`` (so ``False`` "
+"is preserved)."
+msgstr "空值会被丢弃，\\ **除非**\\ 该值是 ``bool``\\ （因此 ``False`` 会被保留）。"
+
+#: ../../source/how-extraction-works.rst:192 fd5acf3e2ad947caa3533df98ce2fb24
+msgid "String values are ``html.unescape``-d, so ``&#064;`` becomes ``@``."
+msgstr "字符串值会经过 ``html.unescape`` 处理，因此 ``&#064;`` 会变成 ``@``\\ 。"
+
+#: ../../source/how-extraction-works.rst:193 e6496870a5d047aa8e21e4a1c0998379
+msgid ""
+"If anything survives, a ``_extractor`` key is added carrying the name of the"
+" scheme that produced the result."
+msgstr "如果有任何内容留存下来，会添加一个 ``_extractor`` 键，携带产生该结果的提取方案的名称。"
+
+#: ../../source/how-extraction-works.rst:197 001229144bc14f538cef731a97c496a4
+msgid "Debug output"
+msgstr "调试输出"
+
+#: ../../source/how-extraction-works.rst:199 069a2ee26d044578aa840b901e36009d
+msgid ""
+"With the root logger at ``DEBUG`` level, successful JSON extraction writes "
+"the pretty-printed parsed object to ``debug_extracted.json`` in the current "
+"working directory. Field failures, transform errors, and post-processor "
+"errors are also emitted at debug level, which is the fastest way to see why "
+"a matching scheme produced fewer fields than expected."
+msgstr ""
+"当根日志记录器处于 ``DEBUG`` 级别时，成功的 JSON 提取会将美化打印后的解析对象写入当前工作目录下的 "
+"``debug_extracted.json``\\ 。字段失败、转换错误和后处理器错误也会以 debug "
+"级别输出，这是查看某个匹配的提取方案为何产生的字段少于预期的最快方式。"
+
+#: ../../source/how-extraction-works.rst:205 a28d3cffb23142b49f7b26ecd3e7af0e
+msgid ""
+"When ``extract(page, use_ai_fallback=True)`` is used and no scheme produces "
+"a result, extraction falls back to an LLM-based extractor. See :doc:`ai-"
+"fallback`."
+msgstr ""
+"当使用 ``extract(page, use_ai_fallback=True)`` 且没有任何提取方案产生结果时，提取会回退到基于 LLM "
+"的提取器。参见 :doc:`ai-fallback`。"

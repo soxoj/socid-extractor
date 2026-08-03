@@ -1,0 +1,250 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/library-usage.rst:4 7baacb62dfea421cb6c8040dbc079b11
+msgid "Python library API"
+msgstr "Python 库 API"
+
+#: ../../source/library-usage.rst:6 675c8e6c784c4861a1ede1e529b08e79
+msgid ""
+"``socid_extractor`` is a plain Python library: you hand it the text of a "
+"profile page or API response and it hands back a flat dictionary of "
+":doc:`ontology` fields. Nothing in the parsing path touches the network, so "
+"you stay in full control of how pages are fetched."
+msgstr ""
+"``socid_extractor`` 是一个纯粹的 Python 库：你把个人资料页或 API 响应的文本交给它，它便返回一个由 "
+":doc:`ontology` 字段组成的扁平字典。解析过程完全不涉及网络，因此你可以完全掌控页面的抓取方式。"
+
+#: ../../source/library-usage.rst:12 a9fa5c308bb943b0af3f527278b178ca
+msgid "Install and import"
+msgstr "安装与导入"
+
+#: ../../source/library-usage.rst:22 5c274cc54b6b4267b7d9e706551b0f63
+msgid ""
+"The package exports four public names: :func:`extract`, :func:`parse`, "
+":func:`parse_cookies`, and :func:`mutate_url`."
+msgstr ""
+"该软件包导出四个公共名称：:func:`extract`、:func:`parse`、:func:`parse_cookies` 和 "
+":func:`mutate_url`。"
+
+#: ../../source/library-usage.rst:27 e53b6ab87e2043dc8f491c8aa0d0e7a8
+msgid "extract"
+msgstr ""
+
+#: ../../source/library-usage.rst:33 b7a3f669da3d467a88aec99ed460ae15
+msgid ""
+"``extract`` is a **pure function over a response body string** — it never "
+"fetches anything. You pass in already-downloaded page text (HTML or an API "
+"response), and it tries each built-in scheme in turn until one matches."
+msgstr ""
+"``extract`` 是一个\\ **作用于响应体字符串的纯函数**——它从不抓取任何内容。你传入已经下载好的页面文本（HTML 或 API "
+"响应），它会依次尝试每个内置提取方案，直到有一个匹配为止。"
+
+#: ../../source/library-usage.rst:37 acab7d1ff50a4ed0aef137dba34ead61
+msgid ""
+"On a match it returns a **flat dict of** :doc:`ontology` **fields** (for "
+"example ``username``, ``fullname``, ``created_at``, ``is_verified``), plus "
+"an ``_extractor`` key naming the scheme that matched."
+msgstr ""
+"匹配成功时，它返回一个\\ **扁平字典**\\ ，其中包含 :doc:`ontology` **字段**\\ （例如 ``username``\\ "
+"、\\ ``fullname``\\ 、\\ ``created_at``\\ 、\\ ``is_verified``\\ ），外加一个 "
+"``_extractor`` 键，用于标明匹配到的提取方案。"
+
+#: ../../source/library-usage.rst:40 a36d28ce48c1421090c5936cd74b9771
+#, python-brace-format
+msgid "When nothing matches it returns ``{}``."
+msgstr "当没有任何方案匹配时，它返回 ``{}``\\ 。"
+
+#: ../../source/library-usage.rst:54 454e36a6ae98434c9596c6a382946441
+msgid ""
+"Because the input is just a string, you can feed ``extract`` a page from any"
+" source — a live request, a saved fixture, an archive snapshot, or a proxy."
+msgstr "由于输入只是一个字符串，你可以把来自任何来源的页面喂给 ``extract``——实时请求、已保存的测试固件、存档快照或代理。"
+
+#: ../../source/library-usage.rst:57 18fbbdd1d05f4d1ebad008c6a5ee7010
+msgid ""
+"Set ``use_ai_fallback=True`` to opt into the LLM-based fallback when no "
+"scheme matches. This is off by default and requires the optional ``[ai]`` "
+"extra; see :doc:`ai-fallback` for details."
+msgstr ""
+"设置 ``use_ai_fallback=True`` 以在没有方案匹配时显式开启基于 LLM 的回退。该功能默认关闭，且需要可选的 ``[ai]`` "
+"附加依赖；详见 :doc:`ai-fallback`。"
+
+#: ../../source/library-usage.rst:66 fca9f3b2444645d48174079f59ce0769
+msgid "parse"
+msgstr ""
+
+#: ../../source/library-usage.rst:72 1645a261d3cb49f8977ae58c87fc275a
+msgid ""
+"``parse`` is the convenience fetcher bundled with the library. It issues a "
+"GET request with browser-like default headers, follows redirects, and "
+"applies any cookies you supply, then returns a ``(page_text, status_code)`` "
+"tuple."
+msgstr ""
+"``parse`` 是库中附带的便捷抓取器。它使用类浏览器的默认请求头发起 GET 请求，跟随重定向，并应用你提供的任何 cookie，然后返回一个 "
+"``(page_text, status_code)`` 元组。"
+
+#: ../../source/library-usage.rst:79 44832e8791b74b6e9dcadc663083a48b
+msgid "Argument"
+msgstr "参数"
+
+#: ../../source/library-usage.rst:80 2ffb1ef05c6044edb3f8b78d68d63da0
+msgid "Default"
+msgstr "默认值"
+
+#: ../../source/library-usage.rst:81 9bd0a4d9772843d09803b4aeb19e5adb
+msgid "Meaning"
+msgstr "含义"
+
+#: ../../source/library-usage.rst:82 937c8a1e71664df183856dfbe9a5e17c
+msgid "``url``"
+msgstr ""
+
+#: ../../source/library-usage.rst:83 f4f54d6e01f043b79c8e5488b097c322
+msgid "*(required)*"
+msgstr "*（必填）*"
+
+#: ../../source/library-usage.rst:84 d65d3048d6994fd0a29f3752b4ecba28
+msgid "The URL to fetch."
+msgstr "要抓取的 URL。"
+
+#: ../../source/library-usage.rst:85 a44bb01895a64842b8110dddd8b9e697
+msgid "``cookies_str``"
+msgstr ""
+
+#: ../../source/library-usage.rst:86 4433e05aa3b54a0fa4b0baae9b3bacf9
+msgid "``''``"
+msgstr ""
+
+#: ../../source/library-usage.rst:87 df4a0742f261460394795227b30c5c6c
+msgid "Raw cookie header string, parsed via :func:`parse_cookies`."
+msgstr "原始 cookie 请求头字符串，通过 :func:`parse_cookies` 解析。"
+
+#: ../../source/library-usage.rst:88 c0fb2a159c794264acaa266cc9afca31
+msgid "``timeout``"
+msgstr ""
+
+#: ../../source/library-usage.rst:89 f0a4aae08839465fb1b20a5749c69b00
+msgid "``3``"
+msgstr ""
+
+#: ../../source/library-usage.rst:90 eac28eff6c994b638726ed91addf6372
+msgid "Seconds, applied to both connect and read timeouts."
+msgstr "秒数，同时应用于连接超时和读取超时。"
+
+#: ../../source/library-usage.rst:91 338004433812460d82a70134d58895ba
+msgid "``headers``"
+msgstr ""
+
+#: ../../source/library-usage.rst:92 5e777c63be9c4a5792193eba7fe3bd61
+#, python-brace-format
+msgid "``{}``"
+msgstr ""
+
+#: ../../source/library-usage.rst:93 538f70d228ef46019d2c3911a14058a3
+msgid "Extra headers merged on top of the built-in browser-like defaults."
+msgstr "在内置的类浏览器默认请求头之上合并的额外请求头。"
+
+#: ../../source/library-usage.rst:95 955923319c5e42b89128425405403c42
+msgid ""
+"The common pattern is to take the page text (element ``0`` of the tuple) and"
+" pipe it straight into :func:`extract`:"
+msgstr "常见的用法是取出页面文本（元组的第 ``0`` 个元素），直接传入 :func:`extract`："
+
+#: ../../source/library-usage.rst:105 f233bd121c3c4956aa87ce438984d056
+msgid ""
+"If you need cookies (for example on Google endpoints), pass them as a "
+"string:"
+msgstr "如果你需要 cookie（例如在 Google 端点上），把它们作为字符串传入："
+
+#: ../../source/library-usage.rst:112 38444edd9acb42d0b9b6a54569f20696
+msgid ""
+"**Bring your own requests.** ``parse`` is a convenience, not a requirement. "
+"Since :func:`extract` only needs a string, you can fetch pages however you "
+"like — with your own ``requests`` session, custom headers, a retry policy, "
+"or a proxy — and pass the resulting text in directly:"
+msgstr ""
+"**自带请求。** ``parse`` 只是便捷工具，而非必需。由于 :func:`extract` "
+"只需要一个字符串，你可以按自己喜欢的方式抓取页面——使用你自己的 ``requests`` "
+"会话、自定义请求头、重试策略或代理——然后直接传入得到的文本："
+
+#: ../../source/library-usage.rst:129 4c0b4eaaad344b789c58aa0775a9ad12
+msgid "parse_cookies"
+msgstr ""
+
+#: ../../source/library-usage.rst:135 0deedf5a206648ba9f8bb2cc3bfd7a78
+#, python-brace-format
+msgid ""
+"Turns a raw cookie header string into a ``{name: value}`` dict. ``parse`` "
+"uses it internally, but you can call it directly when building a request "
+"yourself:"
+msgstr ""
+"将原始 cookie 请求头字符串转换为 ``{name: value}`` 字典。\\ ``parse`` "
+"在内部使用它，但当你自己构建请求时也可以直接调用它："
+
+#: ../../source/library-usage.rst:147 4d469492f2724a8bb2cad7348586ea29
+msgid "mutate_url"
+msgstr ""
+
+#: ../../source/library-usage.rst:153 2453e33f38d54032b76b3780f7b6605f
+#, python-brace-format
+msgid ""
+"Some schemes register ``url_mutations`` that rewrite a human-facing profile "
+"URL into the API endpoint that actually carries the data — for example "
+"``github.com/{username}`` into ``api.github.com/users/{username}``. "
+"``mutate_url`` walks every scheme, matches the input URL against those "
+"mutation rules, and returns a list of ``(mutated_url, headers)`` pairs, "
+"where ``headers`` is any extra headers the mutation requires (an empty set "
+"when it declares none)."
+msgstr ""
+"有些提取方案会注册 ``url_mutations``\\ ，把面向用户的个人资料 URL 改写为实际承载数据的 API 端点——例如把 "
+"``github.com/{username}`` 改写为 ``api.github.com/users/{username}``\\ 。\\ "
+"``mutate_url`` 遍历每个提取方案，将输入 URL 与这些改写规则进行匹配，并返回一个 ``(mutated_url, headers)``"
+" 对的列表，其中 ``headers`` 是该改写所需的任何额外请求头（若未声明则为空集合）。"
+
+#: ../../source/library-usage.rst:168 f49662caf6634ba19e67615e08764c57
+msgid ""
+"This is a **CLI-oriented helper**: it is used to expand a profile URL into "
+"the richer API URLs worth fetching. :func:`extract` itself does **not** call"
+" ``mutate_url`` — it only parses whatever string you give it. If you want to"
+" follow a mutation, fetch the mutated URL yourself and pass its response to "
+"``extract``."
+msgstr ""
+"这是一个\\ **面向 CLI 的辅助函数**\\ ：它用于把一个个人资料 URL 扩展为值得抓取的更丰富的 API "
+"URL。:func:`extract` 本身\\ **不会**\\ 调用 "
+"``mutate_url``——它只解析你给它的任何字符串。如果你想跟进某个改写，请自行抓取改写后的 URL，并把其响应传给 ``extract``\\"
+" 。"
+
+#: ../../source/library-usage.rst:175 efd987408df241d2b52210354a6256d4
+msgid "Used by other tools"
+msgstr "被其他工具使用"
+
+#: ../../source/library-usage.rst:177 ae9fc3e0c9254a379aad8372bd5933c6
+msgid ""
+"Because the parsing surface is a single pure function, ``socid_extractor`` "
+"is easy to embed. It powers `Maigret <https://github.com/soxoj/maigret>`_ "
+"and a number of other OSINT tools. See :doc:`maigret-integration` for how "
+"Maigret consumes the library."
+msgstr ""
+"由于解析接口是单个纯函数，\\ ``socid_extractor`` 很容易被嵌入。它为 `Maigret "
+"<https://github.com/soxoj/maigret>`_ 以及许多其他 OSINT 工具提供支持。关于 Maigret "
+"如何使用该库，请参阅 :doc:`maigret-integration`。"

@@ -1,0 +1,272 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/maigret-integration.rst:4 051be3805fb04078936aa2ebe9866b2a
+msgid "Maigret integration"
+msgstr "Maigret 集成"
+
+#: ../../source/maigret-integration.rst:6 93aedfcf1c1d487a8fe392c90aed6777
+msgid ""
+"`Maigret <https://github.com/soxoj/maigret>`_ is a username reconnaissance "
+"tool that checks a single username across thousands of sites. "
+"``socid_extractor`` is the extraction engine it uses: whenever Maigret "
+"confirms an account exists, it hands the fetched HTML to "
+":func:`socid_extractor.extract` to pull structured profile fields out of the"
+" page."
+msgstr ""
+"`Maigret <https://github.com/soxoj/maigret>`_ 是一款用户名侦察工具，可在数千个网站上检查同一个用户名。\\"
+" ``socid_extractor`` 是它所使用的提取引擎：每当 Maigret 确认某个账号存在时，它就会把抓取到的 HTML 交给 "
+":func:`socid_extractor.extract`，从页面中提取出结构化的个人资料页字段。"
+
+#: ../../source/maigret-integration.rst:12 a0b723dd99254106bd4e370a897c58ab
+msgid ""
+"This page documents that seam — which Maigret function calls ``extract()``, "
+"how it is gated, and where the extracted data lands — so you can enable and "
+"consume it from Maigret's own API. All references below are to the current "
+"Maigret source."
+msgstr ""
+"本页记录了这一衔接点——哪个 Maigret 函数调用了 ``extract()``\\ "
+"、它受哪些条件控制，以及提取出的数据最终落到何处——以便你能够从 Maigret 自己的 API 中启用并使用它。下文的所有引用均指向当前的 "
+"Maigret 源码。"
+
+#: ../../source/maigret-integration.rst:18 7306769ec280489e99460a5edf54cfc6
+msgid "How the two projects fit together"
+msgstr "两个项目如何协同"
+
+#: ../../source/maigret-integration.rst:20 8d7a4362f8114dfc87af8d68b5ba3243
+msgid ""
+"Maigret owns the *breadth*: the site database, the async checker, proxy/Tor "
+"routing, and the found/not-found decision for each site. ``socid_extractor``"
+" owns the *depth*: given the HTML of one confirmed profile page, it matches "
+"a site scheme and returns a flat dict of normalized fields (bio, uid, linked"
+" accounts, timestamps, and so on)."
+msgstr ""
+"Maigret 负责*广度*：站点数据库、异步检查器、代理/Tor 路由，以及对每个站点做出的找到/未找到判定。\\ "
+"``socid_extractor`` 负责*深度*：给定某个已确认的个人资料页的 "
+"HTML，它会匹配一个站点提取方案，并返回一个由规范化字段组成的扁平字典（bio、uid、关联账号、时间戳等等）。"
+
+#: ../../source/maigret-integration.rst:26 661378f970c14dbe81fef5e571221c3f
+msgid "The division of labour is strict:"
+msgstr "分工是严格的："
+
+#: ../../source/maigret-integration.rst:28 4124e41d164d4fd88f52ef02a019d4af
+msgid "Maigret decides *whether* an account exists and fetches its page."
+msgstr "Maigret 决定账号*是否*存在并抓取其页面。"
+
+#: ../../source/maigret-integration.rst:29 461d1e4f88054c03a2eaa853a1d4fa71
+msgid "``socid_extractor`` decides *what can be read* from that page."
+msgstr "``socid_extractor`` 决定能从该页面*读取出什么*。"
+
+#: ../../source/maigret-integration.rst:31 e582a65a15de4d56ae05230231565598
+msgid ""
+"Because the field names ``socid_extractor`` emits are shared and normalized "
+"(see :doc:`ontology`), Maigret can line up the same person's data across "
+"many different sites."
+msgstr ""
+"由于 ``socid_extractor`` 输出的字段名是共享且规范化的（参见 :doc:`ontology`），Maigret "
+"能够在许多不同的站点之间对齐同一个人的数据。"
+
+#: ../../source/maigret-integration.rst:36 d5e4dcf2811f4c9aaa53f66613f67949
+msgid "The integration seam"
+msgstr "集成衔接点"
+
+#: ../../source/maigret-integration.rst:38 216d10b83fc94fcfaadee3dd5c5afd44
+msgid "Maigret imports the extractor at the top of ``maigret/checking.py``:"
+msgstr "Maigret 在 ``maigret/checking.py`` 的顶部导入了提取器："
+
+#: ../../source/maigret-integration.rst:44 0e8a0673e0864adbb34c6c7e8aa4219b
+msgid ""
+"The call itself is wrapped in a small, never-raising helper, "
+"``extract_ids_data`` (``maigret/checking.py``):"
+msgstr ""
+"该调用本身被封装在一个小巧、绝不抛出异常的辅助函数 ``extract_ids_data`` 中（\\ "
+"``maigret/checking.py``\\ ）："
+
+#: ../../source/maigret-integration.rst:56 7ddc3d8e158e4108a1f475333047ea11
+msgid ""
+"Note that it calls ``extract(html_text)`` with the page HTML as the only "
+"argument — extraction failures are logged and swallowed so a bad scheme can "
+"never sink an otherwise valid result."
+msgstr ""
+"注意，它调用 ``extract(html_text)`` 时仅以页面 HTML "
+"作为唯一参数——提取失败会被记录并吞掉，因此一个有缺陷的提取方案绝不会拖垮一个原本有效的结果。"
+
+#: ../../source/maigret-integration.rst:60 4d9b8c1e17d640c0a3a29d599ca399eb
+msgid ""
+"The helper is invoked from the per-site check flow, gated on two conditions:"
+msgstr "该辅助函数在逐站点检查流程中被调用，并受两个条件控制："
+
+#: ../../source/maigret-integration.rst:75 daf83af76d784b43a758b9ff8a918a2b
+msgid "So extraction runs only when both gates are open:"
+msgstr "因此，只有当两个条件都满足时，提取才会运行："
+
+#: ../../source/maigret-integration.rst:80 c7e4d20038c24f02b7887d8abe3470c7
+msgid "Gate"
+msgstr "条件"
+
+#: ../../source/maigret-integration.rst:81 5c1779fe70434c759b46e6ca4a09397f
+msgid "Meaning"
+msgstr "含义"
+
+#: ../../source/maigret-integration.rst:82 5f6f4de171b741ab8c86865173791303
+msgid "``is_parsing_enabled``"
+msgstr ""
+
+#: ../../source/maigret-integration.rst:83 d4d7ede5b36a47babd8bb137774caf90
+msgid "Parsing is turned on for this run (off by default)."
+msgstr "本次运行已开启解析（默认关闭）。"
+
+#: ../../source/maigret-integration.rst:84 20786953292c433596706d6eeb5bbb27
+msgid "``result.status == MaigretCheckStatus.CLAIMED``"
+msgstr ""
+
+#: ../../source/maigret-integration.rst:85 06b7efd75dbf449f91e01f679cdb2528
+msgid "Maigret confirmed the account exists on this site."
+msgstr "Maigret 已确认该账号在此站点上存在。"
+
+#: ../../source/maigret-integration.rst:87 128dc5d7c8da43149a685a5916a3ca8e
+msgid ""
+"When both hold, the returned dict is stored on the result object as "
+"``result.ids_data``. Maigret also runs the extracted fields through "
+"``parse_usernames`` to discover further usernames to check, and merges those"
+" back into the running results. In Maigret's library API the same data is "
+"surfaced under the ``ids_data`` key of each site's result (for example, "
+"``result[\"ids_data\"]``)."
+msgstr ""
+"当两者都成立时，返回的字典会作为 ``result.ids_data`` 存储在结果对象上。Maigret 还会把提取出的字段传给 "
+"``parse_usernames``\\ ，以发现更多需要检查的用户名，并将它们合并回正在运行的结果中。在 Maigret 的库 API "
+"中，同样的数据会在每个站点结果的 ``ids_data`` 键下呈现（例如 ``result[\"ids_data\"]``\\ ）。"
+
+#: ../../source/maigret-integration.rst:95 168ab275097442be8a79bbb892f454a1
+msgid "Enabling extraction from Maigret's library API"
+msgstr "从 Maigret 的库 API 中启用提取"
+
+#: ../../source/maigret-integration.rst:97 9aa7a8896d58430992c9e61776be0557
+msgid ""
+"Extraction is opt-in. From Maigret's Python API you turn it on by passing "
+"``is_parsing_enabled=True`` to the search entry point:"
+msgstr ""
+"提取需显式开启。在 Maigret 的 Python API 中，你可以通过向搜索入口点传入 ``is_parsing_enabled=True`` "
+"来将其打开："
+
+#: ../../source/maigret-integration.rst:116 5ae999693ff94168ac104021199d64b8
+msgid ""
+"For the full pattern — loading the site database, filtering sites, and "
+"running inside an existing event loop — see Maigret's own "
+":external+maigret:doc:`library-usage` page. The ``is_parsing_enabled`` flag "
+"documented there is exactly the gate described above."
+msgstr ""
+"若需完整的用法模式——加载站点数据库、筛选站点，以及在已有的事件循环中运行——请参见 Maigret 自己的 "
+":external+maigret:doc:`library-usage` 页面。那里记录的 ``is_parsing_enabled`` "
+"标志正是上文所述的控制条件。"
+
+#: ../../source/maigret-integration.rst:122 fe609725ed80463f95d5a0a286955d69
+msgid "Why the shared ontology matters"
+msgstr "共享本体为何重要"
+
+#: ../../source/maigret-integration.rst:124 9a3d62fc06604038a38c1cfe394dfa19
+msgid ""
+"The value of a normalized field vocabulary shows up precisely at this seam. "
+"Maigret does not treat the extracted dict as opaque — it reads specific keys"
+" out of it. It derives new usernames to pivot on (via ``parse_usernames`` / "
+"``extract_usernames``), pulls links and websites into the result graph, and "
+"renders fields such as ``image``, ``created_at``, and ``website`` in its "
+"reports."
+msgstr ""
+"规范化字段词汇表的价值恰恰体现在这一衔接点上。Maigret "
+"并不把提取出的字典当作不透明的黑盒——它会从中读取特定的键。它会派生出新的用户名用于进一步展开调查（通过 ``parse_usernames`` / "
+"``extract_usernames``\\ ），把链接和网站拉入结果图谱，并在报告中呈现诸如 ``image``\\ 、\\ "
+"``created_at`` 和 ``website`` 等字段。"
+
+#: ../../source/maigret-integration.rst:131 d7e8051ada2a44b69e9d0a49dfa4005a
+msgid ""
+"That only works because every scheme in ``socid_extractor`` emits the *same*"
+" name for the *same* concept. When a GitHub scheme and a VK scheme both call"
+" a registration timestamp ``created_at``, Maigret can correlate them without"
+" per-site special-casing. Keeping to the shared vocabulary in "
+":doc:`ontology` is therefore what makes cross-site correlation possible on "
+"Maigret's side."
+msgstr ""
+"这之所以行得通，是因为 ``socid_extractor`` 中的每个提取方案都为*相同*的概念输出*相同*的名称。当一个 GitHub "
+"提取方案和一个 VK 提取方案都把注册时间戳称为 ``created_at`` 时，Maigret "
+"无需针对每个站点做特殊处理即可将它们关联起来。因此，遵循 :doc:`ontology` 中的共享词汇表，正是让跨站点关联在 Maigret "
+"一侧成为可能的原因。"
+
+#: ../../source/maigret-integration.rst:138 f8ca4a08747346ada15a49a80cd357d1
+msgid "What Maigret does and does not use"
+msgstr "Maigret 使用了什么、未使用什么"
+
+#: ../../source/maigret-integration.rst:140 f5fd77395f4b4a5ca544a6b979a125dc
+msgid ""
+"Two behaviours are worth calling out precisely, because they are easy to "
+"assume wrong:"
+msgstr "有两种行为值得精确指出，因为它们很容易被想当然地误解："
+
+#: ../../source/maigret-integration.rst:143 a03ad3ce9ed843f8b6d0769614f66b1f
+msgid ""
+"**The AI fallback stays off in this path.** ``extract_ids_data`` calls "
+"``extract(html_text)`` with no ``use_ai_fallback`` argument, so it takes the"
+" default (``use_ai_fallback=False``). The opt-in :doc:`ai-fallback` is never"
+" engaged by Maigret's parsing seam."
+msgstr ""
+"**在这条路径中，AI 回退保持关闭。** ``extract_ids_data`` 调用 ``extract(html_text)`` 时不带 "
+"``use_ai_fallback`` 参数，因此采用默认值（\\ ``use_ai_fallback=False``\\ ）。需显式开启的 "
+":doc:`ai-fallback` 绝不会被 Maigret 的解析衔接点触发。"
+
+#: ../../source/maigret-integration.rst:148 19e948799c77473baba268414118dbe6
+msgid ""
+"**``mutate_url`` is a separate, opt-in enrichment path — not part of the "
+"core seam.** The ``extract_ids_data`` seam described above uses "
+"``extract()`` only. Maigret does also import ``socid_extractor``'s "
+"``mutate_url``, but it is used by a distinct code path, "
+"``run_url_mutations``, which fetches secondary URLs derived from a profile "
+"and merges their fields in. That path is gated on a separate ``--enrich`` "
+"flag (off by default) *and* a ``CLAIMED`` status, and it is independent of "
+"the ``is_parsing_enabled`` extraction described here. If you only enable "
+"``is_parsing_enabled``, no URL mutations are performed."
+msgstr ""
+"**``mutate_url`` 是一条独立的、需显式开启的富化路径——并非核心衔接点的一部分。** 上文所述的 "
+"``extract_ids_data`` 衔接点仅使用 ``extract()``\\ 。Maigret 确实也导入了 "
+"``socid_extractor`` 的 ``mutate_url``\\ ，但它由一条不同的代码路径 ``run_url_mutations`` "
+"使用，该路径会抓取由个人资料页派生出的次级 URL 并将它们的字段合并进来。这条路径受一个独立的 ``--enrich`` 标志（默认关闭）*以及* "
+"``CLAIMED`` 状态共同控制，且与此处所述的 ``is_parsing_enabled`` 提取相互独立。如果你只启用 "
+"``is_parsing_enabled``\\ ，则不会执行任何 URL 变换。"
+
+#: ../../source/maigret-integration.rst:158 0a21e4283ee94efb8c2f9c9a8c2cb21b
+msgid "Cross-project documentation"
+msgstr "跨项目文档"
+
+#: ../../source/maigret-integration.rst:160 ffd6f88098c14a10b279ea6a745ab6fe
+msgid ""
+"These two projects cross-reference each other through Sphinx intersphinx, so"
+" links resolve in both directions. From here you can jump straight into "
+"Maigret's documentation — start at its :external+maigret:doc:`index`, or go "
+"directly to :external+maigret:doc:`library-usage`, "
+":external+maigret:doc:`quick-start`, or :external+maigret:doc:`command-line-"
+"options`. For the extractor side of the seam, see :doc:`how-extraction-"
+"works` and :doc:`ontology`."
+msgstr ""
+"这两个项目通过 Sphinx intersphinx 相互交叉引用，因此链接在两个方向上都能解析。从这里你可以直接跳转到 Maigret "
+"的文档——从它的 :external+maigret:doc:`index` 开始，或直接前往 "
+":external+maigret:doc:`library-usage`、:external+maigret:doc:`quick-start` 或 "
+":external+maigret:doc:`command-line-options`。关于衔接点的提取器一侧，请参见 :doc:`how-"
+"extraction-works` 和 :doc:`ontology`。"

@@ -1,0 +1,127 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/index.rst:43
+msgid "Getting started"
+msgstr "入门"
+
+#: ../../source/index.rst:52
+msgid "How it works"
+msgstr "工作原理"
+
+#: ../../source/index.rst:61
+msgid "Contributing"
+msgstr "贡献"
+
+#: ../../source/index.rst:4 13397e4afad64083b10981e8c79bf140
+msgid "Welcome to the socid_extractor docs!"
+msgstr "欢迎阅读 socid_extractor 文档！"
+
+#: ../../source/index.rst:6 35a05bf3a62343c5b88ee2b2015d4702
+msgid ""
+"**socid_extractor** turns any public profile page into a structured account "
+"record — usernames, display names, bios, avatars, locations, joined-at "
+"dates, follower counts, external links, and the **stable internal "
+"identifiers** that uniquely pin an account across renames, redesigns, and "
+"deletions."
+msgstr ""
+"**socid_extractor** "
+"能将任意公开的个人资料页转换为结构化的账户记录——包括用户名、显示名称、简介、头像、位置、注册日期、粉丝数、外部链接，以及可在改名、改版和删除后依然唯一锁定某个账户的\\"
+" **稳定内部标识符**\\ 。"
+
+#: ../../source/index.rst:11 549d593dab134fd09dbd18740375f8af
+msgid ""
+"It parses HTML pages and API responses from 130+ platforms and returns a "
+"flat, machine-readable dictionary of account fields. No API keys required, "
+"no headless browser — just a single :func:`~socid_extractor.extract` call on"
+" response text."
+msgstr ""
+"它解析来自 130+ 个平台的 HTML 页面和 API 响应，并返回一个扁平的、机器可读的账户字段字典。无需 API "
+"密钥，也无需无头浏览器——只需对响应文本调用一次 :func:`~socid_extractor.extract`。"
+
+#: ../../source/index.rst:15 fb84ed7f05fb49858f7bd4d825f4abe0
+msgid ""
+"socid_extractor powers `Maigret <https://github.com/soxoj/maigret>`_ and a "
+"number of other OSINT tools. If you are looking for a ready-to-use username "
+"checker, start with the :external+maigret:doc:`Maigret docs <index>`; this "
+"project is the extraction engine underneath it."
+msgstr ""
+"socid_extractor 为 `Maigret <https://github.com/soxoj/maigret>`_ 以及许多其他 OSINT"
+" 工具提供支持。如果你想要一个开箱即用的用户名检查工具，请从 :external+maigret:doc:`Maigret 文档 <index>` "
+"开始；本项目是其底层的提取引擎。"
+
+#: ../../source/index.rst:21 de6853b4081a46d6936f9be22838a6dc
+msgid ""
+"**This tool is intended for educational and lawful purposes only.** The "
+"developers do not endorse or encourage any illegal activities or misuse of "
+"this tool. Regulations regarding the collection and use of personal data "
+"vary by country and region, including but not limited to GDPR in the EU, "
+"CCPA in the USA, and similar laws worldwide."
+msgstr ""
+"**本工具仅供教育和合法用途。** 开发者不认可或鼓励任何非法活动或对本工具的滥用。有关个人数据收集和使用的法规因国家和地区而异，包括但不限于欧盟的 "
+"GDPR、美国的 CCPA 以及全球范围内的类似法律。"
+
+#: ../../source/index.rst:26 12e0a633e7cd4fa5aabcac6290de854d
+msgid ""
+"It is your sole responsibility to ensure that your use of this tool complies"
+" with all applicable laws and regulations in your jurisdiction. Any illegal "
+"use of this tool is strictly prohibited, and you are fully accountable for "
+"your actions."
+msgstr "确保你对本工具的使用符合你所在司法管辖区的所有适用法律法规，是你个人的唯一责任。严禁以任何非法方式使用本工具，你需对自己的行为负全部责任。"
+
+#: ../../source/index.rst:30 3e376e2205de41eca137b131b8cd4e14
+msgid ""
+"The authors and developers of this tool bear no responsibility for any "
+"misuse or unlawful activities conducted by its users."
+msgstr "本工具的作者和开发者对其用户进行的任何滥用或非法活动概不负责。"
+
+#: ../../source/index.rst:34 658c092c2ddf435293f2b5142e3dbd51
+msgid "You may be interested in:"
+msgstr "你可能感兴趣的内容："
+
+#: ../../source/index.rst:35 4204a14481e740f09d009e9ba8371dee
+msgid ":doc:`Quick start <quick-start>`"
+msgstr ":doc:`快速开始 <quick-start>`"
+
+#: ../../source/index.rst:36 74c02557fb614c25ac79cccf315a1a05
+msgid ":doc:`Library usage <library-usage>`"
+msgstr ":doc:`库的使用 <library-usage>`"
+
+#: ../../source/index.rst:37 e1e9a1774d474309aa282e55ca7ccd9c
+msgid ":doc:`Field ontology <ontology>`"
+msgstr ":doc:`字段本体 <ontology>`"
+
+#: ../../source/index.rst:38 4a7705999f8b4895bdb6deb4b03523d4
+msgid ":doc:`How extraction works <how-extraction-works>`"
+msgstr ":doc:`提取的工作原理 <how-extraction-works>`"
+
+#: ../../source/index.rst:39 a168abfab0294b51bc3e43da4f6ed62d
+msgid ":doc:`AI fallback <ai-fallback>`"
+msgstr ":doc:`AI 回退 <ai-fallback>`"
+
+#: ../../source/index.rst:40 ef51d7a0d0304c25988db1b501337509
+msgid ":doc:`Maigret integration <maigret-integration>`"
+msgstr ":doc:`Maigret 集成 <maigret-integration>`"
+
+#: ../../source/index.rst:41 58aaef071a814ff2a1b4885affe30969
+msgid ":doc:`Adding a scheme <adding-a-scheme>`"
+msgstr ":doc:`添加提取方案 <adding-a-scheme>`"

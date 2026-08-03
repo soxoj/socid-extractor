@@ -1,0 +1,767 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/ontology.rst:4 4d14401a27aa455faabd8540346ed985
+msgid "Field ontology"
+msgstr "字段本体"
+
+#: ../../source/ontology.rst:6 41c5f5b3d031485680c06642c477a958
+msgid ""
+"socid_extractor normalizes the data returned by every scheme onto a shared "
+"set of **standard field names**. A profile parsed from Bluesky and a profile"
+" parsed from XVideos both expose ``uid``, ``username`` and ``created_at`` "
+"under the same keys, so a downstream pipeline consuming the output does not "
+"need 130 platform-specific mappings — it learns one vocabulary and reuses it"
+" everywhere."
+msgstr ""
+"socid_extractor 把每个提取方案返回的数据归一化到一套共享的 **标准字段名** 上。从 Bluesky 解析出的资料和从 XVideos"
+" 解析出的资料，都在相同的键下暴露 ``uid``\\ 、\\ ``username`` 和 ``created_at``\\ "
+"，因此消费这些输出的下游流水线不需要 130 套平台特定的映射 —— 它只需学会一套词汇，就能到处复用。"
+
+#: ../../source/ontology.rst:12 f5125fce7e5b450db01d3e5c91a55a45
+msgid ""
+"The core rule when adding a scheme: **use an existing name from this page.**"
+" Only create a platform-prefixed field (for example ``gaia_id``) when the "
+"data does not fit any standard category."
+msgstr ""
+"添加提取方案时的核心规则：\\ **使用本页已有的名称。** 只有当数据不属于任何标准类别时，才创建带平台前缀的字段（例如 ``gaia_id``\\ "
+"）。"
+
+#: ../../source/ontology.rst:16 c56c0344ff324dca8ca1ac3698a578f3
+msgid ""
+"This page is a faithful rendering of ``FIELDS.md`` in the repository root. "
+"See :doc:`adding-a-scheme` for how to wire these fields into a scheme, and "
+":doc:`how-extraction-works` for how extraction produces them."
+msgstr ""
+"本页是仓库根目录中 ``FIELDS.md`` 的忠实呈现。关于如何把这些字段接入提取方案，见 :doc:`adding-a-"
+"scheme`；关于提取如何产生这些字段，见 :doc:`how-extraction-works`。"
+
+#: ../../source/ontology.rst:21 7e0999ee5c7b4f9587b3b8fe9a35066b
+msgid "Identity"
+msgstr "身份"
+
+#: ../../source/ontology.rst:27 ../../source/ontology.rst:53
+#: ../../source/ontology.rst:88 ../../source/ontology.rst:117
+#: ../../source/ontology.rst:137 ../../source/ontology.rst:181
+#: ../../source/ontology.rst:227 0695b31d581448e7a2f56495167750fc
+#: 198fa85c8bba461287faf347f7ab6538 2723142ff9cd409db2faf3902ce3b5d6
+#: 518bf376d73d4f9d8cc6bab9898ba35c 8033591d50454818a1128d8276c06a95
+#: c42ed41d8e1d4a9582c1057d09b681c1 f1b64f0e7d96418497117e4400628f4c
+msgid "Field"
+msgstr "字段"
+
+#: ../../source/ontology.rst:28 ../../source/ontology.rst:54
+#: ../../source/ontology.rst:89 ../../source/ontology.rst:118
+#: ../../source/ontology.rst:138 ../../source/ontology.rst:182
+#: ../../source/ontology.rst:228 0be36254974a47f0a10a34099b2e1c48
+#: 18686a038f5c409eab905e6e09691fd4 77f1135e64c14d76a8893ccdc52149a5
+#: aa2f326cdbe34255989798dcf2c09589 bbfe1ffb70ab497b9a1c73c5f6da39f4
+#: d43447ca8a944427a287abaa7d5939ac e5ee1338b8134a9c99885aaef32ba1d9
+msgid "Description"
+msgstr "描述"
+
+#: ../../source/ontology.rst:29 ../../source/ontology.rst:55
+#: ../../source/ontology.rst:90 ../../source/ontology.rst:119
+#: ../../source/ontology.rst:139 ../../source/ontology.rst:183
+#: ../../source/ontology.rst:229 16a38a2f942642948c0f68e65f475434
+#: 1e214c37748541518923676293631ec7 27557c8a34834a3ea1d765d27404a42d
+#: 531cf424e2d14c1fa1dff885c042c738 9a30bf3b187d4f21bf85294d20e7bdd3
+#: c8a58ce6bdce42bd95c2afd457b30088 fcb49d9592f745688d04c5acda075533
+msgid "API mapping examples"
+msgstr "API 映射示例"
+
+#: ../../source/ontology.rst:30 6c4b3ac104bf41fb89555e1e58c6eb84
+msgid "``uid``"
+msgstr ""
+
+#: ../../source/ontology.rst:31 c318b029bf4d46c28064fb1aa9eb0df6
+msgid "Numeric or string account ID on the platform"
+msgstr "平台上的数字或字符串账户 ID"
+
+#: ../../source/ontology.rst:32 9c43d53ec19c461e9c15d19447a73d1b
+msgid "``id``, ``user_id``, ``pk``, ``userid``, ``steamid``, ``did``"
+msgstr ""
+
+#: ../../source/ontology.rst:33 530c7a922ec24479ac42ce7d4c003b5e
+msgid "``username``"
+msgstr ""
+
+#: ../../source/ontology.rst:34 2cb9c221c38d46c49c885b3b1df0076c
+msgid "Unique login / handle (what appears in URL)"
+msgstr "唯一登录名 / handle（出现在 URL 中的部分）"
+
+#: ../../source/ontology.rst:35 79eb26ff422b4cd78f69162d9f0b98c9
+msgid "``login``, ``screen_name``, ``handle``, ``slug``, ``vanity``"
+msgstr ""
+
+#: ../../source/ontology.rst:36 4c60ac0634c547fa862a8fdb61438386
+msgid "``fullname``"
+msgstr ""
+
+#: ../../source/ontology.rst:37 6fc149d9b8ae470ba18731fc05ed7eb1
+msgid "Display name"
+msgstr "显示名称"
+
+#: ../../source/ontology.rst:38 a1ac4f0a37e94e428bea215fe444bc53
+msgid ""
+"``name``, ``displayName``, ``display_name``, ``full_name``, ``screenname``, "
+"``personaname``"
+msgstr ""
+
+#: ../../source/ontology.rst:39 90d9eff36754466e86e6c6862402b269
+msgid "``id``"
+msgstr ""
+
+#: ../../source/ontology.rst:40 59ea350400ea465ea696c737391ffeb7
+msgid "Alternative to ``uid`` (legacy, prefer ``uid``)"
+msgstr "``uid`` 的替代项（遗留，优先使用 ``uid``\\ ）"
+
+#: ../../source/ontology.rst:41 ../../source/ontology.rst:70
+#: ../../source/ontology.rst:102 ../../source/ontology.rst:151
+#: ../../source/ontology.rst:195 ../../source/ontology.rst:201
+#: ../../source/ontology.rst:235 ../../source/ontology.rst:244
+#: ../../source/ontology.rst:247 ../../source/ontology.rst:250
+#: ../../source/ontology.rst:253 ../../source/ontology.rst:256
+#: 02a7c81c3d3f498c8c2fd76236bf0da5 082b0ac1c805434880a15b488277711d
+#: 1d08d92f341545bea4c26fa651181dcf 2b37b6a8294046a3a33a07169c2e98fe
+#: 44bc31c83e424beeabbc8b5cda381903 97a3e5fa14514a0495bdc850c6d3a815
+#: 99ac186f3589461b98edf0947b214e3a a6fd6afd8b20447eb767b386e0fc0a9e
+#: aadb935ad6a94bb9b9af1d1360479d07 dc1ae2101b034987927ca41bb50e85a3
+#: f6314a359f364f359db684bf5281bc3e fe2bff49be0541af80ff711c6faf7e86
+msgid "--"
+msgstr ""
+
+#: ../../source/ontology.rst:43 97a9448f2de14caa9b64d7e07aed89dd
+msgid ""
+"**Rule:** If the API returns ``name`` as a display name, map it to "
+"``fullname``. If ``name`` is a login/handle, map it to ``username``."
+msgstr ""
+"**规则：** 如果 API 把 ``name`` 作为显示名称返回，就映射到 ``fullname``\\ ；如果 ``name`` "
+"是登录名/handle，就映射到 ``username``\\ 。"
+
+#: ../../source/ontology.rst:47 18093225d5a54c5a82889b1d9ba94d48
+msgid "Profile"
+msgstr "个人资料"
+
+#: ../../source/ontology.rst:56 09491d84c71243fbbec3f2a6f6692005
+msgid "``bio``"
+msgstr ""
+
+#: ../../source/ontology.rst:57 63831e7904144807a03d2b9f87a731ef
+msgid "Biography / profile description"
+msgstr "简介 / 个人资料描述"
+
+#: ../../source/ontology.rst:58 6206e4935a1746a8aa95290bea6b72c6
+msgid ""
+"``description``, ``about``, ``signature``, ``status_message``, ``tagline``"
+msgstr ""
+
+#: ../../source/ontology.rst:59 ed6b7cb54128472ea8966f8f01edca9c
+msgid "``image``"
+msgstr ""
+
+#: ../../source/ontology.rst:60 b2568209dc3d4d2ba5ca15a4aecda997
+msgid "Avatar / profile picture URL"
+msgstr "头像 / 个人资料图片 URL"
+
+#: ../../source/ontology.rst:61 19e4d9a5311845348f58d3c14e04ce1e
+msgid ""
+"``photo``, ``avatar``, ``profile_pic_url``, ``avatar_url``, "
+"``profileImageURL``"
+msgstr ""
+
+#: ../../source/ontology.rst:62 b0754e06d8964eb38885d27f04a5a86f
+msgid "``image_bg``"
+msgstr ""
+
+#: ../../source/ontology.rst:63 6b3e552685c84715a65e533ff55c6f40
+msgid "Background / banner image URL"
+msgstr "背景 / 横幅图片 URL"
+
+#: ../../source/ontology.rst:64 b929a3bae7c147378d6c80fbbe6afd1a
+msgid "``banner``, ``cover``, ``bannerImageURL``, ``cover_250_url``"
+msgstr ""
+
+#: ../../source/ontology.rst:65 4146d7cf4a2742fa82a233cfa4953aba
+msgid "``website``"
+msgstr ""
+
+#: ../../source/ontology.rst:66 a93a685ddabd4889affdcb55afac342f
+msgid "Personal website URL"
+msgstr "个人网站 URL"
+
+#: ../../source/ontology.rst:67 396cc4f3a28d400fb2d0363331e83b41
+msgid "``url``, ``domain_url``, ``external_url``, ``blog_url``"
+msgstr ""
+
+#: ../../source/ontology.rst:68 2929203639d44bdc9545fc3c51477125
+msgid "``email``"
+msgstr ""
+
+#: ../../source/ontology.rst:69 cbe547419a1640a4a7e3dadde882168d
+msgid "Public email"
+msgstr "公开邮箱"
+
+#: ../../source/ontology.rst:71 0298a0674b7e4db9ad35d892f8e2632b
+msgid "``occupation``"
+msgstr ""
+
+#: ../../source/ontology.rst:72 b45cb758e65644e6acd244e13cd81201
+msgid "Job title / profession"
+msgstr "职位 / 职业"
+
+#: ../../source/ontology.rst:73 c087f3a965b04a1c9c9de1ef8bbc99f7
+msgid "``jobTitle``, ``role``, ``work``"
+msgstr ""
+
+#: ../../source/ontology.rst:74 3b8299eb9ce146a5ad6d4dfb45786947
+msgid "``company``"
+msgstr ""
+
+#: ../../source/ontology.rst:75 4058e42af63d4515bf32bcbdf7394334
+msgid "Employer / organization"
+msgstr "雇主 / 组织"
+
+#: ../../source/ontology.rst:76 4bdbef7eb2e24bf782d47dfe704976b8
+msgid "``company_name``, ``organization``, ``worksFor``"
+msgstr ""
+
+#: ../../source/ontology.rst:77 ff2189eb09834f088431b831534732b7
+msgid "``interests``"
+msgstr ""
+
+#: ../../source/ontology.rst:78 5de4dd41c6c64f4ba63d7cf466197ee3
+msgid "Interests / hobbies (free text)"
+msgstr "兴趣 / 爱好（自由文本）"
+
+#: ../../source/ontology.rst:79 860ca52fe3524868a18163af3f0fa6f9
+msgid "``interest_names``"
+msgstr ""
+
+#: ../../source/ontology.rst:82 500e14cfe1c64f2f9fecdf5fee98988b
+msgid "Demographics"
+msgstr "人口统计"
+
+#: ../../source/ontology.rst:91 118858fce891444592dd462641712b64
+msgid "``gender``"
+msgstr ""
+
+#: ../../source/ontology.rst:92 607c437a63be4e5cb2a0153671f2b3ee
+msgid "Gender"
+msgstr "性别"
+
+#: ../../source/ontology.rst:93 2dc04d0c4b574c81adf0bb649539f2ed
+msgid "``sex``"
+msgstr ""
+
+#: ../../source/ontology.rst:94 78300f27005146ffbe4f2845d69d32d5
+msgid "``country``"
+msgstr ""
+
+#: ../../source/ontology.rst:95 ddf9ee97ae66446e99dc82987b298447
+msgid "Country (name)"
+msgstr "国家（名称）"
+
+#: ../../source/ontology.rst:96 30634d0611b04f8aa77c9d41860132e1
+msgid "``country_code`` (normalize to name)"
+msgstr "``country_code``\\ （归一化为名称）"
+
+#: ../../source/ontology.rst:97 7938abdc0eb448219f2c7a471b4faa00
+msgid "``country_code``"
+msgstr ""
+
+#: ../../source/ontology.rst:98 d1cc6e7e6e604964896287acb510d152
+msgid "Country (ISO 3166-1 alpha-2 code)"
+msgstr "国家（ISO 3166-1 alpha-2 代码）"
+
+#: ../../source/ontology.rst:99 e6af1814164d43ffb79a5e300ec0fff1
+msgid "``countryCode``, ``country_code``"
+msgstr ""
+
+#: ../../source/ontology.rst:100 efb51288feef44429678454ed1136fdc
+msgid "``city``"
+msgstr ""
+
+#: ../../source/ontology.rst:101 6d2458867e784bb8893a2e2f5a5201a2
+msgid "City"
+msgstr "城市"
+
+#: ../../source/ontology.rst:103 ac70e10cfefa4ceeaa96e0d8be268c2e
+msgid "``location``"
+msgstr ""
+
+#: ../../source/ontology.rst:104 2493c1dcd77b44fc941399386dcef7b6
+msgid "Location (free text, city+country)"
+msgstr "位置（自由文本，城市+国家）"
+
+#: ../../source/ontology.rst:105 beaeba401db849f19aa71806d1d26027
+msgid "``address``"
+msgstr ""
+
+#: ../../source/ontology.rst:106 0699b4a618c04f11867a984fde8ae77a
+msgid "``birthday``"
+msgstr ""
+
+#: ../../source/ontology.rst:107 6fa86d2a72c944cab62583207209c495
+msgid "Date of birth"
+msgstr "出生日期"
+
+#: ../../source/ontology.rst:108 254e35359e5c47d79d4fff3365e7f75e
+msgid "``birth_date``, ``dateOfBirth``"
+msgstr ""
+
+#: ../../source/ontology.rst:111 2e09e7cd78504584b19aa5c94b6bb31f
+msgid "Dates"
+msgstr "日期"
+
+#: ../../source/ontology.rst:120 b579bfaf2f0545b3b29a529dc268d6a4
+msgid "``created_at``"
+msgstr ""
+
+#: ../../source/ontology.rst:121 05df3ec1a76641b786fce5e6987e9281
+msgid "Registration / account creation date"
+msgstr "注册 / 账户创建日期"
+
+#: ../../source/ontology.rst:122 845055674dc943f29883328ae722dda7
+msgid ""
+"``joinedAt``, ``registration``, ``registration_date``, ``history.joined``, "
+"``joined`` (unix), ``created_time`` (unix), ``createdAt``"
+msgstr ""
+
+#: ../../source/ontology.rst:123 8b75d44787e64ab186d152b46521d213
+msgid "``updated_at``"
+msgstr ""
+
+#: ../../source/ontology.rst:124 32b47e39910e487ab80f592c13bdb7b4
+msgid "Last profile update date"
+msgstr "个人资料最后更新日期"
+
+#: ../../source/ontology.rst:125 1ec5840d90094df3af951a4b6824f99f
+msgid "``modifyDate``, ``updatedAt``"
+msgstr ""
+
+#: ../../source/ontology.rst:126 592d167779164dc6b967b264edeaaa81
+msgid "``latest_activity_at``"
+msgstr ""
+
+#: ../../source/ontology.rst:127 e7646c5ef27a4f4996c9fd8061f3c77c
+msgid "Last visit / activity / online time"
+msgstr "最后访问 / 活动 / 在线时间"
+
+#: ../../source/ontology.rst:128 cdfa429f5917490d95195782996c6de6
+msgid "``last_online`` (unix), ``last_seen_at``, ``active``"
+msgstr ""
+
+#: ../../source/ontology.rst:131 dbdfe1489b82491595f7b294f039398c
+msgid "Counters"
+msgstr "计数"
+
+#: ../../source/ontology.rst:140 e7bc83fa05a849a7807858a79992e1f8
+msgid "``follower_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:141 be9c44bb98d444eebf5c475734d298af
+msgid "Followers / subscribers"
+msgstr "关注者 / 订阅者"
+
+#: ../../source/ontology.rst:142 7e0a27209e2e4fef9f856c7fff33593d
+msgid ""
+"``followers``, ``followers_count``, ``followersCount``, "
+"``subscribers_count``, ``numFollowers``"
+msgstr ""
+
+#: ../../source/ontology.rst:143 ec9284e42739497abbcc53b1624ff2c7
+msgid "``following_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:144 1ac02d30dccd4a5fa81c1fc0b8d1eed1
+msgid "Following / subscriptions"
+msgstr "关注中 / 订阅"
+
+#: ../../source/ontology.rst:145 8d69bbac9f16473eb8da30fd0b99c002
+msgid "``following``, ``friends_count``, ``followingCount``, ``numFollowing``"
+msgstr ""
+
+#: ../../source/ontology.rst:146 edc12a9b492640ac9b83971c84329ffd
+msgid "``posts_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:147 a78bd4979cf24f96913d09af8ad8ea7c
+msgid "Number of posts / publications"
+msgstr "帖子 / 发布数量"
+
+#: ../../source/ontology.rst:148 905d5bb5779c4c7499f69e297c316aa6
+msgid "``postsCount``, ``media_count``, ``buzz_count``, ``numPosts``"
+msgstr ""
+
+#: ../../source/ontology.rst:149 5b4007fbb8c946bd9cf5ac90befac4d4
+msgid "``last_posts_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:150 286a4f670e504883b89d398ef756329f
+msgid "Number of recent posts visible on the first page (not the total)"
+msgstr "首页可见的近期帖子数量（非总数）"
+
+#: ../../source/ontology.rst:152 c208bd6c430a45c59e279dc51704b25d
+msgid "``comments_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:153 dc2e0ee0c28946ed8198e4209196ae09
+msgid "Number of comments"
+msgstr "评论数量"
+
+#: ../../source/ontology.rst:154 25c0e06f9d63473f9f07238f5cffc65d
+msgid "``numPosts`` (Disqus counts comments as posts)"
+msgstr "``numPosts``\\ （Disqus 把评论算作帖子）"
+
+#: ../../source/ontology.rst:155 3ac63daee44e4ee0aead4005aa189bbb
+msgid "``likes_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:156 5bca16164fd84b3081690fe80dbb92dd
+msgid "Received likes"
+msgstr "收到的赞"
+
+#: ../../source/ontology.rst:157 baa9b1f1088c4b4fa809e25cf165148c
+msgid "``numLikesReceived``, ``likes_count``, ``heartCount``"
+msgstr ""
+
+#: ../../source/ontology.rst:158 955035eb6a314f3b8cd3197c7d14940c
+msgid "``views_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:159 76462bc9700c4ddf9e00b799580c03f5
+msgid "Views"
+msgstr "浏览量"
+
+#: ../../source/ontology.rst:160 b9f97758289f46e4b27dde967c526d9d
+msgid "``all_views_count``, ``profile_views``, ``profile_hits``"
+msgstr ""
+
+#: ../../source/ontology.rst:161 559e8928e3d34d6789f360727e73588e
+msgid "``videos_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:162 63670d9809c64ab589e63e3c3043d185
+msgid "Number of videos"
+msgstr "视频数量"
+
+#: ../../source/ontology.rst:163 471fd365f32b4fddb9872556581ca107
+msgid "``videos_total``, ``nb_videos``"
+msgstr ""
+
+#: ../../source/ontology.rst:164 b17158e5bcd249869e9f36f7ef2a64be
+msgid "``photos_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:165 281017164cae4229bed7b67700a3078c
+msgid "Number of photos"
+msgstr "照片数量"
+
+#: ../../source/ontology.rst:166 de690e5e88114c8e9833b5f613debab9
+msgid "``photoCount``, ``photos_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:167 c80fb09aa8c345e1aa6162a1a8d253e3
+msgid "``friends_count``"
+msgstr ""
+
+#: ../../source/ontology.rst:168 779bc43f78db467f94939ba295eee131
+msgid "Friends (mutual relationship)"
+msgstr "好友（双向关系）"
+
+#: ../../source/ontology.rst:169 e9b12187574c44d389a3cd09d2994f09
+msgid "``totalFriends``"
+msgstr ""
+
+#: ../../source/ontology.rst:171 b1284b2c6b824285a58f9d7d89049fd5
+msgid ""
+"**Rule:** Always use singular noun + ``_count``: ``follower_count`` (not "
+"``followers_count``), ``video_count`` / ``videos_count``."
+msgstr ""
+"**规则：** 始终使用单数名词 + ``_count``\\ ：\\ ``follower_count``\\ （不是 "
+"``followers_count``\\ ）、\\ ``video_count`` / ``videos_count``\\ 。"
+
+#: ../../source/ontology.rst:175 e9c55f71d3ab4f3c97aac733c51e18dd
+msgid "Boolean flags"
+msgstr "布尔标志"
+
+#: ../../source/ontology.rst:184 c8920cb059624c299cad038ac401f814
+msgid "``is_verified``"
+msgstr ""
+
+#: ../../source/ontology.rst:185 f9837144565f4b2480830be1036e6675
+msgid "Verified account"
+msgstr "已验证账户"
+
+#: ../../source/ontology.rst:186 fe4ec827cb7d47248632e4d9a5100c97
+msgid "``verified``, ``isVerified``, ``has_verified_badge``"
+msgstr ""
+
+#: ../../source/ontology.rst:187 3fd8f48aaa0d4be6bfb059f697f01cce
+msgid "``is_private``"
+msgstr ""
+
+#: ../../source/ontology.rst:188 76d35901597f47baa98162f244d8413e
+msgid "Private profile"
+msgstr "私密资料"
+
+#: ../../source/ontology.rst:189 b981b8c013d44cb4947af4c0547084bc
+msgid "``isPrivate``, ``text_post_app_is_private``"
+msgstr ""
+
+#: ../../source/ontology.rst:190 e814a350511847309686a1bd1c3b02c6
+msgid "``is_banned``"
+msgstr ""
+
+#: ../../source/ontology.rst:191 3fd5d29ca9fd48caaf41b18a32e6a176
+msgid "Banned account"
+msgstr "被封禁账户"
+
+#: ../../source/ontology.rst:192 b3a5720bbcb04f4fb306bd2211e63bec
+msgid "``isBanned``"
+msgstr ""
+
+#: ../../source/ontology.rst:193 f38dbb27ab5040c68a7d09696f81b632
+msgid "``is_deleted``"
+msgstr ""
+
+#: ../../source/ontology.rst:194 d9dd3118016444cd9cb7405dc89662ed
+msgid "Deleted account"
+msgstr "已删除账户"
+
+#: ../../source/ontology.rst:196 35c7acc579ab46ad95e52c7e3f199422
+msgid "``is_suspended``"
+msgstr ""
+
+#: ../../source/ontology.rst:197 4be24424692d48d1ab8ad52630e722dd
+msgid "Suspended account"
+msgstr "被暂停账户"
+
+#: ../../source/ontology.rst:198 195ec554cf554d89bee07bddc67549e0
+msgid "``suspended``"
+msgstr ""
+
+#: ../../source/ontology.rst:199 ceb79ad3fcec4ca5b14dfa3cecaa0927
+msgid "``is_business``"
+msgstr ""
+
+#: ../../source/ontology.rst:200 e4214d8a6e964bbbb56b0dac9a489443
+msgid "Business account"
+msgstr "企业账户"
+
+#: ../../source/ontology.rst:202 bbac0e5b508d4cd7bb975c12358a51a0
+msgid "``is_employee``"
+msgstr ""
+
+#: ../../source/ontology.rst:203 9130e5f110ea4de2946b4f863eb19726
+msgid "Platform employee"
+msgstr "平台员工"
+
+#: ../../source/ontology.rst:204 4d7dd1083af6478d8bc24b805af4b28a
+msgid "``isEmployee``, ``scratchteam``"
+msgstr ""
+
+#: ../../source/ontology.rst:206 c5806b77220747d58c145945058718b9
+msgid ""
+"**Rule:** Boolean fields start with ``is_`` and are stored as strings "
+"``'True'`` / ``'False'``. Never use bare ``verified`` — always "
+"``is_verified``."
+msgstr ""
+"**规则：** 布尔字段以 ``is_`` 开头，并以字符串 ``'True'`` / ``'False'`` 存储。绝不要用裸的 "
+"``verified`` —— 始终用 ``is_verified``\\ 。"
+
+#: ../../source/ontology.rst:211 526ebbbb4505436aa2abf8bcabdc1b3a
+msgid "**Common mistakes to avoid:**"
+msgstr "**需要避免的常见错误：**"
+
+#: ../../source/ontology.rst:213 3e3f60f3ff0147d582913586c6dc1f04
+msgid "``verified`` → ``is_verified``"
+msgstr ""
+
+#: ../../source/ontology.rst:214 109c7c82d1cd469b99e943e63cb5a986
+msgid "``joined`` → ``created_at``"
+msgstr ""
+
+#: ../../source/ontology.rst:215 c76b42e29c874f5299514b533581f022
+msgid "``last_online`` → ``latest_activity_at``"
+msgstr ""
+
+#: ../../source/ontology.rst:217 51cb26ac797541ca921ec0960335fc3d
+msgid ""
+"And for the identity fields: map a display name to ``fullname`` and a "
+"login/handle to ``username`` — do not dump either into a bare ``name``."
+msgstr ""
+"对于身份字段：把显示名称映射到 ``fullname``\\ ，把登录名/handle 映射到 ``username`` —— "
+"不要把两者随意塞进一个裸的 ``name``\\ 。"
+
+#: ../../source/ontology.rst:221 dbd86d785eca4fee8513c7ff0f6de4bb
+msgid "Cross-platform links"
+msgstr "跨平台链接"
+
+#: ../../source/ontology.rst:230 8d27eda096ee4bb0bd4dedb3c3d21bfb
+msgid "``links``"
+msgstr ""
+
+#: ../../source/ontology.rst:231 2b6170a523c0409aabb330f14d725ddd
+msgid "List of external links"
+msgstr "外部链接列表"
+
+#: ../../source/ontology.rst:232 9ba5e48e909c4c57b26043fc62f28b38
+msgid "``socialLinks``, ``websites``"
+msgstr ""
+
+#: ../../source/ontology.rst:233 f4b85e596fe4470eb889c2df340777f4
+msgid "``social_links``"
+msgstr ""
+
+#: ../../source/ontology.rst:234 a5ee8cdf53c74207a532930240370fef
+msgid "Linked social accounts (structured)"
+msgstr "关联的社交账户（结构化）"
+
+#: ../../source/ontology.rst:236 e585892e6f934475bfccdd467f3dae6a
+msgid "``twitter_username``"
+msgstr ""
+
+#: ../../source/ontology.rst:237 de8680f1dcce4d0c9a59503ff62b5f00
+msgid "Twitter/X handle"
+msgstr "Twitter/X handle"
+
+#: ../../source/ontology.rst:238 622c0e2ac75e42c1b4e2350a81c0ee42
+msgid "``twitterUsername``, ``twitter_screen_name``"
+msgstr ""
+
+#: ../../source/ontology.rst:239 ae3353294b47433e8bcab41a5540f293
+msgid "``facebook_uid``"
+msgstr ""
+
+#: ../../source/ontology.rst:240 45484af1fb564f0dadce66f313de79dd
+msgid "Numeric Facebook ID"
+msgstr "数字 Facebook ID"
+
+#: ../../source/ontology.rst:241 f27ee10f71ce4b56ae441236ca95acc9
+#, python-brace-format
+msgid "Also extracted from ``graph.facebook.com/{id}/picture`` in avatar URLs"
+msgstr "也可从头像 URL 中的 ``graph.facebook.com/{id}/picture`` 提取"
+
+#: ../../source/ontology.rst:242 048862a02851459ea2bf511a3e7f2fb6
+msgid "``facebook_username``"
+msgstr ""
+
+#: ../../source/ontology.rst:243 1271bfb71b7747e3b763870d1bc1a28b
+msgid "Facebook username"
+msgstr "Facebook 用户名"
+
+#: ../../source/ontology.rst:245 14d18ba7924b48229222b4803657085c
+msgid "``instagram_username``"
+msgstr ""
+
+#: ../../source/ontology.rst:246 e1bb99fde2184803a5e7ea5d524317c2
+msgid "Instagram handle"
+msgstr "Instagram handle"
+
+#: ../../source/ontology.rst:248 d88c380da8be466cb9b4d2ca2b4490a6
+msgid "``telegram_username``"
+msgstr ""
+
+#: ../../source/ontology.rst:249 518efc67a56c4707a389b6756709af4e
+msgid "Telegram handle"
+msgstr "Telegram handle"
+
+#: ../../source/ontology.rst:251 7dcf3697f6044a15abc6f7625dee6c60
+msgid "``vk_username``"
+msgstr ""
+
+#: ../../source/ontology.rst:252 71f6ea38a3134e5cbd9dab3312d0ff83
+msgid "VK handle"
+msgstr "VK handle"
+
+#: ../../source/ontology.rst:254 dc62b185975a40809659d46eb5d81b7d
+msgid "``github_username``"
+msgstr ""
+
+#: ../../source/ontology.rst:255 9ae165172fd34bff8f863c5c8b7f3ef0
+msgid "GitHub username"
+msgstr "GitHub 用户名"
+
+#: ../../source/ontology.rst:257 51ed7e901bbd41d281669da6182e3350
+msgid "``linkedin_username``"
+msgstr ""
+
+#: ../../source/ontology.rst:258 c319057c3418474aac62862516a8456e
+msgid "LinkedIn handle"
+msgstr "LinkedIn handle"
+
+#: ../../source/ontology.rst:259 327d3540f2b94ad69eefe90be266143c
+msgid "``linkedin_url`` (extract last path segment)"
+msgstr "``linkedin_url``\\ （提取最后一段路径）"
+
+#: ../../source/ontology.rst:262 185c31eab699448185eade5fee593d84
+msgid "Platform-specific fields"
+msgstr "平台特定字段"
+
+#: ../../source/ontology.rst:264 2e582db3a07b448da603eed1fec0f5d8
+msgid ""
+"Fields with unique meaning that have no standard equivalent. Use a platform "
+"prefix **only** for such fields."
+msgstr "具有独特含义、没有标准对应项的字段。\\ **只**\\ 对这类字段使用平台前缀。"
+
+#: ../../source/ontology.rst:286 42787d51b12b4f5aaa040a93608d7495
+msgid "API response mapping examples"
+msgstr "API 响应映射示例"
+
+#: ../../source/ontology.rst:289 35a011e9d0234be2909504640062d98e
+msgid "JSON API (Bluesky)"
+msgstr "JSON API（Bluesky）"
+
+#: ../../source/ontology.rst:306 bfe7fa20e5c54852bbd304a731c59b43
+msgid "HTML regex (XVideos)"
+msgstr "HTML 正则（XVideos）"
+
+#: ../../source/ontology.rst:317 14b2f2c6615f4840979e388abb926341
+msgid "og:meta (Habr)"
+msgstr "og:meta（Habr）"
+
+#: ../../source/ontology.rst:325 8fdcca02361f4e8e81abcf7e40bbbbc0
+msgid "When to create a new field"
+msgstr "何时创建新字段"
+
+#: ../../source/ontology.rst:327 a512356cb13a4743b1b85ea07653a6c4
+msgid "Check this document -- is there a standard equivalent?"
+msgstr "查阅本文档 —— 是否有标准对应项？"
+
+#: ../../source/ontology.rst:328 0cf2f6642a774143b09c4da107c9a089
+msgid ""
+"Does the data fit a standard field? -> Use it with mapping in the lambda."
+msgstr "数据是否适合某个标准字段？-> 在 lambda 中做映射后使用它。"
+
+#: ../../source/ontology.rst:329 250dca749d0247aaaabbdfcc448c5338
+msgid ""
+"Is the data unique to the platform with no equivalent? -> Create with a "
+"platform prefix."
+msgstr "数据是否为该平台独有、没有对应项？-> 用平台前缀创建。"
+
+#: ../../source/ontology.rst:331 ecaab77a421143649c68e81137389258
+msgid ""
+"Is the data useful across multiple platforms but not listed here? -> Add it "
+"to this document as a new standard field."
+msgstr "数据是否跨多个平台有用但此处未列出？-> 把它作为新的标准字段加入本文档。"
