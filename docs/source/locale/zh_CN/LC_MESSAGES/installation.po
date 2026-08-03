@@ -1,0 +1,128 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/installation.rst:4 d33df26756e64c17b4b74001c4b12597
+msgid "Installation"
+msgstr "安装"
+
+#: ../../source/installation.rst:7 491096f598e64a99b0c7ced804787f97
+msgid "Requirements"
+msgstr "环境要求"
+
+#: ../../source/installation.rst:9 41cd466c7a3c401e87f47f5a316a4175
+msgid "**Python 3.10+** (CI tests 3.10 – 3.14)."
+msgstr "**Python 3.10+**\\ （CI 测试 3.10 – 3.14）。"
+
+#: ../../source/installation.rst:10 a390460d1eb9416d8efad067c2c44af6
+msgid ""
+"No API keys and no headless browser for the core library. The optional "
+":doc:`AI fallback <ai-fallback>` needs an OpenAI API key."
+msgstr ""
+"核心库无需 API 密钥，也无需无头浏览器。可选的 :doc:`AI 回退 <ai-fallback>` 需要 OpenAI API 密钥。"
+
+#: ../../source/installation.rst:14 5fd142bc86f34a95a0d5e4705152880b
+msgid "From PyPI"
+msgstr "从 PyPI 安装"
+
+#: ../../source/installation.rst:20 3ac08b0efd7b45948c2fc3fd81382b61
+msgid ""
+"For a clean CLI install on a workstation (isolated virtualenv, "
+"``socid_extractor`` on your ``PATH``):"
+msgstr ""
+"若要在工作站上进行干净的 CLI 安装（隔离的 virtualenv，将 ``socid_extractor`` 加入你的 ``PATH``\\ ）："
+
+#: ../../source/installation.rst:28 15b7ce0054c3446aa6458373292d18ad
+msgid "Latest development version"
+msgstr "最新开发版本"
+
+#: ../../source/installation.rst:35 d3f17596087849b29950e95cad6501a3
+msgid "Optional extras"
+msgstr "可选附加组件"
+
+#: ../../source/installation.rst:37 848053c964204393ae2bc71e0df9f66a
+msgid ""
+"The extras are declared in ``pyproject.toml`` under ``[project.optional-"
+"dependencies]`` and installed with the ``package[extra]`` syntax:"
+msgstr ""
+"这些附加组件在 ``pyproject.toml`` 的 ``[project.optional-dependencies]`` 下声明，并使用 "
+"``package[extra]`` 语法安装："
+
+#: ../../source/installation.rst:44 bcd33eb47a1645a7b250825d5bc60ba5
+msgid "Extra"
+msgstr "附加组件"
+
+#: ../../source/installation.rst:45 214dc66857c34a0d9f31ccfc127b3aa9
+msgid "Contents / when to use"
+msgstr "内容 / 使用场景"
+
+#: ../../source/installation.rst:46 0fbcd26c91584e66adfdf9f34bc7b2e2
+msgid "``ai``"
+msgstr ""
+
+#: ../../source/installation.rst:47 eb8daf9a315f44bfa5db2be3576656fb
+msgid ""
+"``openai`` — required only for the opt-in :doc:`AI fallback <ai-fallback>`. "
+"``pip install 'socid-extractor[ai]'``. The import is lazy, so the core "
+"library never needs it."
+msgstr ""
+"``openai`` —— 仅在需显式开启的 :doc:`AI 回退 <ai-fallback>` 时才需要。\\ ``pip install "
+"'socid-extractor[ai]'``\\ 。导入是惰性的，因此核心库永远不需要它。"
+
+#: ../../source/installation.rst:50 7f02057db895499fb95a96005757e5b6
+msgid "``test``"
+msgstr ""
+
+#: ../../source/installation.rst:51 48e13224abf14a6e99f326d767d3434d
+msgid ""
+"``pytest`` + ``pytest-rerunfailures`` + ``pytest-xdist``. ``pip install "
+"'.[test]'``."
+msgstr ""
+
+#: ../../source/installation.rst:53 caaf9440e589483985470e866f50b887
+msgid "``dev``"
+msgstr ""
+
+#: ../../source/installation.rst:54 d0ecab503b464dd484633f845ef8f57d
+msgid ""
+"Everything in ``test`` plus ``flake8`` / ``mypy`` / ``black`` — the full set"
+" CI uses. ``pip install '.[dev]'``."
+msgstr ""
+"``test`` 中的一切，外加 ``flake8`` / ``mypy`` / ``black`` —— CI 使用的完整工具集。\\ ``pip "
+"install '.[dev]'``\\ 。"
+
+#: ../../source/installation.rst:58 0c957ed8816647a8befebbcfa8577dc0
+msgid "Verifying the install"
+msgstr "验证安装"
+
+#: ../../source/installation.rst:69 79195344e1af49049ea0a1ebd0f38efb
+msgid "Running without installing"
+msgstr "无需安装即可运行"
+
+#: ../../source/installation.rst:71 4981acd9859945d6a4391a3320b14164
+msgid "From a checkout of the repository, ``run.py`` calls the CLI directly:"
+msgstr "从仓库检出的代码中，\\ ``run.py`` 会直接调用 CLI："
+
+#: ../../source/installation.rst:77 a61f7b4821cc433fa91f29827a95c1db
+msgid ""
+"Next: the :doc:`quick-start` for first calls, or :doc:`library-usage` for "
+"the full API."
+msgstr "接下来：查看 :doc:`quick-start` 了解首次调用，或查看 :doc:`library-usage` 了解完整 API。"

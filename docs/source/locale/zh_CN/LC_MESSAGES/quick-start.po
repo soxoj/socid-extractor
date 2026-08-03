@@ -1,0 +1,109 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, soxoj
+# This file is distributed under the same license as the socid_extractor
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: socid_extractor 0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-03 08:15+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/quick-start.rst:4 e77497feb0df4996bc0cf5ea3c62c7a9
+msgid "Quick start"
+msgstr "快速开始"
+
+#: ../../source/quick-start.rst:7 2c4f86c8d8df4eb7af3a0a3e7ea70f54
+msgid "Install"
+msgstr "安装"
+
+#: ../../source/quick-start.rst:9 a0cdc1dd48ff4ac4810952130443a115
+msgid "Python 3.10+ is required."
+msgstr "需要 Python 3.10+。"
+
+#: ../../source/quick-start.rst:15 e982254bea6d45ae91142434ed3fbb3c
+msgid ""
+"See :doc:`installation` for ``pipx``, the development version, and optional "
+"extras (the AI fallback, test, and dev tool sets)."
+msgstr "参见 :doc:`installation` 了解 ``pipx``\\ 、开发版本以及可选的附加组件（AI 回退、测试和开发工具集）。"
+
+#: ../../source/quick-start.rst:19 72ea6f544d23400a83c6236b2edb650e
+msgid "As a CLI"
+msgstr "作为 CLI 使用"
+
+#: ../../source/quick-start.rst:21 9464196669e244cd9fbba2d8e9f69f3d
+msgid ""
+"Point ``socid_extractor`` at a profile URL and it fetches the page and "
+"prints one ``field: value`` per line:"
+msgstr "将 ``socid_extractor`` 指向一个个人资料页 URL，它便会抓取该页面，并逐行打印 ``field: value``\\ ："
+
+#: ../../source/quick-start.rst:35 1e4955724a394b248ce2bcc320341302
+msgid ""
+"**Batch tip.** Pass ``--skip-fetch-if-no-url-hint`` to skip the HTTP request"
+" when the URL doesn't match any known site hint (faster for large batches, "
+"but may skip generic engines such as forum templates):"
+msgstr ""
+"**批量处理提示。** 传入 ``--skip-fetch-if-no-url-hint`` 可在 URL 不匹配任何已知站点提示时跳过 HTTP "
+"请求（对大批量处理更快，但可能会跳过论坛模板等通用引擎）："
+
+#: ../../source/quick-start.rst:44 77837ab9d3404f429446e5c89196880b
+msgid "As a Python library"
+msgstr "作为 Python 库使用"
+
+#: ../../source/quick-start.rst:46 ff1bce87bc0d41d8b1dcd82e11050a6d
+msgid ""
+"Fetch the page yourself, then hand the response text to "
+":func:`~socid_extractor.extract`:"
+msgstr "自行抓取页面，然后将响应文本交给 :func:`~socid_extractor.extract`："
+
+#: ../../source/quick-start.rst:60 481ceae38ae149659425f51a14241242
+#, python-brace-format
+msgid ""
+"``extract()`` is a pure function over the response body — it never makes "
+"network requests itself. The returned dict uses the normalized field names "
+"from the :doc:`ontology`, plus an ``_extractor`` key naming the scheme that "
+"matched. If no scheme matches it returns ``{}``."
+msgstr ""
+"``extract()`` 是一个作用于响应体的纯函数——它本身从不发起网络请求。返回的字典使用来自 :doc:`ontology` "
+"的规范化字段名，外加一个 ``_extractor`` 键，用于标明匹配到的提取方案。如果没有任何方案匹配，则返回 ``{}``\\ 。"
+
+#: ../../source/quick-start.rst:66 6b9a655fbdb64ab4b7f4d10533bb5c69
+msgid "Where to go next"
+msgstr "接下来该看什么"
+
+#: ../../source/quick-start.rst:68 8241d7b42d7a47e5b49513a9e8b3ca42
+msgid ""
+":doc:`library-usage` — the full ``extract`` / ``parse`` / ``mutate_url`` "
+"API."
+msgstr ""
+":doc:`library-usage` —— 完整的 ``extract`` / ``parse`` / ``mutate_url`` API。"
+
+#: ../../source/quick-start.rst:69 1f264631147241a7aaa498cb36c4b300
+msgid ""
+":doc:`how-extraction-works` — how a page is matched to a scheme and reduced "
+"to fields."
+msgstr ":doc:`how-extraction-works` —— 页面如何匹配到提取方案并精简为字段。"
+
+#: ../../source/quick-start.rst:70 ef95e2002cf54865bcf0a09be4fce01d
+msgid ":doc:`ontology` — the standard field names every scheme uses."
+msgstr ":doc:`ontology` —— 每个提取方案使用的标准字段名。"
+
+#: ../../source/quick-start.rst:71 2c7da25381fc479db825d46bf89296fc
+msgid ""
+":doc:`ai-fallback` — the opt-in LLM fallback for pages no scheme covers."
+msgstr ":doc:`ai-fallback` —— 针对没有方案覆盖的页面、需显式开启的 LLM 回退。"
+
+#: ../../source/quick-start.rst:72 0412ab80fd4945de9e828f18165e24e0
+msgid ":doc:`adding-a-scheme` — add support for a new site."
+msgstr ":doc:`adding-a-scheme` —— 为新站点添加支持。"
