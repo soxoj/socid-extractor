@@ -63,6 +63,10 @@ dev = [
     "mypy>=1.14,<3.0",
     "black>=25.1,<27.0",
 ]
+# Install with: pip install 'socid-extractor[ai]'
+# Enables the AI fallback extractor: extract(page, use_ai_fallback=True).
+# Optional — `openai` is imported lazily, only when the flag is on and a key is set.
+ai = ["openai>=1.0,<3.0"]
 
 [project.urls]
 Homepage = "https://github.com/soxoj/socid-extractor"
@@ -96,6 +100,7 @@ module = [
     "requests.*",
     "dateutil.*",
     "bs4.*",
+    "openai.*",
 ]
 ignore_missing_imports = true
 
@@ -120,4 +125,5 @@ markers = [
     "github_failed: requests from GitHub Actions CI servers are blocked",
     "rate_limited: anti-bot / captcha / rate limiting from the site",
     "requires_cookies: cookies are required to get content",
+    "ai_eval: hits the real OpenAI API; needs OPENAI_API_KEY (skipped otherwise)",
 ]
