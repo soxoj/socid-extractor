@@ -545,6 +545,7 @@ def test_stack_exchange():
 
 @pytest.mark.skip(reason="SoundCloud returns 403 / empty embed for automated clients (2026)")
 def test_soundcloud():
+    """SoundCloud"""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36'}
     info = extract(parse('https://soundcloud.com/danielpatterson', headers=headers)[0])
@@ -558,7 +559,10 @@ def test_soundcloud():
     assert info.get('image') == 'https://i1.sndcdn.com/avatars-000222811304-x9f1ao-large.jpg'
     assert info.get('location') == 'Baton Rouge'
     assert info.get('country_code') == 'US'
-    assert info.get('created_at') == '2009-02-27T16:08:17Z'
+    assert info.get('created_at') is None
+    assert info.get('updated_at') == '2018-08-23T17:22:43Z'
+    assert info.get('comments_count') == '0'
+    assert info.get('likes_count') == '17'
 
 
 @pytest.mark.skip(reason="broken")
