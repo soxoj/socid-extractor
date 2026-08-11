@@ -3649,6 +3649,24 @@ schemes = {
             'created_at':       lambda x: parse_datetime_str(x['createdAt']) if x.get('createdAt') else None,
         },
     },
+    'HuggingFace API': {
+        'url_hints': ('huggingface.co',),
+        'flags': ['"numModels":', '"numDatasets":', '"numSpaces":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('user'),
+            'fullname': lambda x: x.get('fullname') or None,
+            'bio': lambda x: x.get('details') or None,
+            'image': lambda x: x.get('avatarUrl') if x.get('avatarUrl') and x.get('avatarUrl').startswith('http') else ('https://huggingface.co' + x.get('avatarUrl') if x.get('avatarUrl') else None),
+            'follower_count': lambda x: x.get('numFollowers'),
+            'following_count': lambda x: x.get('numFollowing'),
+            'created_at': lambda x: x.get('createdAt'),
+            'huggingface_models': lambda x: x.get('numModels'),
+            'huggingface_datasets': lambda x: x.get('numDatasets'),
+            'huggingface_spaces': lambda x: x.get('numSpaces'),
+        }
+    },
 }
 
 # -- Plugin loading (must come after the built-in schemes dict is defined) --
