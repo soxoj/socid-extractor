@@ -3667,6 +3667,17 @@ schemes = {
             'huggingface_spaces': lambda x: x.get('numSpaces'),
         }
     },
+    'HackerNews': {
+        'url_hints': ('news.ycombinator.com',),
+        'flags': ['>created:</td>', '>karma:</td>'],
+        'regex': r'^([\s\S]+)$',
+        'fields': {
+            'username': lambda x: m.group(1) if (m := re.search(r'class="hnuser">([^<]+)</a>', x)) else None,
+            'created_at': lambda x: m.group(1).strip() if (m := re.search(r'created:</td><td><span class="age"><a[^>]+>([^<]+)</a></span></td>', x)) else (m2.group(1).strip() if (m2 := re.search(r'created:</td><td>([^<]+)</td>', x)) else None),
+            'karma': lambda x: int(re.sub(r'[^\d]', '', m.group(1))) if (m := re.search(r'karma:</td><td>([^<]+)</td>', x)) and re.sub(r'[^\d]', '', m.group(1)) else None,
+            'bio': lambda x: re.sub(r'<[^>]+>', '', m.group(1)).strip() if (m := re.search(r'about:</td><td[^>]*>(.*?)</td>', x, re.DOTALL)) else None,
+        }
+    },
 }
 
 # -- Plugin loading (must come after the built-in schemes dict is defined) --
