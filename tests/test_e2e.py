@@ -1690,3 +1690,18 @@ def test_lens_account_absent():
     """Lens (Hey/Orb/Buttrfly) account"""
     # Missing account -> {"data":{"account":null}}; scheme must not fire.
     assert extract('{"data":{"account":null}}') == {}
+def test_huggingface_api_e2e():
+    """HuggingFace API"""
+    info = extract(parse('https://huggingface.co/api/users/julien-c/overview')[0])
+
+    assert info.get('username') == 'julien-c'
+    assert info.get('fullname')
+    assert info.get('bio')
+    assert info.get('created_at')
+    assert 'cdn-avatars.huggingface.co' in info.get('image', '')
+    assert int(info.get('huggingface_models', -1)) >= 0
+    assert int(info.get('huggingface_datasets', -1)) >= 0
+    assert int(info.get('huggingface_spaces', -1)) >= 0
+    assert int(info.get('follower_count', -1)) > 0
+    assert int(info.get('following_count', -1)) >= 0
+

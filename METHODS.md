@@ -176,5 +176,6 @@
 171 | Matrix profile API |  |  |
 172 | osu! | [osu](https://github.com/soxoj/socid-extractor/search?q=test_osu) |  |
 173 | Lens (Hey/Orb/Buttrfly) account | [lens_account](https://github.com/soxoj/socid-extractor/search?q=test_lens_account), [lens_account_absent](https://github.com/soxoj/socid-extractor/search?q=test_lens_account_absent) |  |
+174 | HuggingFace API | [huggingface_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_huggingface_api_e2e) |  |
 
-The table has been updated at 2026-08-02 15:54:35.116398 UTC
+The table has been updated at 2026-08-11 15:26:18.203756 UTC
