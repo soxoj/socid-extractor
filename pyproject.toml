@@ -66,7 +66,7 @@ dev = [
 # Install with: pip install 'socid-extractor[ai]'
 # Enables the AI fallback extractor: extract(page, use_ai_fallback=True).
 # Optional — `openai` is imported lazily, only when the flag is on and a key is set.
-ai = ["openai>=1.0,<3.0"]
+ai = ["openai>=1.0,<4.0"]
 
 [project.urls]
 Homepage = "https://github.com/soxoj/socid-extractor"
