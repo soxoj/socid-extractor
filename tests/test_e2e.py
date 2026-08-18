@@ -1705,3 +1705,13 @@ def test_huggingface_api_e2e():
     assert int(info.get('follower_count', -1)) > 0
     assert int(info.get('following_count', -1)) >= 0
 
+
+def test_hackernews():
+    """HackerNews"""
+    html = '<tr class="athing"><td valign="top">user:</td><td timestamp="1160418092"><a href="user?id=pg" class="hnuser">pg</a></td></tr><tr><td valign="top">created:</td><td><span class="age"><a href="front?day=2006-10-09&birth=pg">October 9, 2006</a></span></td></tr><tr><td valign="top">karma:</td><td>157316</td></tr><tr><td valign="top">about:</td><td style="overflow:hidden">Bug fixer.</td></tr>'
+    info = extract(html)
+
+    assert info.get('username') == 'pg'
+    assert '2006' in info.get('created_at', '')
+    assert int(info.get('karma', -1)) > 100000
+    assert info.get('bio') == 'Bug fixer.'
