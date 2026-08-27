@@ -860,7 +860,7 @@ def test_mssg_me():
     assert info.get('messenger_values') == "['+77026924715', 'adamcigelnik']"
 
 
-@pytest.mark.skip(reason="broken")
+@pytest.mark.rate_limited  # Cloudflare challenges datacenter IPs; needs a residential proxy
 def test_patreon():
     info = extract(parse('https://www.patreon.com/annetlovart')[0])
 
@@ -874,6 +874,21 @@ def test_patreon():
     assert 'image_bg' in info
     assert info.get('created_at') == '2020-04-19T16:29:11.000+00:00'
     assert 'bio' in info
+
+
+@pytest.mark.rate_limited  # Cloudflare challenges datacenter IPs; needs a residential proxy
+def test_patreon_rsc():
+    """Patreon RSC"""
+    # App Router profile: no __NEXT_DATA__, payload comes from the RSC stream.
+    info = extract(parse('https://www.patreon.com/kurzgesagt')[0])
+
+    assert info.get('patreon_id') == '43579'
+    assert info.get('patreon_username') == 'Kurzgesagt'
+    assert info.get('is_nsfw') == 'False'
+    assert info.get('created_at') == '2013-08-30T16:09:54.000+00:00'
+    assert 'https://www.instagram.com/kurzgesagt' in info.get('links', '')
+    # a "$38"-style RSC reference must be resolved to the real summary
+    assert info.get('bio', '').startswith('<p ')
 
 
 @pytest.mark.github_failed

@@ -373,6 +373,85 @@ _MASTODON_INSTANCES = [
 ]
 
 
+_PATREON_RSC_CHUNK_RE = re.compile(r'self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)')
+
+
+def _patreon_rsc_deref(rsc, obj):
+    """Resolve `"$<row>"` placeholders to the RSC text rows they point at.
+
+    Long strings (a campaign summary, say) are not inlined — the object holds a
+    reference like `"$5f"` and that row carries the text. Row ids are hex, so a
+    decimal-only pattern silently leaves anything past row 9 unresolved. Only
+    text rows (`T`) are resolved; the payload length in their header is counted
+    in UTF-8 bytes, not characters.
+    """
+    raw = rsc.encode('utf-8')
+
+    def resolve(match):
+        row = re.search(rb'(?:^|\n)' + match.group(1).encode() + rb':T([0-9a-f]+),', raw)
+        if not row:
+            return match.group(0)
+        length = int(row.group(1), 16)
+        return json.dumps(raw[row.end():row.end() + length].decode('utf-8', 'replace'))
+
+    return re.sub(r'"\$([0-9a-f]+)"', resolve, obj)
+
+
+def _patreon_rsc_bootstrap(page):
+    """Pull the `pageBootstrap` object out of a Patreon App Router page.
+
+    Those profiles carry no __NEXT_DATA__ — the same payload arrives as escaped
+    JSON inside `self.__next_f.push([1,"..."])` chunks, so the chunks are decoded,
+    joined, and the object is cut out by brace matching. Returns a JSON string
+    for the extract_json pipeline, '{}' when the marker is absent.
+    """
+    rsc = ''.join(json.loads(c) for c in _PATREON_RSC_CHUNK_RE.findall(page))
+    marker = rsc.find('"pageBootstrap":')
+    if marker < 0:
+        return '{}'
+    start = rsc.find('{', marker + len('"pageBootstrap":'))
+    depth, in_string, escaped = 0, False, False
+    for i in range(start, len(rsc)):
+        char = rsc[i]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char == '"':
+                in_string = False
+        elif char == '"':
+            in_string = True
+        elif char == '{':
+            depth += 1
+        elif char == '}':
+            depth -= 1
+            if depth == 0:
+                return _patreon_rsc_deref(rsc, rsc[start:i + 1])
+    return '{}'
+
+
+def _patreon_user(bootstrap):
+    """The `user` entry of a campaign's `included` list — its position varies."""
+    return next((i for i in bootstrap['campaign']['included'] if i.get('type') == 'user'), {})
+
+
+# Shared by both Patreon schemes below: the campaign payload has the same shape
+# whether it comes from __NEXT_DATA__ or from the App Router RSC stream.
+_PATREON_FIELDS = {
+    'patreon_id': lambda x: _patreon_user(x)['id'],
+    'patreon_username': lambda x: _patreon_user(x)['attributes']['vanity'],
+    'fullname': lambda x: _patreon_user(x)['attributes']['full_name'],
+    'links': lambda x: [y['attributes'].get('external_profile_url') for y in x['campaign']['included'] if
+                        y['attributes'].get('app_name')],
+    'image': lambda x: x['campaign']['data']['attributes']['avatar_photo_url'],
+    'image_bg': lambda x: x['campaign']['data']['attributes']['cover_photo_url'],
+    'is_nsfw': lambda x: x['campaign']['data']['attributes']['is_nsfw'],
+    'created_at': lambda x: x['campaign']['data']['attributes']['published_at'],
+    'bio': lambda x: x['campaign']['data']['attributes']['summary'],
+}
+
+
 schemes = {
     # IMPORTANT: extract() returns the FIRST matching scheme.
     # More specific schemes (more/stricter flags) must come BEFORE
@@ -566,20 +645,27 @@ schemes = {
     'Patreon': {
         'url_hints': ('patreon.com',),
         'flags': ['www.patreon.com/api', 'pledge_url'],
-        'regex': r'Object.assign\(window.patreon.bootstrap, ([\s\S]*)\);[\s\S]*Object.assign\(window.patreon.campaignFeatures, {}\);',
+        # Patreon moved to Next.js: the old `window.patreon.bootstrap` assignment
+        # is gone, the same payload now sits in __NEXT_DATA__ under pageBootstrap.
+        'regex': r'<script id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
         'extract_json': True,
-        'fields': {
-            'patreon_id': lambda x: x['campaign']['included'][0]['id'],
-            'patreon_username': lambda x: x['campaign']['included'][0]['attributes']['vanity'],
-            'fullname': lambda x: x['campaign']['included'][0]['attributes']['full_name'],
-            'links': lambda x: [y['attributes'].get('external_profile_url') for y in x['campaign']['included'] if
-                                y['attributes'].get('app_name')],
-            'image': lambda x: x['campaign']['data']['attributes']['avatar_photo_url'],
-            'image_bg': lambda x: x['campaign']['data']['attributes']['cover_photo_url'],
-            'is_nsfw': lambda x: x['campaign']['data']['attributes']['is_nsfw'],
-            'created_at': lambda x: x['campaign']['data']['attributes']['published_at'],
-            'bio': lambda x: x['campaign']['data']['attributes']['summary'],
-        }
+        'transforms': [
+            json.loads,
+            lambda x: safe_deep_get(x, 'props', 'pageProps', 'bootstrapEnvelope', 'pageBootstrap', default={}),
+            json.dumps,
+        ],
+        'fields': _PATREON_FIELDS,
+    },
+    # Patreon is mid-migration: App Router profiles (e.g. /kurzgesagt) ship no
+    # __NEXT_DATA__ at all, the same pageBootstrap arrives in an RSC stream.
+    'Patreon RSC': {
+        'url_hints': ('patreon.com',),
+        # RSC payloads are escaped, so the raw body has \"pageBootstrap\", not "pageBootstrap"
+        'flags': ['self.__next_f', 'pageBootstrap', 'pledge_url'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_patreon_rsc_bootstrap],
+        'fields': _PATREON_FIELDS,
     },
     'Flickr': {
         'url_hints': ('flickr.com',),
