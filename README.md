@@ -76,7 +76,7 @@ $ socid_extractor --url https://example.com/foo --skip-fetch-if-no-url-hint
 
 ## Supported sites
 
-[**130+ schemes** — see METHODS.md for the full list.](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md)
+[**260+ schemes** — see METHODS.md for the full list.](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md)
 
 A non-exhaustive sample:
 
@@ -104,9 +104,8 @@ For data examples, see [`tests/test_e2e.py`](https://github.com/soxoj/socid-extr
 
 The open-source `socid_extractor` is MIT-licensed and free for commercial use without restriction — but page parsers break over time as platforms change their HTML and APIs, and they need active maintenance.
 
-For serious commercial use — with a maintained private plugin pack of extra parsers or a hosted extraction API — reach out: 📧 socid@soxoj.com
+For serious commercial use — a hosted extraction API, or maintenance of the parsers your product depends on — reach out: 📧 socid@soxoj.com
 
-- Private parser plugin — **100+ additional checks** on top of the public 150+ sites, kept up to date as platforms change (separate from the public open-source database)
 - Extraction API — integrate `socid_extractor` into your product
 
 ## SOWEL classification

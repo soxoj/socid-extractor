@@ -229,6 +229,196 @@ def _lens_attr(attrs, *keys):
     return None
 
 
+# ==========================================================================
+#  Helpers for the schemes merged in from the extended plugin pack
+# ==========================================================================
+
+def _search_group(pattern, text, group=1):
+    """First capture group of `pattern` in `text`, or None when it doesn't match."""
+    match = re.search(pattern, text or '')
+    return match.group(group) if match else None
+
+
+def _discourse_user_field(soup, field):
+    """Extract a field from Discourse data-preloaded user JSON embedded in HTML.
+
+    Falls back to <title> for username when user data is missing
+    (e.g. on /summary pages where Discourse doesn't embed user JSON).
+    """
+    tag = soup.find(id='data-preloaded')
+    if tag and tag.get('data-preloaded'):
+        raw = tag['data-preloaded']
+        m = re.search(r'"user_\w+":"(.*?)"(?:,"|\}$)', raw)
+        if m:
+            inner = m.group(1).replace('\\"', '"')
+            try:
+                data = json.loads(inner)
+            except (json.JSONDecodeError, ValueError):
+                data = {}
+            user = data.get('user', {})
+            val = user.get(field)
+            if val is not None:
+                return val
+
+    # Fallback: extract username from <title>Profile - {username} - {site}</title>
+    if field == 'username':
+        title_tag = soup.find('title')
+        if title_tag and title_tag.string:
+            tm = re.match(r'\s*Profile\s*-\s*(.+?)\s*-\s*', title_tag.string)
+            if tm:
+                return tm.group(1)
+    return None
+
+
+def _osu_field(soup, field):
+    """Extract a field from osu! data-initial-data JSON embedded in HTML."""
+    tag = soup.find(attrs={'data-initial-data': True})
+    if not tag:
+        return None
+    try:
+        data = json.loads(tag['data-initial-data'])
+    except (json.JSONDecodeError, ValueError, KeyError):
+        return None
+    return data.get('user', {}).get(field)
+
+
+def _fl_ld(soup, *keys):
+    """Extract a nested value from FL.ru JSON-LD (application/ld+json)."""
+    tag = soup.find('script', type='application/ld+json')
+    if not tag or not tag.string:
+        return None
+    try:
+        data = json.loads(tag.string)
+    except (json.JSONDecodeError, ValueError):
+        return None
+    for k in keys:
+        if isinstance(data, dict):
+            data = data.get(k)
+        else:
+            return None
+    return data or None
+
+
+def _meta(soup, prop, attr='content', tag_attr='property'):
+    """Return value from <meta {tag_attr}="{prop}" {attr}="..."/> or None."""
+    tag = soup.find('meta', {tag_attr: prop})
+    if not tag:
+        return None
+    return tag.get(attr)
+
+
+def _meta_re(soup, prop, pattern, group=1, tag_attr='property'):
+    """Apply regex pattern to a meta tag's content; return capture group or None."""
+    val = _meta(soup, prop, tag_attr=tag_attr)
+    if not val:
+        return None
+    m = re.search(pattern, val)
+    return m.group(group) if m else None
+
+
+def _wikidot_field(soup, label):
+    """Wikidot profile-box has <dl><dt>label:</dt><dd>value</dd></dl>.
+    Find the <dt> matching the label and return the next <dd> text."""
+    box = soup.find(class_='profile-box')
+    if not box:
+        return None
+    for dt in box.find_all('dt'):
+        if dt.get_text(strip=True).rstrip(':') == label:
+            dd = dt.find_next_sibling('dd')
+            if dd:
+                return dd.get_text(' ', strip=True) or None
+    return None
+
+
+def _sc_value(soup, label, strip=None):
+    """Star Citizen profile field lookup: find <p class="entry"> with given
+    <span class="label">label</span> and return its <strong class="value">."""
+    for entry in soup.select('p.entry'):
+        label_tag = entry.find('span', class_='label')
+        if label_tag and label_tag.get_text(strip=True) == label:
+            value_tag = entry.find('strong', class_='value')
+            if value_tag:
+                text = ' '.join(value_tag.get_text(' ', strip=True).split())
+                if strip:
+                    text = text.lstrip(strip)
+                return text or None
+    return None
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  Instance lists for platform families
+# ═══════════════════════════════════════════════════════════════════
+
+_MASTODON_INSTANCES = [
+    'vmst.io',
+    'tilde.zone',
+    'masto.nyc',
+    'graphics.social',
+    'expressional.social',
+    'federated.press',
+    'libretooth.gr',
+    'hostux.social',
+    'mapstodon.space',
+    'hcommons.social',
+    'hometech.social',
+    'nitecrew.rip',
+    'poweredbygay.social',
+    'vkl.world',
+    'tooting.ch',
+    'c.im',
+    'masto.ai',
+    'mastodon.online',
+    'toot.community',
+    'defcon.social',
+    'social.bund.de',
+    'toot.cat',
+    'infosec.exchange',
+]
+
+_DISCOURSE_INSTANCES = [
+    'community.openai.com',
+    'blenderartists.org',
+    'discourse.flathub.org',
+    'discussions.unity.com',
+    'forums.unrealengine.com',
+    'community.shopify.com',
+    'community.plotly.com',
+    'discuss.streamlit.io',
+    'forums.meteor.com',
+    'forums.eveonline.com',
+    'forums.comodo.com',
+    'discuss.kde.org',
+    'discuss.rubyonrails.org',
+    'discuss.ai.google.dev',
+    'discussion.fedoraproject.org',
+    'twittercommunity.com',
+    'forums.spongepowered.org',
+    'community.e.foundation',
+    'community.netdata.cloud',
+    'community.norton.com',
+    'community.trading212.com',
+    'community.humanetech.com',
+    'forum.djangoproject.com',
+    'forum.crystal-lang.org',
+    'forum.dfinity.org',
+    'forum.hackthebox.com',
+    'forums.powershell.org',
+    'forum.polkadot.network',
+    'forum.modular.com',
+    'forum.shopware.com',
+    'internals.rust-lang.org',
+    'krita-artists.org',
+    'root-forum.cern.ch',
+    'erlangforums.com',
+    'tosdr.community',
+    'ziggit.dev',
+    'community.bunpro.jp',
+    'discuss.ray.io',
+    'forum.jscourse.com',
+    'forum.valuepickr.com',
+]
+
+
 schemes = {
     # IMPORTANT: extract() returns the FIRST matching scheme.
     # More specific schemes (more/stricter flags) must come BEFORE
@@ -1386,6 +1576,17 @@ schemes = {
             'nickname': lambda x: x['personaname'],
             'username': lambda x: [y for y in x['url'].split('/') if y][-1],
         }
+    },
+    'Steam Community Group': {
+        'url_hints': ('steamcommunity.com',),
+        'flags': ['steamcommunity.com', 'Steam Community :: Group ::'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'steamcommunity\.com/groups/([^/?#"\' ]+)', str(x))),
+            'fullname': lambda x: _meta_re(x, 'og:title', r'Steam Community :: Group :: (.+)$'),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
     },
     'Steam Addiction': {
         # TODO: добавить отображение предыдущих ников по ссылке /ajaxaliases/, например https://steamcommunity.com/profiles/76561198222448544/ajaxaliases/
@@ -3654,17 +3855,28 @@ schemes = {
         'flags': ['"numModels":', '"numDatasets":', '"numSpaces":'],
         'regex': r'^(\{[\s\S]+\})$',
         'extract_json': True,
+        'url_mutations': [
+            {
+                'from': r'https?://huggingface\.co/(?P<username>[^/?#]+)',
+                'to': 'https://huggingface.co/api/users/{username}/overview',
+            },
+        ],
         'fields': {
+            'uid': lambda x: x.get('_id'),
             'username': lambda x: x.get('user'),
             'fullname': lambda x: x.get('fullname') or None,
             'bio': lambda x: x.get('details') or None,
             'image': lambda x: x.get('avatarUrl') if x.get('avatarUrl') and x.get('avatarUrl').startswith('http') else ('https://huggingface.co' + x.get('avatarUrl') if x.get('avatarUrl') else None),
+            'is_pro': lambda x: x.get('isPro'),
             'follower_count': lambda x: x.get('numFollowers'),
             'following_count': lambda x: x.get('numFollowing'),
+            'likes_count': lambda x: x.get('numLikes'),
+            'upvotes_count': lambda x: x.get('numUpvotes'),
             'created_at': lambda x: x.get('createdAt'),
             'huggingface_models': lambda x: x.get('numModels'),
             'huggingface_datasets': lambda x: x.get('numDatasets'),
             'huggingface_spaces': lambda x: x.get('numSpaces'),
+            'huggingface_papers': lambda x: x.get('numPapers'),
         }
     },
     'HackerNews': {
@@ -3677,6 +3889,1551 @@ schemes = {
             'karma': lambda x: int(re.sub(r'[^\d]', '', m.group(1))) if (m := re.search(r'karma:</td><td>([^<]+)</td>', x)) and re.sub(r'[^\d]', '', m.group(1)) else None,
             'bio': lambda x: re.sub(r'<[^>]+>', '', m.group(1)).strip() if (m := re.search(r'about:</td><td[^>]*>(.*?)</td>', x, re.DOTALL)) else None,
         }
+    },
+    'GDBrowser API': {
+        'url_hints': ('gdbrowser.com',),
+        'flags': ['"playerID":', '"accountID":', '"userCoins":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'uid': lambda x: x.get('playerID'),
+            'gd_account_id': lambda x: x.get('accountID'),
+            'youtube_username': lambda x: x.get('youtube') or None,
+            'twitter_username': lambda x: x.get('twitter') or None,
+            'twitch_username': lambda x: x.get('twitch') or None,
+            'discord_username': lambda x: x.get('discord') or None,
+            'instagram_username': lambda x: x.get('instagram') or None,
+            'tiktok_username': lambda x: x.get('tiktok') or None,
+            'website': lambda x: x.get('customLink') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://gdbrowser\.com/u/(?P<username>[^/?#]+)',
+            'to': 'https://gdbrowser.com/api/profile/{username}',
+        }],
+    },
+    'StreamElements API': {
+        'url_hints': ('streamelements.com',),
+        'flags': ['"providerId":', '"broadcasterType":', '"isPartner":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('_id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('displayName'),
+            'image': lambda x: x.get('avatar') or None,
+            'provider': lambda x: x.get('provider'),
+            'provider_id': lambda x: x.get('providerId'),
+            'is_partner': lambda x: x.get('isPartner'),
+        },
+        'url_mutations': [{
+            'from': r'https?://streamelements\.com/(?P<username>[^/?#]+)',
+            'to': 'https://api.streamelements.com/kappa/v2/channels/{username}',
+        }],
+    },
+    'Streamlabs API': {
+        'url_hints': ('streamlabs.com',),
+        'flags': ['"primary_account":', '"ab_test_group":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'image': lambda x: x.get('logo') or None,
+            'primary_account_type': lambda x: x.get('primary_account', {}).get('type'),
+            'primary_account_id': lambda x: x.get('primary_account', {}).get('id'),
+            'primary_account_username': lambda x: x.get('primary_account', {}).get('username'),
+        },
+        'url_mutations': [{
+            'from': r'https?://streamlabs\.com/(?P<username>[^/?#]+)',
+            'to': 'https://streamlabs.com/api/v6/user/{username}',
+        }],
+    },
+    'Donatty API': {
+        'url_hints': ('donatty.com',),
+        'flags': ['"response":', '"registrationDate":', '"refId":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['response'],
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('refId'),
+            'username': lambda x: x.get('name'),
+            'fullname': lambda x: x.get('displayName'),
+            'image': lambda x: x.get('picture', {}).get('source') or None,
+            'created_at': lambda x: x.get('registrationDate'),
+            'twitch_url': lambda x: x.get('twitch', {}).get('url') or None,
+            'twitch_username': lambda x: x.get('twitch', {}).get('url', '').rstrip('/').split('/')[-1] or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://donatty\.com/(?P<username>[^/?#]+)',
+            'to': 'https://api.donatty.com/users/find/{username}',
+        }],
+    },
+    'VisnessCard API': {
+        'url_hints': ('visnesscard.com',),
+        'flags': ['"card_id":', '"end_point":', '"business_title":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('card_id'),
+            'username': lambda x: x.get('end_point'),
+            'fullname': lambda x: ' '.join(filter(None, [x.get('first_name'), x.get('last_name')])) or None,
+            'email': lambda x: x.get('email') or None,
+            'company': lambda x: x.get('company_name') or None,
+            'business_title': lambda x: x.get('business_title') or None,
+            'location': lambda x: ', '.join(filter(None, [x.get('address'), x.get('suite'), x.get('city'), x.get('state'), x.get('zip')])) or None,
+            'website': lambda x: x.get('company_website_1') or x.get('company_website_2') or None,
+            'image': lambda x: (x.get('icons', [{}])[0].get('image_key') if x.get('icons') else None) or x.get('android_icon_key') or None,
+            'views_count': lambda x: x.get('unique_views') or x.get('views'),
+            'created_at': lambda x: x.get('date_created'),
+        },
+        'url_mutations': [{
+            'from': r'https?://my\.visnesscard\.com/(?P<username>[^/?#]+)',
+            'to': 'https://my.visnesscard.com/Home/GetCard/{username}',
+        }],
+    },
+    'Codeforces API': {
+        'url_hints': ('codeforces.com',),
+        'flags': ['"status":"OK"', '"handle":', '"maxRating":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['result'][0],
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('handle'),
+            'fullname': lambda x: ' '.join(filter(None, [x.get('firstName'), x.get('lastName')])) or None,
+            'country': lambda x: x.get('country') or None,
+            'city': lambda x: x.get('city') or None,
+            'organization': lambda x: x.get('organization') or None,
+            'image': lambda x: x.get('avatar'),
+            'image_bg': lambda x: x.get('titlePhoto') or None,
+            'rank': lambda x: x.get('rank'),
+            'max_rank': lambda x: x.get('maxRank'),
+            'rating': lambda x: x.get('rating'),
+            'max_rating': lambda x: x.get('maxRating'),
+            'contribution': lambda x: x.get('contribution'),
+            'follower_count': lambda x: x.get('friendOfCount'),
+            'created_at': lambda x: x.get('registrationTimeSeconds'),
+        },
+        'url_mutations': [{
+            'from': r'https?://codeforces\.com/profile/(?P<username>[^/?#]+)',
+            'to': 'https://codeforces.com/api/user.info?handles={username}',
+        }],
+    },
+    'Discogs API': {
+        'url_hints': ('discogs.com',),
+        'flags': ['"wantlist_url":', '"releases_contributed":', '"inventory_url":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('profile') or None,
+            'location': lambda x: x.get('location') or None,
+            'website': lambda x: x.get('home_page') or None,
+            'image': lambda x: x.get('avatar_url') or None,
+            'image_bg': lambda x: x.get('banner_url') or None,
+            'created_at': lambda x: x.get('registered'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?discogs\.com/user/(?P<username>[^/?#]+)',
+            'to': 'https://api.discogs.com/users/{username}',
+        }],
+    },
+    'iNaturalist API': {
+        'url_hints': ('inaturalist.org',),
+        'flags': ['"total_results":', '"observations_count":', '"identifications_count":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['results'][0],
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('login'),
+            'fullname': lambda x: x.get('name') or None,
+            'image': lambda x: x.get('icon_url') or None,
+            'orcid': lambda x: x.get('orcid') or None,
+            'observations_count': lambda x: x.get('observations_count'),
+            'species_count': lambda x: x.get('species_count'),
+            'identifications_count': lambda x: x.get('identifications_count'),
+            'created_at': lambda x: x.get('created_at'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?inaturalist\.org/people/(?P<username>[^/?#]+)',
+            'to': 'https://api.inaturalist.org/v1/users/{username}',
+        }],
+    },
+    'Pronouny API': {
+        'url_hints': ('pronouny.xyz',),
+        'flags': ['"pronouns":', '"nouns":', '"isPublic":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('_id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x['names'][0] if isinstance(x.get('names'), list) and x['names'] and isinstance(x['names'][0], str) else (x['names'][0].get('name') if isinstance(x.get('names'), list) and x['names'] and isinstance(x['names'][0], dict) else None),
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('profileImageURL') if x.get('profileImageURL', '').startswith('http') else None,
+            'pronouns': lambda x: ', '.join(p.get('pattern', '').split('/')[0] + '/' + p.get('pattern', '').split('/')[1] if '/' in p.get('pattern', '') else p.get('pattern', '') for p in x.get('pronouns', []) if isinstance(p, dict)) or None,
+            'created_at': lambda x: x.get('created'),
+        },
+        'url_mutations': [{
+            'from': r'https?://pronouny\.xyz/u/(?P<username>[^/?#]+)',
+            'to': 'https://pronouny.xyz/api/users/profile/username/{username}',
+        }],
+    },
+    'Zepeto API': {
+        'url_hints': ('zepeto.io', 'zepeto.me'),
+        'flags': ['"zepetoId":', '"hashCode":', '"isCreator":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('zepetoId'),
+            'fullname': lambda x: x.get('name') or None,
+            'hash_code': lambda x: x.get('hashCode'),
+            'image': lambda x: x.get('profilePic') or None,
+            'bio': lambda x: x.get('statusMessage') or None,
+            'country': lambda x: x.get('nationality') or None,
+            'occupation': lambda x: x.get('job') or None,
+            'is_creator': lambda x: x.get('isCreator'),
+            'follower_count': lambda x: x.get('followerCount'),
+            'following_count': lambda x: x.get('followingCount'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?zepeto\.me/profile/(?P<username>[^/?#]+)',
+            'to': 'https://gw-napi.zepeto.io/profiles/{username}',
+        }],
+    },
+    'OnlyFans API': {
+        'url_hints': ('onlyfans.com',),
+        'flags': ['"isPerformer":', '"subscribersCount":', '"joinDate":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name'),
+            'bio': lambda x: x.get('about'),
+            'website': lambda x: x.get('website') or None,
+            'location': lambda x: x.get('location') or None,
+            'image': lambda x: x.get('avatar'),
+            'image_bg': lambda x: x.get('header') or None,
+            'created_at': lambda x: x.get('joinDate'),
+            'latest_activity_at': lambda x: x.get('lastSeen') or None,
+            'is_verified': lambda x: x.get('isVerified'),
+            'is_performer': lambda x: x.get('isPerformer'),
+            'is_adult_content': lambda x: x.get('isAdultContent'),
+            'posts_count': lambda x: x.get('postsCount'),
+            'photos_count': lambda x: x.get('photosCount'),
+            'videos_count': lambda x: x.get('videosCount'),
+            'follower_count': lambda x: x.get('subscribersCount'),
+            'favorites_count': lambda x: x.get('favoritedCount'),
+            'subscribe_price': lambda x: x.get('subscribePrice'),
+        },
+    },
+    'eToro API': {
+        'url_hints': ('etoro.com',),
+        'flags': ['"gcid":', '"realCID":', '"allowDisplayFullName":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('gcid'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: ' '.join(filter(None, [x.get('firstName'), x.get('lastName')])) or None,
+            'bio': lambda x: x.get('aboutMe') or None,
+            'country': lambda x: x.get('country'),
+            'language': lambda x: x.get('languageIsoCode'),
+            'image': lambda x: next((a['url'] for a in x.get('avatars', []) if a.get('width') == 150), None),
+            'is_verified': lambda x: x.get('isVerified'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?etoro\.com/people/(?P<username>[^/?#]+)',
+            'to': 'https://www.etoro.com/api/logininfo/v1.1/users/{username}',
+        }],
+    },
+    'Gettr API': {
+        'url_hints': ('gettr.com',),
+        'flags': ['"nickname":', '"flw":', '"dsc":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('result', {}).get('data', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('_id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('nickname') or None,
+            'bio': lambda x: x.get('dsc') or None,
+            'website': lambda x: x.get('website') or None,
+            'location': lambda x: x.get('location') or None,
+            'language': lambda x: x.get('lang') or None,
+            'image': lambda x: x.get('ico') or None,
+            'image_bg': lambda x: x.get('bgimg') or None,
+            'is_verified': lambda x: x.get('vrf'),
+            'follower_count': lambda x: x.get('flw'),
+            'created_at': lambda x: x.get('cdate'),
+        },
+        'url_mutations': [{
+            'from': r'https?://gettr\.com/user/(?P<username>[^/?#]+)',
+            'to': 'https://gettr.com/api/s/uinf/{username}',
+        }],
+    },
+    'Habbo API': {
+        'url_hints': ('habbo.com', 'habbo.de', 'habbo.fr', 'habbo.es',
+                      'habbo.it', 'habbo.nl', 'habbo.fi', 'habbo.com.br',
+                      'habbo.com.tr'),
+        'flags': ['"uniqueId":', '"figureString":', '"memberSince":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('uniqueId'),
+            'username': lambda x: x.get('name'),
+            'bio': lambda x: x.get('motto') or None,
+            'is_online': lambda x: x.get('online'),
+            'created_at': lambda x: x.get('memberSince'),
+            'latest_activity_at': lambda x: x.get('lastAccessTime') or None,
+            'level': lambda x: x.get('currentLevel'),
+            'experience': lambda x: x.get('totalExperience'),
+            'is_profile_visible': lambda x: x.get('profileVisible'),
+        },
+        'url_mutations': [
+            {'from': r'https?://www\.habbo\.com/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.com/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.de/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.de/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.fr/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.fr/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.es/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.es/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.it/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.it/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.nl/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.nl/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.fi/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.fi/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.com\.br/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.com.br/api/public/users?name={username}'},
+            {'from': r'https?://www\.habbo\.com\.tr/profile/(?P<username>[^/?#]+)',
+             'to': 'https://www.habbo.com.tr/api/public/users?name={username}'},
+        ],
+    },
+    'Hackadvisor API': {
+        'url_hints': ('hackadvisor.io',),
+        'flags': ['"crypto_wallet_address":', '"bb_platform":', '"accounts":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: ' '.join(filter(None, [x.get('first_name'), x.get('last_name')])) or None,
+            'bio': lambda x: x.get('bio') or None,
+            'crypto_wallet': lambda x: x.get('crypto_wallet_address') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://hackadvisor\.io/hacker/(?P<username>[^/?#]+)',
+            'to': 'https://hackadvisor.io/api/v2/profile/{username}/',
+        }],
+    },
+    'Pillowfort JSON API': {
+        'url_hints': ('pillowfort.social',),
+        'flags': ['"posts":', '"rebloggable":', '"avatar_url":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('posts', [{}])[0] if isinstance(x.get('posts'), list) and x['posts'] else {},
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('user_id'),
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('avatar_url') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?pillowfort\.social/(?P<username>[^/?#]+)',
+            'to': 'https://www.pillowfort.social/{username}/json/?p=1',
+        }],
+    },
+    'Scored API': {
+        'url_hints': ('scored.co',),
+        'flags': ['"post_score":', '"comment_score":', '"moderates":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('users', [{}])[0] if isinstance(x.get('users'), list) and x['users'] else {},
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('profile_picture') or None,
+            'is_admin': lambda x: x.get('is_admin'),
+            'post_score': lambda x: x.get('post_score'),
+            'comment_score': lambda x: x.get('comment_score'),
+            'created_at': lambda x: x.get('created'),
+        },
+        'url_mutations': [{
+            'from': r'https?://scored\.co/u/(?P<username>[^/?#]+)',
+            'to': 'https://scored.co/api/v2/user/about.json?user={username}',
+        }],
+    },
+    'YesWeHack API': {
+        'url_hints': ('yeswehack.com',),
+        'flags': ['"hunter_profile":', '"nb_reports":', '"kyc_status":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: ' '.join(filter(None, [x.get('public_firstname'), x.get('public_lastname')])) or None,
+            'image': lambda x: x.get('avatar') or None,
+            'country': lambda x: x.get('nationality') or None,
+            'website': lambda x: (x.get('hunter_profile') or {}).get('website_url') or None,
+            'github_username': lambda x: (x.get('hunter_profile') or {}).get('github') or None,
+            'twitter_username': lambda x: (x.get('hunter_profile') or {}).get('twitter') or None,
+            'rank': lambda x: x.get('rank'),
+            'reports_count': lambda x: x.get('nb_reports'),
+            'points': lambda x: x.get('points'),
+            'impact': lambda x: x.get('impact'),
+            'created_at': lambda x: x.get('joined_on'),
+        },
+        'url_mutations': [{
+            'from': r'https?://yeswehack\.com/hunters/(?P<username>[^/?#]+)',
+            'to': 'https://api.yeswehack.com/hunters/{username}',
+        }],
+    },
+    'Destream API': {
+        'url_hints': ('destream.net',),
+        'flags': ['"userName":', '"logoImageUrl":', '"liveStream":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('userName'),
+            'image': lambda x: x.get('logoImageUrl') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://destream\.net/live/(?P<username>[^/?#]+)',
+            'to': 'https://api.destream.net/siteapi/v2/live/details/{username}',
+        }],
+    },
+    'Tipeeestream API': {
+        'url_hints': ('tipeeestream.com',),
+        'flags': ['"tipper_number":', '"paymentMeans":', '"aclPage":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: (x.get('user') or {}).get('id'),
+            'username': lambda x: x.get('slug'),
+            'fullname': lambda x: (x.get('user') or {}).get('pseudo') or None,
+            'image': lambda x: x.get('avatar') or None,
+            'image_bg': lambda x: x.get('cover') or None,
+            'language': lambda x: (x.get('user') or {}).get('userLanguage') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?tipeeestream\.com/(?P<username>[^/?#]+)',
+            'to': 'https://www.tipeeestream.com/v3.0/pages/{username}',
+        }],
+    },
+    'Komi API': {
+        'url_hints': ('komi.io',),
+        'flags': ['"accountStatus":', '"talentProfile":', '"hasBooking":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: (x.get('talentProfile') or {}).get('displayName') or None,
+            'bio': lambda x: (x.get('talentProfile') or {}).get('bio') or None,
+            'image': lambda x: x.get('avatar') or (x.get('talentProfile') or {}).get('avatar') or None,
+            'website': lambda x: (x.get('talentProfile') or {}).get('website') or None,
+            'instagram_username': lambda x: (x.get('talentProfile') or {}).get('instagram') or None,
+            'youtube_channel': lambda x: (x.get('talentProfile') or {}).get('youtube') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?P<username>[^./?#]+)\.komi\.io',
+            'to': 'https://api.komi.io/api/talent/usernames/{username}',
+        }],
+    },
+    'Cropty API': {
+        'url_hints': ('cropty.io',),
+        'flags': ['"ref_code":', '"ref_link":', '"nickname":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('data', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'fullname': lambda x: x.get('name') or None,
+            'username': lambda x: x.get('nickname'),
+            'image': lambda x: x.get('image') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?cropty\.io/@(?P<username>[^/?#]+)',
+            'to': 'https://api.cropty.io/v1/auth/{username}',
+        }],
+    },
+    'Redgifs API': {
+        'url_hints': ('redgifs.com',),
+        'flags': ['"profileImageUrl":', '"publishedGifs":', '"creationtime":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('description') or None,
+            'image': lambda x: x.get('profileImageUrl') or None,
+            'website': lambda x: x.get('profileUrl') or None,
+            'is_verified': lambda x: x.get('verified'),
+            'follower_count': lambda x: x.get('followers'),
+            'following_count': lambda x: x.get('following'),
+            'views_count': lambda x: x.get('views'),
+            'likes_count': lambda x: x.get('likes'),
+            'gifs_count': lambda x: x.get('gifs'),
+            'created_at': lambda x: x.get('creationtime'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?redgifs\.com/users/(?P<username>[^/?#]+)',
+            'to': 'https://api.redgifs.com/v1/users/{username}',
+        }],
+    },
+    'Tappy API': {
+        'url_hints': ('tappy.tech',),
+        'flags': ['"header_logo":', '"social_order":', '"accent_color":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('user_id'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('photo') or None,
+            'image_bg': lambda x: x.get('banner_image') or x.get('header_logo') or None,
+            'created_at': lambda x: x.get('created_at'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?tappy\.tech/(?P<username>[^/?#]+)',
+            'to': 'https://api.tappy.tech/api/profile/username/{username}',
+        }],
+    },
+    'Komoot API': {
+        'url_hints': ('komoot.com', 'komoot.de'),
+        'flags': ['"display_name":', '"_links":', 'komoot'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('display_name') or None,
+            'image': lambda x: (x.get('avatar') or {}).get('src') if isinstance(x.get('avatar'), dict) else None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?komoot\.com/user/(?P<username>[^/?#]+)',
+            'to': 'https://api.komoot.de/v007/users/{username}/',
+        }],
+    },
+    'Tapitag API': {
+        'url_hints': ('tapitag.co',),
+        'flags': ['"profileDetail":', '"rfnumber":', '"privacystatus":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('data') or {}).get('profileDetail', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('uuid') or x.get('id'),
+            'username': lambda x: x.get('rfnumber'),
+            'fullname': lambda x: ' '.join(filter(None, [x.get('first_name'), x.get('last_name')])) or None,
+            'email': lambda x: x.get('email') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('image') or None,
+            'image_bg': lambda x: x.get('bannerimage') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://account\.tapitag\.co/(?P<username>[^/?#]+)',
+            'to': 'https://account.tapitag.co/tapitag/api/v1/{username}',
+        }],
+    },
+    'Vivino API': {
+        'url_hints': ('vivino.com',),
+        'flags': ['"seo_name":', '"is_featured":', '"statistics":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('seo_name'),
+            'fullname': lambda x: x.get('alias') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'website': lambda x: x.get('website') or None,
+            'image': lambda x: x.get('image', {}).get('location') or None,
+            'image_bg': lambda x: x.get('background_image', {}).get('location') or None,
+            'language': lambda x: x.get('language') or None,
+            'country': lambda x: (x.get('address') or {}).get('country') or None,
+            'is_premium': lambda x: x.get('is_premium'),
+            'follower_count': lambda x: (x.get('statistics') or {}).get('followers_count'),
+            'following_count': lambda x: (x.get('statistics') or {}).get('followings_count'),
+            'ratings_count': lambda x: (x.get('statistics') or {}).get('ratings_count'),
+            'reviews_count': lambda x: (x.get('statistics') or {}).get('reviews_count'),
+            'wishlist_count': lambda x: (x.get('statistics') or {}).get('wishlist_count'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?vivino\.com/users/(?P<username>[^/?#]+)',
+            'to': 'https://api.vivino.com/users/{username}',
+        }],
+    },
+    'Google Scholar': {
+        'url_hints': ('scholar.google.com', 'scholar.google.ru'),
+        'flags': ['gsc_prf_in', 'gsc_prf_il', 'gsc_rsb_st'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: x.find(id='gsc_prf_in').text if x.find(id='gsc_prf_in') else None,
+            'bio': lambda x: x.find('div', class_='gsc_prf_il').text if x.find('div', class_='gsc_prf_il') else None,
+            'image': lambda x: x.find(id='gsc_prf_pup-img')['src'] if x.find(id='gsc_prf_pup-img') else None,
+            'website': lambda x: x.find(id='gsc_prf_ivh').find('a')['href'] if x.find(id='gsc_prf_ivh') and x.find(id='gsc_prf_ivh').find('a') else None,
+            'interests': lambda x: ', '.join(a.text for a in x.find_all('a', class_='gsc_prf_inta')) or None,
+        },
+    },
+    'Snapchat profile': {
+        'url_hints': ('snapchat.com',),
+        'flags': ['__NEXT_DATA__', '"snapcodeImageUrl":', '"publicProfileInfo":'],
+        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('props', {}).get('pageProps', {}).get('userProfile', {}).get('publicProfileInfo', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('title') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('profilePictureUrl') or None,
+            'website': lambda x: x.get('websiteUrl') or None,
+            'snapcode_url': lambda x: x.get('snapcodeImageUrl') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?snapchat\.com/add/(?P<username>[^/?#]+)',
+            'to': 'https://www.snapchat.com/add/{username}',
+        }],
+    },
+    'Flipboard profile': {
+        'url_hints': ('flipboard.com',),
+        'flags': ['__PRELOADED_STATE__', 'authorDisplayName', 'authorUsername'],
+        'regex': r'__PRELOADED_STATE__\s*=\s*(\{.*?\});\s*</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('sections', {}).get('entries', [{}])[0] if isinstance(x.get('sections', {}).get('entries'), list) and x['sections']['entries'] else {},
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('userid'),
+            'username': lambda x: x.get('authorUsername'),
+            'fullname': lambda x: x.get('authorDisplayName') or None,
+            'bio': lambda x: x.get('authorDescription') or None,
+            'image': lambda x: (x.get('authorImage') or {}).get('smallURL') or None,
+            'is_verified': lambda x: x.get('isVerifiedPublisher'),
+            'mastodon_url': lambda x: x.get('mastodonProfile') or None,
+            'follower_count': lambda x: (x.get('metrics') or {}).get('follower'),
+            'following_count': lambda x: (x.get('metrics') or {}).get('follow'),
+            'articles_count': lambda x: (x.get('metrics') or {}).get('articles'),
+            'magazines_count': lambda x: (x.get('metrics') or {}).get('magazineCount'),
+        },
+    },
+    'Clubhouse profile': {
+        'url_hints': ('clubhouse.com',),
+        'flags': ['__NEXT_DATA__', '"num_followers":', '"user_profile_type":'],
+        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('props', {}).get('pageProps', {}).get('routeProps', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: (x.get('user') or {}).get('username'),
+            'fullname': lambda x: (x.get('user') or {}).get('full_name') or None,
+            'bio': lambda x: (x.get('user') or {}).get('bio') or None,
+            'image': lambda x: (x.get('user') or {}).get('photo_url') or None,
+            'twitter_username': lambda x: (x.get('user') or {}).get('twitter_username') or None,
+            'instagram_username': lambda x: (x.get('user') or {}).get('instagram_username') or None,
+            'follower_count': lambda x: x.get('num_followers'),
+            'following_count': lambda x: x.get('num_following'),
+        },
+    },
+    'Coda.io profile': {
+        'url_hints': ('coda.io',),
+        'flags': ['application/ld+json', '"Person"', 'coda.io/@'],
+        'regex': r'<script[^>]*application/ld\+json[^>]*>\s*(\{[^<]+\})\s*</script>',
+        'extract_json': True,
+        'fields': {
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('description') or None,
+            'image': lambda x: x.get('image') or None,
+            'occupation': lambda x: x.get('jobTitle') or None,
+            'company': lambda x: (x.get('worksFor') or {}).get('name') or None,
+            'website': lambda x: x.get('url') or None,
+        },
+    },
+    'Poe.com profile': {
+        'url_hints': ('poe.com',),
+        'flags': ['__NEXT_DATA__', '"followerCount":', '"createdBotCount":'],
+        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('props', {}).get('pageProps', {}).get('data', {}).get('mainQuery', {}).get('user', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('handle'),
+            'fullname': lambda x: x.get('fullName') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('largeProfilePhotoUrl') or x.get('profilePhotoUrl') or None,
+            'follower_count': lambda x: x.get('followerCount'),
+            'following_count': lambda x: x.get('followeeCount'),
+            'bots_count': lambda x: x.get('createdBotCount'),
+        },
+    },
+    'Gumroad profile': {
+        'url_hints': ('gumroad.com',),
+        'flags': ['data-page=', 'creator_profile', 'Gumroad'],
+        'regex': r'data-page="([^"]+)"',
+        'extract_json': True,
+        'transforms': [
+            html.unescape,
+            json.loads,
+            lambda x: x.get('props', {}).get('creator_profile', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('external_id'),
+            'fullname': lambda x: x.get('name') or None,
+            'image': lambda x: x.get('avatar_url') or None,
+            'is_verified': lambda x: x.get('is_verified'),
+        },
+    },
+    'Mastodon HTML profile': {
+        'flags': ['id="mastodon"', 'profile:username', 'initial-state'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: x.find('meta', {'property': 'profile:username'})['content'].split('@')[0] if x.find('meta', {'property': 'profile:username'}) else None,
+            'fullname': lambda x: (lambda t: t['content'].split(' (@')[0] if ' (@' in t.get('content', '') else t['content'])(x.find('meta', {'property': 'og:title'})) if x.find('meta', {'property': 'og:title'}) else None,
+            'bio': lambda x: x.find('meta', {'property': 'og:description'})['content'] if x.find('meta', {'property': 'og:description'}) else None,
+            'image': lambda x: x.find('meta', {'property': 'og:image'})['content'] if x.find('meta', {'property': 'og:image'}) else None,
+            'mastodon_id': lambda x: x.find('meta', {'property': 'profile:username'})['content'] if x.find('meta', {'property': 'profile:username'}) else None,
+        },
+    },
+    'Discourse HTML profile': {
+        'flags': ['data-preloaded=', 'discourse_theme_id', 'discourse_current_homepage'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: _discourse_user_field(x, 'id'),
+            'username': lambda x: _discourse_user_field(x, 'username'),
+            'fullname': lambda x: _discourse_user_field(x, 'name') or None,
+            'title': lambda x: _discourse_user_field(x, 'title') or None,
+            'website': lambda x: _discourse_user_field(x, 'website') or None,
+            'image': lambda x: (_discourse_user_field(x, 'avatar_template') or '').replace('{size}', '240') or None,
+            'trust_level': lambda x: _discourse_user_field(x, 'trust_level'),
+            'is_moderator': lambda x: _discourse_user_field(x, 'moderator'),
+            'is_admin': lambda x: _discourse_user_field(x, 'admin'),
+            'badge_count': lambda x: _discourse_user_field(x, 'badge_count'),
+            'views_count': lambda x: _discourse_user_field(x, 'profile_view_count'),
+            'created_at': lambda x: _discourse_user_field(x, 'created_at'),
+            'latest_activity_at': lambda x: _discourse_user_field(x, 'last_seen_at'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?P<domain>[^/]+)/u/(?P<username>[^/?#.]+)/summary',
+            'to': 'https://{domain}/u/{username}',
+        }],
+    },
+    'Mastodon API': {
+        'url_hints': tuple(_MASTODON_INSTANCES),
+        'flags': ['"followers_count":', '"avatar_static":', '"header_static":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('display_name') or None,
+            'bio': lambda x: x.get('note') or None,
+            'image': lambda x: x.get('avatar') if x.get('avatar') and '/missing.' not in x.get('avatar', '') else None,
+            'image_bg': lambda x: x.get('header') if x.get('header') and '/missing.' not in x.get('header', '') else None,
+            'is_locked': lambda x: x.get('locked'),
+            'is_bot': lambda x: x.get('bot'),
+            'follower_count': lambda x: x.get('followers_count'),
+            'following_count': lambda x: x.get('following_count'),
+            'posts_count': lambda x: x.get('statuses_count'),
+            'created_at': lambda x: x.get('created_at'),
+            'latest_activity_at': lambda x: x.get('last_status_at') or None,
+        },
+        'url_mutations': [
+            {
+                'from': r'https?://' + d.replace('.', r'\.') + r'/@(?P<username>[^/?#]+)',
+                'to': 'https://' + d + '/api/v1/accounts/lookup?acct={username}',
+            }
+            for d in _MASTODON_INSTANCES
+        ],
+    },
+    'Discourse Forums': {
+        'url_hints': tuple(_DISCOURSE_INSTANCES),
+        'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('user', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'title': lambda x: x.get('title') or None,
+            'bio': lambda x: x.get('bio_raw') or None,
+            'website': lambda x: x.get('website') or None,
+            'location': lambda x: x.get('location') or None,
+            'image': lambda x: x.get('avatar_template', '').replace('{size}', '240') or None,
+            'trust_level': lambda x: x.get('trust_level'),
+            'is_moderator': lambda x: x.get('moderator'),
+            'is_admin': lambda x: x.get('admin'),
+            'badge_count': lambda x: x.get('badge_count'),
+            'views_count': lambda x: x.get('profile_view_count'),
+            'created_at': lambda x: x.get('created_at'),
+            'latest_activity_at': lambda x: x.get('last_seen_at'),
+        },
+        'url_mutations': [
+            {
+                'from': r'https?://' + d.replace('.', r'\.') + r'/u/(?P<username>[^/?#.]+)',
+                'to': 'https://' + d + '/u/{username}.json',
+            }
+            for d in _DISCOURSE_INSTANCES
+        ],
+    },
+    'FL.ru': {
+        'url_hints': ('fl.ru',),
+        'flags': ['application/ld+json', '"ProfilePage"', 'fl.ru'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'ID:(\d+)', x.title.text if x.title else '')),
+            'username': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'/users/([^/]+)/', _fl_ld(x, 'mainEntity', 'url') or '')),
+            'fullname': lambda x: _fl_ld(x, 'mainEntity', 'name'),
+            'occupation': lambda x: _fl_ld(x, 'mainEntity', 'jobTitle'),
+            'image': lambda x: _fl_ld(x, 'mainEntity', 'image'),
+            'created_at': lambda x: _fl_ld(x, 'dateCreated'),
+        },
+    },
+    'Manifold Markets': {
+        'url_hints': ('manifold.markets',),
+        'flags': ['__NEXT_DATA__', '"creatorTraders":', '"followerCountCached":'],
+        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: {**x.get('props', {}).get('pageProps', {}).get('user', {}),
+                        '_rating': x.get('props', {}).get('pageProps', {}).get('rating'),
+                        '_reviewCount': x.get('props', {}).get('pageProps', {}).get('reviewCount')},
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('avatarUrl') or None,
+            'website': lambda x: x.get('website') or None,
+            'twitter_username': lambda x: x.get('twitterHandle') or None,
+            'discord_username': lambda x: x.get('discordHandle') or None,
+            'is_bot': lambda x: x.get('isBot'),
+            'is_verified': lambda x: x.get('idVerified'),
+            'follower_count': lambda x: x.get('followerCountCached'),
+            'created_at': lambda x: x.get('createdTime'),
+            'rating': lambda x: x.get('_rating'),
+            'review_count': lambda x: x.get('_reviewCount'),
+        },
+    },
+    'VSCO': {
+        'url_hints': ('vsco.co',),
+        'flags': ['__PRELOADED_STATE__', 'vsco.co', '"profileImage"'],
+        'regex': r'__PRELOADED_STATE__\s*=\s*(\{[\s\S]+\})\s*;?\s*</script>',
+        'extract_json': True,
+        'transforms': [
+            lambda x: x.replace('undefined', 'null'),
+            json.loads,
+            lambda x: next((v.get('site', {}) for v in (x.get('sites', {}).get('siteByUsername', {}) or {}).values() if isinstance(v, dict) and 'site' in v), {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id') or x.get('userId'),
+            'username': lambda x: x.get('subdomain'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('description') or None,
+            'image': lambda x: x.get('profileImage') or None,
+            'website': lambda x: (x.get('links', {}) or {}).get('personalUrl') or x.get('externalLink') or None,
+        },
+    },
+    'Mojang API': {
+        'url_hints': ('api.mojang.com',),
+        'flags': ['"id" :', '"name" :'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('name'),
+        },
+    },
+    'OP.GG': {
+        'url_hints': ('op.gg',),
+        'flags': ['op.gg/lol/summoners/', 'game_name'],
+        'regex': r'\\"game_name\\":\\"(?P<username>[^\\]+)\\",\\"tagline\\":\\"(?P<opgg_tagline>[^\\]+)\\",\\"name\\":\\"(?P<opgg_summoner_name>[^\\]*)\\",\\"internal_name\\":\\"[^\\]*\\",\\"profile_image_url\\":\\"(?P<image>[^\\]+)\\",\\"level\\":(?P<opgg_level>\d+)',
+        'fields': {},
+    },
+    'coder.social': {
+        'url_hints': ('coder.social',),
+        'flags': ['Coder Social</title>', 'og:site_name'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: (lambda t: t.split('|')[0].strip() if t else None)(x.title.text if x.title else None),
+            'fullname': lambda x: (lambda m: m['content'].split(',')[1].strip() if ',' in m.get('content', '') else None)(x.find('meta', {'name': 'keywords'}) or {}) if x.find('meta', {'name': 'keywords'}) else None,
+            'image': lambda x: (lambda i: i['src'] if i else None)(x.find('img', src=re.compile(r'avatars\.githubusercontent\.com'))),
+            'location': lambda x: (lambda d: d.split('.')[-2].strip() if d and '.' in d else None)(x.find('meta', {'name': 'description'}).get('content', '') if x.find('meta', {'name': 'description'}) else None),
+        },
+    },
+    'osu!': {
+        'url_hints': ('osu.ppy.sh',),
+        'flags': ['data-initial-data=', 'osu-layout', 'play_count'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: _osu_field(x, 'id'),
+            'username': lambda x: _osu_field(x, 'username'),
+            'image': lambda x: _osu_field(x, 'avatar_url'),
+            'country': lambda x: (_osu_field(x, 'country') or {}).get('name') if isinstance(_osu_field(x, 'country'), dict) else None,
+            'country_code': lambda x: _osu_field(x, 'country_code'),
+            'title': lambda x: _osu_field(x, 'title') or None,
+            'occupation': lambda x: _osu_field(x, 'occupation') or None,
+            'interests': lambda x: _osu_field(x, 'interests') or None,
+            'website': lambda x: _osu_field(x, 'website') or None,
+            'twitter_username': lambda x: _osu_field(x, 'twitter') or None,
+            'discord_username': lambda x: _osu_field(x, 'discord') or None,
+            'is_bot': lambda x: _osu_field(x, 'is_bot'),
+            'is_active': lambda x: _osu_field(x, 'is_active'),
+            'is_deleted': lambda x: _osu_field(x, 'is_deleted'),
+            'is_supporter': lambda x: _osu_field(x, 'is_supporter'),
+            'follower_count': lambda x: _osu_field(x, 'follower_count'),
+            'posts_count': lambda x: _osu_field(x, 'post_count'),
+            'created_at': lambda x: _osu_field(x, 'join_date'),
+            'osu_pp': lambda x: (_osu_field(x, 'statistics') or {}).get('pp'),
+            'osu_global_rank': lambda x: (_osu_field(x, 'statistics') or {}).get('global_rank'),
+            'osu_country_rank': lambda x: (_osu_field(x, 'statistics') or {}).get('country_rank'),
+            'osu_play_count': lambda x: (_osu_field(x, 'statistics') or {}).get('play_count'),
+            'osu_hit_accuracy': lambda x: (_osu_field(x, 'statistics') or {}).get('hit_accuracy'),
+            'previous_usernames': lambda x: ', '.join(_osu_field(x, 'previous_usernames') or []) or None,
+        },
+    },
+    'GOG': {
+        'url_hints': ('gog.com',),
+        'flags': ['profilesData.profileUser', '"games_owned"'],
+        'regex': r'profilesData\.profileUser\s*=\s*(\{[^;]+\})\s*;',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('userId'),
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('avatar') or None,
+            'created_at': lambda x: x.get('created_date'),
+            'gog_games_owned': lambda x: (x.get('stats') or {}).get('games_owned'),
+            'gog_achievements': lambda x: (x.get('stats') or {}).get('achievements'),
+            'gog_hours_played': lambda x: (x.get('stats') or {}).get('hours_played'),
+        },
+    },
+    'Kick API': {
+        'url_hints': ('kick.com',),
+        'flags': ['"followers_count":', '"subscriber_badges":', '"playback_url":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('user', {}).get('id'),
+            'username': lambda x: x.get('user', {}).get('username'),
+            'bio': lambda x: x.get('user', {}).get('bio') or None,
+            'image': lambda x: x.get('user', {}).get('profile_pic') or None,
+            'image_bg': lambda x: (x.get('banner_image') or {}).get('url') or None,
+            'is_verified': lambda x: x.get('verified'),
+            'is_banned': lambda x: x.get('is_banned'),
+            'follower_count': lambda x: x.get('followers_count'),
+            'instagram_username': lambda x: x.get('user', {}).get('instagram').rstrip('/').rsplit('/', 1)[-1] if x.get('user', {}).get('instagram') else None,
+            'twitter_username': lambda x: x.get('user', {}).get('twitter') or None,
+            'youtube_channel_id': lambda x: x.get('user', {}).get('youtube').split('/')[-1] if x.get('user', {}).get('youtube') else None,
+            'discord_username': lambda x: x.get('user', {}).get('discord') or None,
+            'tiktok_username': lambda x: x.get('user', {}).get('tiktok') or None,
+            'facebook_username': lambda x: x.get('user', {}).get('facebook') or None,
+            'created_at': lambda x: x.get('user', {}).get('email_verified_at'),
+        },
+    },
+    'Academia.edu': {
+        'url_hints': ('academia.edu',),
+        'flags': ['Aedu.User.set_viewed(', 'academia.edu'],
+        'regex': r'Aedu\.User\.set_viewed\(\s*(\{[^)]+\})\s*\)',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('page_name'),
+            'fullname': lambda x: x.get('display_name') or None,
+            'image': lambda x: x.get('photo') if x.get('has_photo') else None,
+            'created_at': lambda x: x.get('created_at'),
+        },
+    },
+    'TradingView': {
+        'url_hints': ('tradingview.com',),
+        'flags': ['"ssrData":', '"date_joined":', 'tradingview.com/u/'],
+        'regex': r'"ssrData"\s*:\s*(\{.+?"paid_space":[^}]*\})',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('picture_url_orig') or None,
+            'website': lambda x: (x.get('social_links') or {}).get('website') or None,
+            'twitter_username': lambda x: (x.get('social_links') or {}).get('twitter_username') or None,
+            'instagram_username': lambda x: (x.get('social_links') or {}).get('instagram_username') or None,
+            'facebook_username': lambda x: (x.get('social_links') or {}).get('facebook_username') or None,
+            'follower_count': lambda x: (x.get('statistics') or {}).get('followers'),
+            'following_count': lambda x: (x.get('statistics') or {}).get('following'),
+            'created_at': lambda x: parse_datetime(int(x['date_joined'])) if x.get('date_joined') else None,
+            'latest_activity_at': lambda x: parse_datetime(int(x['last_login'])) if x.get('last_login') else None,
+        },
+    },
+    'Geocaching': {
+        'url_hints': ('geocaching.com',),
+        'flags': ['geocaching.com', 'ProfileHeader_lblMemberName'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: (lambda t: t.text.strip() if t else None)(x.find(id=re.compile(r'lblMemberName'))),
+            'uid': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'guid=([a-f0-9-]+)', str(x))),
+            'image': lambda x: (lambda t: t['src'] if t and '/default_avatar' not in t.get('src', '') else None)(x.find(id=re.compile(r'uxProfilePhoto'))),
+        },
+    },
+    'Rutracker': {
+        'url_hints': ('rutracker.org', 'rutracker.net'),
+        'flags': ['rutracker', 'avatar-img'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'privmsg\.php\?mode=post&(?:amp;)?u=(\d+)', str(x))),
+            'username': lambda x: x.title.text.strip() if x.title else None,
+            'image': lambda x: (lambda t: t.find('img')['src'] if t and t.find('img') else None)(x.find(id='avatar-img')),
+            'created_at': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'Зарегистрирован.*?<b[^>]*>(\d{4}-\d{2}-\d{2})', str(x), re.DOTALL)),
+            'posts_count': lambda x: (lambda m: m.group(1).replace(',', '') if m else None)(re.search(r'Сообщения.*?<b>([\d,]+)</b>', str(x), re.DOTALL)),
+        },
+    },
+    'Weburg': {
+        'url_hints': ('weburg.net',),
+        'flags': ['search-item_type_persons', 'weburg.me/user/'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: (lambda a: _search_group(r'/user/(\d+)', a.get('href', '')) if a else None)(x.find('a', class_='search-item-heading-link')),
+            'username': lambda x: (lambda a: a.text.strip() if a else None)(x.find('a', class_='search-item-heading-link')),
+            'image': lambda x: (lambda i: i['src'] if i else None)(x.find('img', class_='search-item-image')),
+        },
+    },
+    'Pokemon Showdown': {
+        'url_hints': ('pokemonshowdown.com',),
+        'flags': ['pokemonshowdown.com', 'Joined:'],
+        'regex': r'<h1>(?P<fullname>[^<]+)</h1>[\s\S]*?<em>Joined:</em>\s*(?P<created_at>[^<]+)</small>',
+        'fields': {},
+    },
+    'ImageShack': {
+        'url_hints': ('imageshack.com',),
+        'flags': ['IS.start(', 'bootstrapped'],
+        'regex': r'photosTotal:\s*"(?P<photos_count>\d+)",\s*username:\s*"(?P<username>[^"]+)"',
+        'fields': {},
+    },
+    'Replit': {
+        'url_hints': ('replit.com',),
+        'flags': ['__NEXT_DATA__', 'apolloState', '"User:'],
+        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: next((v for k, v in x.get('props', {}).get('apolloState', {}).items() if k.startswith('User:')), {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullName') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('image') or None,
+            'location': lambda x: x.get('location') or None,
+        },
+    },
+    'Itch.io': {
+        'url_hints': ('itch.io',),
+        'flags': ['itch:path', 'itch.io'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: (lambda m: m['content'].split('/')[-1] if m else None)(x.find('meta', {'name': 'itch:path'})),
+            'fullname': lambda x: (lambda t: t['content'] if t else None)(x.find('meta', {'property': 'og:title'})),
+            'created_at': lambda x: (lambda a: a['title'] if a else None)(x.find('abbr')),
+        },
+    },
+    'Giphy': {
+        'url_hints': ('giphy.com',),
+        'flags': ['giphy.com/channel', 'avatar_url'],
+        'regex': r'\\"display_name\\":\\"(?P<fullname>[^\\]*)\\",\\"about_bio\\":\\"(?P<bio>[^\\]*)\\",\\"avatar\\":\\"(?P<image>[^\\]+)\\"[\s\S]*?\\"is_verified\\":(?P<is_verified>true|false)[\s\S]*?\\"twitter\\":\\"(?P<twitter_username>[^\\]*)\\",\\"instagram\\":\\"(?P<instagram_username>[^\\]*)\\",\\"facebook\\":\\"(?P<facebook_username>[^\\]*)\\",\\"tiktok\\":\\"(?P<tiktok_username>[^\\]*)\\",\\"youtube\\":\\"(?P<youtube_username>[^\\]*)\\",\\"website_url\\":(?:\\"(?P<website>[^\\]*)\\"|null)',
+        'fields': {},
+    },
+    'Wattpad HTML profile': {
+        'url_hints': ('wattpad.com',),
+        'flags': ['wattpad.com/user/', '"allowCrawler"', '"numStoriesPublished"'],
+        'regex': r'"user\.[^"]+":\{"data":\[(\{[\s\S]+?"lastName":"[^"]*"\})\]',
+        'extract_json': True,
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('description') or None,
+            'image': lambda x: x.get('avatar') or None,
+            'image_bg': lambda x: x.get('backgroundUrl') or None,
+            'gender': lambda x: x.get('gender') or None,
+            'location': lambda x: x.get('location') or None,
+            'website': lambda x: x.get('website') or None,
+            'is_verified': lambda x: x.get('verified'),
+            'is_private': lambda x: x.get('isPrivate'),
+            'follower_count': lambda x: x.get('numFollowers'),
+            'following_count': lambda x: x.get('numFollowing'),
+            'posts_count': lambda x: x.get('numStoriesPublished'),
+            'created_at': lambda x: x.get('createDate'),
+            'facebook_username': lambda x: x.get('facebook') or None,
+        },
+    },
+    'Venmo': {
+        'url_hints': ('venmo.com',),
+        'flags': ['__NEXT_DATA__', '"friendCount":', '"initials":'],
+        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('props', {}).get('pageProps', {}).get('user', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('displayName') or None,
+            'image': lambda x: x.get('profilePictureUrl') or None,
+            'friends_count': lambda x: x.get('friendCount'),
+            'is_active': lambda x: x.get('isActive'),
+        },
+    },
+    'Tumblr blog': {
+        'url_hints': ('tumblr.com',),
+        'flags': ['___INITIAL_STATE___', '"blog-info"', '"uuid":"t:'],
+        'regex': r'id="___INITIAL_STATE___"[^>]*>\s*([\s\S]+?)\s*</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: {
+                **next((q.get('state', {}).get('data', {}) for q in x.get('queries', {}).get('queries', []) if 'blog-info' in str(q.get('queryKey', []))), {}),
+                '_latest_post_ts': (x.get('PeeprRoute', {}).get('initialTimeline', {}).get('objects', [{}]) or [{}])[0].get('timestamp'),
+                '_visible_posts': len(x.get('PeeprRoute', {}).get('initialTimeline', {}).get('objects', []) or []),
+            },
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('uuid'),
+            'username': lambda x: x.get('name'),
+            'fullname': lambda x: x.get('title') or None,
+            'website': lambda x: x.get('url') or None,
+            'image': lambda x: next((a['url'] for a in x.get('avatar', []) if a.get('width') == 512), None) or (x.get('avatar', [{}])[0].get('url') if x.get('avatar') else None),
+            'image_bg': lambda x: (x.get('theme') or {}).get('headerImage') or None,
+            'is_adult': lambda x: x.get('isAdult'),
+            'created_at': lambda x: parse_datetime(int(x['created'])) if x.get('created') else None,
+            'latest_activity_at': lambda x: parse_datetime(int(x['_latest_post_ts'])) if x.get('_latest_post_ts') else None,
+            'last_posts_count': lambda x: x.get('_visible_posts'),
+        },
+    },
+    'Drive2.ru': {
+        'url_hints': ('drive2.ru',),
+        'flags': ['drive2.ru', 'data-ihc-token', 'c-username'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: (lambda m: m.group(1) if m else None)(re.search(r'data-ihc-token="p/(\d+)"', str(x))),
+            'username': lambda x: (lambda l: l['href'].rstrip('/').rsplit('/', 1)[-1] if l and '/users/' in l.get('href', '') else None)(x.find('link', rel='canonical')),
+            'fullname': lambda x: (lambda m: m['content'].split(',', 1)[1].rsplit('—', 1)[0].strip() if m and ',' in m.get('content', '') else None)(x.find('meta', {'property': 'yandex_recommendations_title'})),
+            'bio': lambda x: (lambda m: m['content'] if m else None)(x.find('meta', {'name': 'description'})),
+            'image': lambda x: (lambda m: m['content'] if m else None)(x.find('meta', {'property': 'og:image'})),
+            'location': lambda x: (lambda m: m['title'] if m else None)(x.find('span', title=re.compile(r'.+,.+'))),
+        },
+    },
+    'Lichess API': {
+        'url_hints': ('lichess.org',),
+        'flags': ['"perfs":', '"playTime":', '"createdAt":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('profile', {}).get('realName') or None,
+            'bio': lambda x: x.get('profile', {}).get('bio') or None,
+            'country_code': lambda x: x.get('profile', {}).get('flag') or None,
+            'location': lambda x: x.get('profile', {}).get('location') or None,
+            'is_verified': lambda x: x.get('verified'),
+            'lichess_is_patron': lambda x: x.get('patron'),
+            'lichess_is_tos_violation': lambda x: x.get('tosViolation'),
+            'created_at': lambda x: x.get('createdAt'),
+            'latest_activity_at': lambda x: x.get('seenAt'),
+            'play_time_seconds': lambda x: x.get('playTime', {}).get('total'),
+            'games_count': lambda x: x.get('count', {}).get('all'),
+            'wins_count': lambda x: x.get('count', {}).get('win'),
+            'losses_count': lambda x: x.get('count', {}).get('loss'),
+            'draws_count': lambda x: x.get('count', {}).get('draw'),
+            'links': lambda x: x.get('profile', {}).get('links') or None,
+            'twitch_username': lambda x: ((x.get('streamer', {}).get('twitch', {}) or {}).get('channel') or '').rstrip('/').rsplit('/', 1)[-1] or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://lichess\.org/@/(?P<username>[^/?#]+)',
+            'to': 'https://lichess.org/api/user/{username}',
+        }],
+    },
+    'Hackerrank API': {
+        'url_hints': ('hackerrank.com',),
+        'flags': ['"model":', '"username":', '"followers_count":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['model'],
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('short_bio') or None,
+            'country': lambda x: x.get('country') or None,
+            'image': lambda x: x.get('avatar') or None,
+            'website': lambda x: x.get('website') or None,
+            'company': lambda x: x.get('company') or None,
+            'occupation': lambda x: x.get('job_title') or None,
+            'school': lambda x: x.get('school') or None,
+            'created_at': lambda x: x.get('created_at'),
+            'follower_count': lambda x: x.get('followers_count'),
+            'is_admin': lambda x: x.get('is_admin'),
+            'is_deleted': lambda x: x.get('deleted'),
+            'linkedin_username': lambda x: (x.get('linkedin_url') or '').rstrip('/').rsplit('/', 1)[-1] or None,
+            'github_username': lambda x: (x.get('github_url') or '').rstrip('/').rsplit('/', 1)[-1] or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?hackerrank\.com/(?:profile/)?(?P<username>[^/?#]+)',
+            'to': 'https://www.hackerrank.com/rest/contests/master/hackers/{username}/profile',
+        }],
+    },
+    'Kongregate API': {
+        'url_hints': ('kongregate.com',),
+        'flags': ['"user_data":', '"profile_data":', '"badge_count":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('user_data', {}).get('id'),
+            'username': lambda x: x.get('user_data', {}).get('username'),
+            'image': lambda x: x.get('user_data', {}).get('avatar_url') or None,
+            'level': lambda x: x.get('user_data', {}).get('level'),
+            'points': lambda x: x.get('user_data', {}).get('points'),
+            'is_developer': lambda x: x.get('user_data', {}).get('developer'),
+            'is_moderator': lambda x: x.get('user_data', {}).get('moderator'),
+            'is_admin': lambda x: x.get('user_data', {}).get('admin'),
+            'is_premium': lambda x: x.get('user_data', {}).get('premium'),
+            'is_banned': lambda x: x.get('user_data', {}).get('banned'),
+            'facebook_uid': lambda x: x.get('user_data', {}).get('facebook_uid'),
+            'bio': lambda x: x.get('profile_data', {}).get('about') or None,
+            'location': lambda x: x.get('profile_data', {}).get('location') or None,
+            'created_at': lambda x: x.get('profile_data', {}).get('created_at'),
+            'friends_count': lambda x: x.get('profile_data', {}).get('friend_count'),
+            'badge_count': lambda x: x.get('profile_data', {}).get('badge_count'),
+            'comments_count': lambda x: x.get('profile_data', {}).get('comment_count'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?kongregate\.com/accounts/(?P<username>[^/?#.]+)',
+            'to': 'https://www.kongregate.com/accounts/{username}.json',
+        }],
+    },
+    'WordPress.com site API': {
+        'url_hints': ('wordpress.com', 'public-api.wordpress.com'),
+        'flags': ['"jetpack":', '"subscribers_count":', '"is_private":'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: x.get('ID'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('description') or None,
+            'website': lambda x: x.get('URL') or None,
+            'image': lambda x: (x.get('icon') or {}).get('img') or None,
+            'follower_count': lambda x: x.get('subscribers_count'),
+            'is_private': lambda x: x.get('is_private'),
+            'is_deleted': lambda x: x.get('is_deleted'),
+        },
+        'url_mutations': [{
+            'from': r'https?://(?P<username>[^/?#.]+)\.wordpress\.com/?',
+            'to': 'https://public-api.wordpress.com/rest/v1.1/sites/{username}.wordpress.com',
+        }],
+    },
+    'Codecademy profile': {
+        'url_hints': ('codecademy.com',),
+        'flags': ['__NEXT_DATA__', '"profile":', '"profileImageUrl":', '"proGold":'],
+        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x.get('props', {}).get('pageProps', {}).get('profile', {}),
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('profileImageUrl') or None,
+            'is_pro': lambda x: x.get('pro'),
+            'codecademy_is_pro_gold': lambda x: x.get('proGold'),
+            'is_private': lambda x: True if x.get('__typename') == 'PrivateUser' else None,
+        },
+    },
+    'About.me profile': {
+        'url_hints': ('about.me',),
+        'flags': ['about.me', 'aboutme_prod:page', 'application/ld+json'],
+        'bs': True,
+        'fields': {
+            'fullname': lambda x: _fl_ld(x, 'name'),
+            'bio': lambda x: _fl_ld(x, 'description'),
+            'website': lambda x: _fl_ld(x, 'url'),
+            'image': lambda x: _fl_ld(x, 'image', 'url'),
+        },
+    },
+    'Fur Affinity profile': {
+        'url_hints': ('furaffinity.net',),
+        'flags': ['Fur Affinity', 'og:title', 'Userpage of'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'/user/([^/?#]+)/?'),
+            'fullname': lambda x: _meta_re(x, 'og:title', r'Userpage of\s+(.+?)\s+--'),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Pikabu profile': {
+        'url_hints': ('pikabu.ru',),
+        'flags': ['pikabu.ru', 'data-user-id=', 'profile__nick'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: (lambda t: t.get('data-user-id') if t else None)(x.find(attrs={'data-user-id': True})),
+            'username': lambda x: _meta_re(x, 'og:url', r'/@([^/?#]+)'),
+            'image': lambda x: _meta(x, 'og:image') or None,
+        },
+    },
+    'Codepen profile': {
+        'url_hints': ('codepen.io',),
+        'flags': ['codepen.io', 'og:url', 'CodePen'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'codepen\.io/([^/?#]+)'),
+            'fullname': lambda x: _meta_re(x, 'og:title', r'^(.+?)\s+on CodePen$'),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Letterboxd profile': {
+        'url_hints': ('letterboxd.com',),
+        'flags': ['letterboxd.com', 'og:url', 'Letterboxd'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'letterboxd\.com/([^/?#]+)/?'),
+            'fullname': lambda x: _meta_re(x, 'og:title', r'^(.+?)(?:’s|\'s)\s+profile$'),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Gitee profile': {
+        'url_hints': ('gitee.com',),
+        'flags': ['Gitee.com', 'og:url', 'gon.info'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:title', r'\(([^)]+)\)'),
+            'fullname': lambda x: _meta_re(x, 'og:title', r'^(.+?)\s*\('),
+            'image': lambda x: _meta(x, 'og:image'),
+            'bio': lambda x: _meta(x, 'og:description'),
+        },
+    },
+    'Slack workspace': {
+        'url_hints': ('slack.com',),
+        'flags': ['slack.com', 'og:url', 'team_id'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'https?://([^./]+)\.slack\.com'),
+            'fullname': lambda x: _meta(x, 'og:title'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Instructables member': {
+        'url_hints': ('instructables.com',),
+        'flags': ['Instructables', 'og:type', '/member/'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'/member/([^/?#]+)/?'),
+            'fullname': lambda x: _meta(x, 'og:title'),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Envato Author profile': {
+        'url_hints': (
+            'themeforest.net', 'codecanyon.net', 'audiojungle.net',
+            'graphicriver.net', 'photodune.net', 'videohive.net', '3docean.net',
+        ),
+        'flags': ['profile on', 'envato', '/user/'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'/user/([^/?#]+)'),
+            'fullname': lambda x: _meta_re(x, 'og:title', r"^(.+?)(?:'s|&#39;s)\s+profile on"),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+            'envato_marketplace': lambda x: _meta_re(x, 'og:title', r"profile on (\S+)$"),
+        },
+    },
+    'Kwork freelancer': {
+        'url_hints': ('kwork.ru', 'kwork.com'),
+        'flags': ['Kwork', '<title>', '/user/'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: (lambda t: _search_group(r'\(([^)]+)\)', t.text) if t else None)(x.find('title')),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Freesound user': {
+        'url_hints': ('freesound.org',),
+        'flags': ['freesound.org', '/people/', 'Freesound'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: (lambda a: _search_group(r'/people/([^/?#]+)/', a.get('href', '')) if a else None)(x.find('a', title=re.compile(r'^Username:'))),
+            'fullname': lambda x: (lambda h: h.get_text(strip=True) if h else None)(x.find('h1')),
+        },
+    },
+    'Star Citizen citizen': {
+        'url_hints': ('robertsspaceindustries.com',),
+        'flags': ['robertsspaceindustries', 'UEE Citizen Record', 'Handle name'],
+        'bs': True,
+        'fields': {
+            'uid': lambda x: _sc_value(x, 'UEE Citizen Record', strip='#'),
+            'username': lambda x: _sc_value(x, 'Handle name'),
+            'created_at': lambda x: _sc_value(x, 'Enlisted'),
+            'location': lambda x: _sc_value(x, 'Location'),
+            'sc_organization_rank': lambda x: _sc_value(x, 'Organization rank'),
+            'sc_sid': lambda x: _sc_value(x, 'Spectrum Identification (SID)'),
+            'sc_fluency': lambda x: _sc_value(x, 'Fluency'),
+        },
+    },
+    'Dribbble profile': {
+        'url_hints': ('dribbble.com',),
+        'flags': ['dribbble.com', 'og:type', 'Dribbble', 'profile'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'dribbble\.com/([^/?#]+)'),
+            'fullname': lambda x: _meta(x, 'og:title'),
+            'bio': lambda x: _meta(x, 'description', tag_attr='name'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Depop shop': {
+        'url_hints': ('depop.com',),
+        'flags': ['depop.com', 'og:url', 'Depop'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'depop\.com/([^/?#]+)/?'),
+            'fullname': lambda x: _meta_re(x, 'og:title', r"^(.+?)(?:’s|'s)\s+Shop"),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'ModDB member': {
+        'url_hints': ('moddb.com',),
+        'flags': ['moddb.com', '/members/', 'ModDB'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'/members/([^/?#]+)'),
+            'fullname': lambda x: _meta(x, 'og:title'),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Xbox Gamertag': {
+        'url_hints': ('xboxgamertag.com',),
+        'flags': ['Xbox Gamertag', 'Xbox Live Profile'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'description', r"^(.+?)(?:’s|'s)\s+Xbox Live Profile", tag_attr='name'),
+            'fullname': lambda x: _meta_re(x, 'description', r"^(.+?)(?:’s|'s)\s+Xbox Live Profile", tag_attr='name'),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'DonationAlerts streamer': {
+        'url_hints': ('donationalerts.com',),
+        'flags': ['donationalerts.com', 'DonationAlerts', '/r/'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'donationalerts\.com/r/([^/?#]+)'),
+            'image': lambda x: (lambda v: v if v and 'da_logo' not in v else None)(_meta(x, 'og:image')),
+        },
+    },
+    'CCM profile': {
+        'url_hints': ('ccm.net',),
+        'flags': ['ccm.net', "'s profile - CCM", '/profile/user/'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: (lambda t: _search_group(r"^(.+?)(?:’s|'s)\s+profile - CCM$", t.text) if t else None)(x.find('title')),
+            'image': lambda x: _meta(x, 'og:image'),
+        },
+    },
+    'Wikidot user': {
+        'url_hints': ('wikidot.com',),
+        'flags': ['Wikidot', 'profile-title', 'profile-box'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: (lambda t: t.get_text(strip=True) if t else None)(x.find(class_='profile-title')),
+            'gender': lambda x: _wikidot_field(x, 'Gender'),
+            'website': lambda x: _wikidot_field(x, 'Website'),
+            'created_at': lambda x: _wikidot_field(x, 'Wikidot user since'),
+            'wikidot_account_type': lambda x: _wikidot_field(x, 'Account type'),
+            'karma': lambda x: _wikidot_field(x, 'Karma level'),
+        },
+    },
+    'Couchsurfing person': {
+        'url_hints': ('couchsurfing.com',),
+        'flags': ['couchsurfing.com', 'Couchsurfing', '/people/'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'/people/([^/?#]+)'),
+            'fullname': lambda x: (lambda v: v if v and v.lower() != 'couchsurfing' else None)(_meta(x, 'og:title')),
+            'bio': lambda x: (lambda v: v if v and 'Couchsurfers share their homes' not in (v or '') else None)(_meta(x, 'og:description')),
+            'image': lambda x: (lambda v: v if v and 'og_image-' not in (v or '') else None)(_meta(x, 'og:image')),
+        },
+    },
+    'ReverbNation artist': {
+        'url_hints': ('reverbnation.com',),
+        'flags': ['reverbnation.com', 'ReverbNation', 'og:type'],
+        'bs': True,
+        'fields': {
+            'username': lambda x: _meta_re(x, 'og:url', r'reverbnation\.com/([^/?#]+)'),
+            'fullname': lambda x: _meta_re(x, 'og:title', r'^(.+?)(?:\s*\|\s*)'),
+            'bio': lambda x: _meta(x, 'og:description'),
+            'image': lambda x: (lambda v: v if v and 'rn-logo' not in (v or '') else None)(_meta(x, 'og:image')),
+        },
     },
 }
 

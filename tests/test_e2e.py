@@ -1715,3 +1715,58 @@ def test_hackernews():
     assert '2006' in info.get('created_at', '')
     assert int(info.get('karma', -1)) > 100000
     assert info.get('bio') == 'Bug fixer.'
+
+
+def test_gdbrowser_api_e2e():
+    """GDBrowser API"""
+    info = extract(parse('https://gdbrowser.com/api/profile/john')[0])
+
+    assert info.get('username') == 'John'
+    assert info.get('uid') == '3158367'
+    assert info.get('gd_account_id') == '2103'
+
+
+def test_streamelements_api_e2e():
+    """StreamElements API"""
+    info = extract(parse('https://api.streamelements.com/kappa/v2/channels/john')[0])
+
+    assert info.get('uid') == '5b02f77a398dff6c3fbd887d'
+    assert info.get('username') == 'john'
+    assert info.get('fullname') == 'John'
+    assert info.get('provider') == 'youtube'
+    assert info.get('provider_id') == 'UC_j3Wd_7i1mgyoxnU7_yFfg'
+
+
+def test_streamlabs_api_e2e():
+    """Streamlabs API"""
+    info = extract(parse('https://streamlabs.com/api/v6/user/john')[0])
+
+    assert info.get('uid') == '4350278'
+    assert info.get('primary_account_type') == 'youtube_account'
+    assert info.get('primary_account_id') == 'UCzzotlhxYmISG-HUidWa8VA'
+
+
+def test_donatty_api_e2e():
+    """Donatty API"""
+    info = extract(parse('https://api.donatty.com/users/find/john')[0])
+
+    assert info.get('uid')
+    assert info.get('username') == 'john'
+    assert info.get('fullname')
+    assert info.get('twitch_url')
+    assert info.get('created_at')
+
+
+@pytest.mark.github_failed
+def test_visnesscard_api_e2e():
+    """VisnessCard API"""
+    import requests as req
+    r = req.get('https://my.visnesscard.com/Home/GetCard/JOHN', verify=False, timeout=10)
+    info = extract(r.text)
+
+    assert info.get('uid') == '6700'
+    assert info.get('username') == 'JOHN'
+    assert info.get('fullname') == 'JOHN SMITH'
+    assert info.get('email')
+    assert info.get('company') == 'GRINDTIME FITNESS'
+    assert 'Detroit' in info.get('location', '')
