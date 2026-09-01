@@ -233,6 +233,12 @@ def _lens_attr(attrs, *keys):
 #  Helpers for the schemes merged in from the extended plugin pack
 # ==========================================================================
 
+def _search_group(pattern, text, group=1):
+    """First capture group of `pattern` in `text`, or None when it doesn't match."""
+    match = re.search(pattern, text or '')
+    return match.group(group) if match else None
+
+
 def _discourse_user_field(soup, field):
     """Extract a field from Discourse data-preloaded user JSON embedded in HTML.
 
@@ -4933,7 +4939,7 @@ schemes = {
         'flags': ['search-item_type_persons', 'weburg.me/user/'],
         'bs': True,
         'fields': {
-            'uid': lambda x: (lambda a: re.search(r'/user/(\d+)', a['href']).group(1) if a and re.search(r'/user/(\d+)', a.get('href', '')) else None)(x.find('a', class_='search-item-heading-link')),
+            'uid': lambda x: (lambda a: _search_group(r'/user/(\d+)', a.get('href', '')) if a else None)(x.find('a', class_='search-item-heading-link')),
             'username': lambda x: (lambda a: a.text.strip() if a else None)(x.find('a', class_='search-item-heading-link')),
             'image': lambda x: (lambda i: i['src'] if i else None)(x.find('img', class_='search-item-image')),
         },
@@ -5306,7 +5312,7 @@ schemes = {
         'flags': ['Kwork', '<title>', '/user/'],
         'bs': True,
         'fields': {
-            'username': lambda x: (lambda t: re.search(r'\(([^)]+)\)', t.text).group(1) if t and re.search(r'\(([^)]+)\)', t.text) else None)(x.find('title')),
+            'username': lambda x: (lambda t: _search_group(r'\(([^)]+)\)', t.text) if t else None)(x.find('title')),
             'image': lambda x: _meta(x, 'og:image'),
         },
     },
@@ -5315,7 +5321,7 @@ schemes = {
         'flags': ['freesound.org', '/people/', 'Freesound'],
         'bs': True,
         'fields': {
-            'username': lambda x: (lambda a: re.search(r'/people/([^/?#]+)/', a['href']).group(1) if a and a.get('title', '').startswith('Username:') else None)(x.find('a', title=re.compile(r'^Username:'))),
+            'username': lambda x: (lambda a: _search_group(r'/people/([^/?#]+)/', a.get('href', '')) if a else None)(x.find('a', title=re.compile(r'^Username:'))),
             'fullname': lambda x: (lambda h: h.get_text(strip=True) if h else None)(x.find('h1')),
         },
     },
@@ -5390,7 +5396,7 @@ schemes = {
         'flags': ['ccm.net', "'s profile - CCM", '/profile/user/'],
         'bs': True,
         'fields': {
-            'username': lambda x: (lambda t: re.search(r"^(.+?)(?:’s|'s)\s+profile - CCM$", t.text).group(1) if t and re.search(r"^(.+?)(?:’s|'s)\s+profile - CCM$", t.text) else None)(x.find('title')),
+            'username': lambda x: (lambda t: _search_group(r"^(.+?)(?:’s|'s)\s+profile - CCM$", t.text) if t else None)(x.find('title')),
             'image': lambda x: _meta(x, 'og:image'),
         },
     },
