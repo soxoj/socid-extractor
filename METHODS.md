@@ -178,5 +178,6 @@
 173 | Lens (Hey/Orb/Buttrfly) account | [lens_account](https://github.com/soxoj/socid-extractor/search?q=test_lens_account), [lens_account_absent](https://github.com/soxoj/socid-extractor/search?q=test_lens_account_absent) |  |
 174 | HuggingFace API | [huggingface_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_huggingface_api_e2e) |  |
 175 | HackerNews | [hackernews](https://github.com/soxoj/socid-extractor/search?q=test_hackernews) |  |
+176 | Teletype | [teletype](https://github.com/soxoj/socid-extractor/search?q=test_teletype) |  |
 
-The table has been updated at 2026-08-17 23:58:44.131716 UTC
+The table has been updated at 2026-09-04 23:33:10.733064 UTC
