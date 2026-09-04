@@ -1715,3 +1715,13 @@ def test_hackernews():
     assert '2006' in info.get('created_at', '')
     assert int(info.get('karma', -1)) > 100000
     assert info.get('bio') == 'Bug fixer.'
+
+def test_teletype():
+    """Teletype"""
+    info = extract(parse('https://teletype.in/@johndoe')[0])
+
+    assert info.get('uid') == '133496'
+    assert info.get('username') == 'johndoe'
+    assert info.get('fullname') == 'John Doe'
+    assert info.get('image') == 'https://teletype.in/files/f4/f418d759-3732-429c-b28b-dbcc498560d0.png'
+    assert info.get('is_verified') == 'False'
