@@ -1481,7 +1481,7 @@ def test_paragraph_api_e2e():
     info = extract(parse('https://paragraph.com/api/blogs/@vitalik')[0])
 
     assert info.get('uid') == 'aLOC85RCnjhDinsLDfUr'
-    assert info.get('fullname') == 'Vitalik Buterin'
+    assert info.get('fullname') == 'vitalik.eth'
     assert info.get('username') == 'vitalik'
     assert info.get('twitter_username') == 'VitalikButerin'
     assert info.get('wallet_address') == '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
@@ -1524,7 +1524,7 @@ def test_buymeacoffee():
     info = extract(parse('https://buymeacoffee.com/johndoe')[0])
 
     assert info.get("fullname") == "John Doe"
-    assert info.get("bio") == "Designer & Art Director, Growing brands.Welcome to my BMC page. If you like my content, please consider buying me a coffee. Thank you for your support!"
+    assert info.get("bio") == "Designer &amp; Art Director, Growing brands.Welcome to my BMC page. If you like my content, please consider buying me a coffee. Thank you for your support!"
     assert "15211" in info.get("image") or "cdn.buymeacoffee.com" in info.get("image")
 
 
@@ -1715,3 +1715,13 @@ def test_hackernews():
     assert '2006' in info.get('created_at', '')
     assert int(info.get('karma', -1)) > 100000
     assert info.get('bio') == 'Bug fixer.'
+
+def test_teletype():
+    """Teletype"""
+    info = extract(parse('https://teletype.in/@johndoe')[0])
+
+    assert info.get('uid') == '133496'
+    assert info.get('username') == 'johndoe'
+    assert info.get('fullname') == 'John Doe'
+    assert info.get('image') == 'https://teletype.in/files/f4/f418d759-3732-429c-b28b-dbcc498560d0.png'
+    assert info.get('is_verified') == 'False'

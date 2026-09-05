@@ -228,6 +228,24 @@ def _lens_attr(attrs, *keys):
             return a['value']
     return None
 
+def _extract_teletype_blog(state):
+    """Merge a Teletype blog's profile with stats pulled from its article section."""
+    blogs = (state.get('blogs') or {}).get('items') or []
+    blog = next((b for b in blogs if b.get('uri')), {})
+
+    articles = (state.get('blog_articles') or {}).get('items') or {}
+    details = (articles.get(str(blog.get('id') or '')) or {}).get('blog') or {}
+
+    return {
+        **blog,
+        'posts_count': (details.get('sections') or {}).get('published'),
+        'topics': [
+            topic.get('uri')
+            for topic in (details.get('topics') or [])
+            if topic.get('uri')
+        ],
+    }
+
 
 schemes = {
     # IMPORTANT: extract() returns the FIRST matching scheme.
@@ -3677,6 +3695,38 @@ schemes = {
             'karma': lambda x: int(re.sub(r'[^\d]', '', m.group(1))) if (m := re.search(r'karma:</td><td>([^<]+)</td>', x)) and re.sub(r'[^\d]', '', m.group(1)) else None,
             'bio': lambda x: re.sub(r'<[^>]+>', '', m.group(1)).strip() if (m := re.search(r'about:</td><td[^>]*>(.*?)</td>', x, re.DOTALL)) else None,
         }
+    },
+    'Teletype': {
+        'url_hints': ('teletype.in',),
+        'flags': [
+            'window.__PUBLIC_PATH__=\'https://teletype.in/\'',
+            'property="og:site_name" content="Teletype"',
+            'teletype.in/rss/',
+        ],
+        'regex': r'window\.__INITIAL_STATE__=(\{[\s\S]+?\});window\.__PUBLIC_PATH__=',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            _extract_teletype_blog,
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('uri'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('userpic') or None,
+            'is_verified': lambda x: x.get('verified'),
+            'follower_count': lambda x: x.get('subscriptions'),
+            'following_count': lambda x: x.get('subscribed'),
+            'website': lambda x: x.get('domain') or None,
+            'posts_count': lambda x: x.get('posts_count'),
+            'topics': lambda x: x.get('topics') or None,
+            'url': lambda x: (
+                'https://teletype.in/@{}'.format(x['uri'])
+                if x.get('uri') else None
+            )
+        },
     },
 }
 
