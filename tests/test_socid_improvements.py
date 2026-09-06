@@ -1387,6 +1387,40 @@ def test_discourse_html_only_fires_on_a_profile():
     assert extract(deny) == {}
 
 
+def test_a_broken_transform_skips_only_its_own_scheme():
+    """A transform that gives up must not take the rest of the page with it."""
+    from socid_extractor.schemes import schemes
+
+    marker = '"pipeline-guard-fixture"'
+    # transform() turns a PROCESS_ERRORS failure into {} — a dict, not the '{}'
+    # string json.loads expects. Chains ending in json.dumps paper over it; this
+    # one ends on the failure, like Reddit, DeviantArt and SlideShare do.
+    broken = {
+        'flags': [marker],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [lambda x: json.loads(x)['missing']],
+    }
+    working = {
+        'flags': [marker],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [json.loads, lambda x: {'username': x['user']}, json.dumps],
+        'fields': {'username': lambda x: x.get('username')},
+    }
+
+    original = dict(schemes)
+    schemes.clear()
+    schemes.update({'Broken fixture': broken, 'Working fixture': working, **original})
+    try:
+        info = extract('{"pipeline-guard-fixture": 1, "user": "bob"}')
+    finally:
+        schemes.clear()
+        schemes.update(original)
+
+    assert info.get('username') == 'bob'
+
+
 def test_no_flag_subset_shadows():
     """Detect scheme pairs where one's flags are a subset of another's.
 
