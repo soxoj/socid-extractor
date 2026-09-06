@@ -1780,3 +1780,25 @@ def test_visnesscard_api_e2e():
     assert info.get('email')
     assert info.get('company') == 'GRINDTIME FITNESS'
     assert 'Detroit' in info.get('location', '')
+
+
+def test_discourse_api():
+    """Discourse API"""
+    # a host that is not in the url_hints list — the mutation has to carry it
+    url, _ = mutate_url('https://discuss.python.org/u/hugovk')[0]
+    info = extract(parse(url)[0])
+
+    assert info.get('uid') == '358'
+    assert info.get('username') == 'hugovk'
+    assert info.get('trust_level')
+    assert info.get('created_at')
+
+
+def test_discourse_html_profile():
+    """Discourse HTML profile"""
+    # the HTML shell, which is all that is left when an instance closes its API
+    info = extract(parse('https://discuss.python.org/u/hugovk')[0])
+
+    assert info.get('username') == 'hugovk'
+    assert info.get('bio')
+    assert 'user_avatar' in info.get('image', '')

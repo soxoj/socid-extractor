@@ -252,35 +252,41 @@ def _search_group(pattern, text, group=1):
     match = re.search(pattern, text or '')
     return match.group(group) if match else None
 
-def _discourse_user_field(soup, field):
-    """Extract a field from Discourse data-preloaded user JSON embedded in HTML.
+def _discourse_html_profile(page):
+    """Pull what a Discourse profile page still carries in its server-rendered HTML.
 
-    Falls back to <title> for username when user data is missing
-    (e.g. on /summary pages where Discourse doesn't embed user JSON).
+    Modern Discourse draws the profile on the client — everything lives in the JSON
+    at /u/<name>.json, which the url_mutation below fetches. The HTML shell is worth
+    parsing anyway: it names the user in the avatar URL and carries the bio in
+    og:description, which is all one gets when an instance closes its API. There is
+    no user id in it.
     """
-    tag = soup.find(id='data-preloaded')
-    if tag and tag.get('data-preloaded'):
-        raw = tag['data-preloaded']
-        m = re.search(r'"user_\w+":"(.*?)"(?:,"|\}$)', raw)
-        if m:
-            inner = m.group(1).replace('\\"', '"')
-            try:
-                data = json.loads(inner)
-            except (json.JSONDecodeError, ValueError):
-                data = {}
-            user = data.get('user', {})
-            val = user.get(field)
-            if val is not None:
-                return val
+    def find(pattern):
+        match = re.search(pattern, page)
+        return html.unescape(match.group(1)) if match else None
 
-    # Fallback: extract username from <title>Profile - {username} - {site}</title>
-    if field == 'username':
-        title_tag = soup.find('title')
-        if title_tag and title_tag.string:
-            tm = re.match(r'\s*Profile\s*-\s*(.+?)\s*-\s*', title_tag.string)
-            if tm:
-                return tm.group(1)
-    return None
+    # Every page of a forum carries the generator tag and other people's avatars,
+    # so the profile has to be identified before anything is read off it —
+    # otherwise a topic page would report whoever posted in it first.
+    # The canonical link keeps the sub-route (/u/<name>/summary), which is how
+    # maigret stores these accounts, so the name is read without anchoring the end.
+    username = find(r'<link rel="canonical" href="[^"]*/u/([^"/?#]+)')
+    if not username and re.search(r'<title>\s*Profile - ', page):
+        username = find(r'/user_avatar/[^/"]+/([^/"]+)/')
+    if not username:
+        return '{}'
+
+    bio = find(r'property="og:description" content="([^"]*)"')
+    image = find(r'property="og:image" content="([^"]+)"')
+    # The canonical link is on the deny page too, so a username on its own is just
+    # the request echoed back — instances that refuse anonymous profiles would
+    # otherwise "confirm" every name asked about. Something the account owns has
+    # to come with it.
+    if not (bio or image):
+        return '{}'
+
+    return json.dumps({'username': username, 'bio': bio, 'image': image})
+
 
 def _fl_ld(soup, *keys):
     """Extract a nested value from FL.ru JSON-LD (application/ld+json)."""
@@ -364,49 +370,6 @@ _MASTODON_INSTANCES = [
     'social.bund.de',
     'toot.cat',
     'infosec.exchange',
-]
-
-_DISCOURSE_INSTANCES = [
-    'community.openai.com',
-    'blenderartists.org',
-    'discourse.flathub.org',
-    'discussions.unity.com',
-    'forums.unrealengine.com',
-    'community.shopify.com',
-    'community.plotly.com',
-    'discuss.streamlit.io',
-    'forums.meteor.com',
-    'forums.eveonline.com',
-    'forums.comodo.com',
-    'discuss.kde.org',
-    'discuss.rubyonrails.org',
-    'discuss.ai.google.dev',
-    'discussion.fedoraproject.org',
-    'twittercommunity.com',
-    'forums.spongepowered.org',
-    'community.e.foundation',
-    'community.netdata.cloud',
-    'community.norton.com',
-    'community.trading212.com',
-    'community.humanetech.com',
-    'forum.djangoproject.com',
-    'forum.crystal-lang.org',
-    'forum.dfinity.org',
-    'forum.hackthebox.com',
-    'forums.powershell.org',
-    'forum.polkadot.network',
-    'forum.modular.com',
-    'forum.shopware.com',
-    'internals.rust-lang.org',
-    'krita-artists.org',
-    'root-forum.cern.ch',
-    'erlangforums.com',
-    'tosdr.community',
-    'ziggit.dev',
-    'community.bunpro.jp',
-    'discuss.ray.io',
-    'forum.jscourse.com',
-    'forum.valuepickr.com',
 ]
 
 
@@ -3524,6 +3487,18 @@ schemes = {
             'created_at': lambda x: x.get('created_at'),
             'latest_activity_at': lambda x: x.get('last_seen_at'),
         },
+        'url_mutations': [
+            {
+                # Matches /u/<name> and the sub-routes a profile link carries —
+                # maigret stores Discourse accounts as /u/<name>/summary. The base
+                # is captured rather than the host alone because plenty of forums
+                # live under a path (freecodecamp.org/forum). Dots are allowed in
+                # the name (a.shishkin is a real one); only a trailing .json is
+                # refused, so an already mutated URL is left alone.
+                'from': r'https?://(?P<base>[^?#]*?)/+u/(?P<username>[^/?#]+?)(?<!\.json)(?:/|$|[?#])',
+                'to': 'https://{base}/u/{username}.json',
+            },
+        ],
     },
     'Snapchat': {
         'flags': ['__NEXT_DATA__', '"userProfile":'],
@@ -4669,28 +4644,24 @@ schemes = {
             'mastodon_id': lambda x: x.find('meta', {'property': 'profile:username'})['content'] if x.find('meta', {'property': 'profile:username'}) else None,
         },
     },
+    # Recognised by the generator meta tag every Discourse instance emits; the
+    # data-preloaded attribute this used to key on is gone from current versions.
     'Discourse HTML profile': {
-        'flags': ['data-preloaded=', 'discourse_theme_id', 'discourse_current_homepage'],
-        'bs': True,
+        'flags': ['name="generator" content="Discourse', 'discourse_theme_id'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_discourse_html_profile],
         'fields': {
-            'uid': lambda x: _discourse_user_field(x, 'id'),
-            'username': lambda x: _discourse_user_field(x, 'username'),
-            'fullname': lambda x: _discourse_user_field(x, 'name') or None,
-            'title': lambda x: _discourse_user_field(x, 'title') or None,
-            'website': lambda x: _discourse_user_field(x, 'website') or None,
-            'image': lambda x: (_discourse_user_field(x, 'avatar_template') or '').replace('{size}', '240') or None,
-            'trust_level': lambda x: _discourse_user_field(x, 'trust_level'),
-            'is_moderator': lambda x: _discourse_user_field(x, 'moderator'),
-            'is_admin': lambda x: _discourse_user_field(x, 'admin'),
-            'badge_count': lambda x: _discourse_user_field(x, 'badge_count'),
-            'views_count': lambda x: _discourse_user_field(x, 'profile_view_count'),
-            'created_at': lambda x: _discourse_user_field(x, 'created_at'),
-            'latest_activity_at': lambda x: _discourse_user_field(x, 'last_seen_at'),
+            'username': lambda x: x.get('username'),
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('image') or None,
         },
-        'url_mutations': [{
-            'from': r'https?://(?P<domain>[^/]+)/u/(?P<username>[^/?#.]+)/summary',
-            'to': 'https://{domain}/u/{username}',
-        }],
+        'url_mutations': [
+            {
+                'from': r'https?://(?P<host>[^/]+)/u/(?P<username>[^/?#.]+)/summary',
+                'to': 'https://{host}/u/{username}',
+            },
+        ],
     },
     'Mastodon API': {
         'url_hints': tuple(_MASTODON_INSTANCES),
@@ -4718,41 +4689,6 @@ schemes = {
                 'to': 'https://' + d + '/api/v1/accounts/lookup?acct={username}',
             }
             for d in _MASTODON_INSTANCES
-        ],
-    },
-    'Discourse Forums': {
-        'url_hints': tuple(_DISCOURSE_INSTANCES),
-        'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
-        'regex': r'^(\{[\s\S]+\})$',
-        'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: x.get('user', {}),
-            json.dumps,
-        ],
-        'fields': {
-            'uid': lambda x: x.get('id'),
-            'username': lambda x: x.get('username'),
-            'fullname': lambda x: x.get('name') or None,
-            'title': lambda x: x.get('title') or None,
-            'bio': lambda x: x.get('bio_raw') or None,
-            'website': lambda x: x.get('website') or None,
-            'location': lambda x: x.get('location') or None,
-            'image': lambda x: x.get('avatar_template', '').replace('{size}', '240') or None,
-            'trust_level': lambda x: x.get('trust_level'),
-            'is_moderator': lambda x: x.get('moderator'),
-            'is_admin': lambda x: x.get('admin'),
-            'badge_count': lambda x: x.get('badge_count'),
-            'views_count': lambda x: x.get('profile_view_count'),
-            'created_at': lambda x: x.get('created_at'),
-            'latest_activity_at': lambda x: x.get('last_seen_at'),
-        },
-        'url_mutations': [
-            {
-                'from': r'https?://' + d.replace('.', r'\.') + r'/u/(?P<username>[^/?#.]+)',
-                'to': 'https://' + d + '/u/{username}.json',
-            }
-            for d in _DISCOURSE_INSTANCES
         ],
     },
     'FL.ru': {
