@@ -228,16 +228,29 @@ def _lens_attr(attrs, *keys):
             return a['value']
     return None
 
+def _extract_teletype_blog(state):
+    """Merge a Teletype blog's profile with stats pulled from its article section."""
+    blogs = (state.get('blogs') or {}).get('items') or []
+    blog = next((b for b in blogs if b.get('uri')), {})
 
-# ==========================================================================
-#  Helpers for the schemes merged in from the extended plugin pack
-# ==========================================================================
+    articles = (state.get('blog_articles') or {}).get('items') or {}
+    details = (articles.get(str(blog.get('id') or '')) or {}).get('blog') or {}
+
+    return {
+        **blog,
+        'posts_count': (details.get('sections') or {}).get('published'),
+        'topics': [
+            topic.get('uri')
+            for topic in (details.get('topics') or [])
+            if topic.get('uri')
+        ],
+    }
+
 
 def _search_group(pattern, text, group=1):
     """First capture group of `pattern` in `text`, or None when it doesn't match."""
     match = re.search(pattern, text or '')
     return match.group(group) if match else None
-
 
 def _discourse_user_field(soup, field):
     """Extract a field from Discourse data-preloaded user JSON embedded in HTML.
@@ -269,7 +282,6 @@ def _discourse_user_field(soup, field):
                 return tm.group(1)
     return None
 
-
 def _fl_ld(soup, *keys):
     """Extract a nested value from FL.ru JSON-LD (application/ld+json)."""
     tag = soup.find('script', type='application/ld+json')
@@ -286,14 +298,12 @@ def _fl_ld(soup, *keys):
             return None
     return data or None
 
-
 def _meta(soup, prop, attr='content', tag_attr='property'):
     """Return value from <meta {tag_attr}="{prop}" {attr}="..."/> or None."""
     tag = soup.find('meta', {tag_attr: prop})
     if not tag:
         return None
     return tag.get(attr)
-
 
 def _meta_re(soup, prop, pattern, group=1, tag_attr='property'):
     """Apply regex pattern to a meta tag's content; return capture group or None."""
@@ -302,7 +312,6 @@ def _meta_re(soup, prop, pattern, group=1, tag_attr='property'):
         return None
     m = re.search(pattern, val)
     return m.group(group) if m else None
-
 
 def _wikidot_field(soup, label):
     """Wikidot profile-box has <dl><dt>label:</dt><dd>value</dd></dl>.
@@ -317,7 +326,6 @@ def _wikidot_field(soup, label):
                 return dd.get_text(' ', strip=True) or None
     return None
 
-
 def _sc_value(soup, label, strip=None):
     """Star Citizen profile field lookup: find <p class="entry"> with given
     <span class="label">label</span> and return its <strong class="value">."""
@@ -331,11 +339,6 @@ def _sc_value(soup, label, strip=None):
                     text = text.lstrip(strip)
                 return text or None
     return None
-
-
-# ═══════════════════════════════════════════════════════════════════
-#  Instance lists for platform families
-# ═══════════════════════════════════════════════════════════════════
 
 _MASTODON_INSTANCES = [
     'vmst.io',
@@ -3887,6 +3890,38 @@ schemes = {
             'karma': lambda x: int(re.sub(r'[^\d]', '', m.group(1))) if (m := re.search(r'karma:</td><td>([^<]+)</td>', x)) and re.sub(r'[^\d]', '', m.group(1)) else None,
             'bio': lambda x: re.sub(r'<[^>]+>', '', m.group(1)).strip() if (m := re.search(r'about:</td><td[^>]*>(.*?)</td>', x, re.DOTALL)) else None,
         }
+    },
+    'Teletype': {
+        'url_hints': ('teletype.in',),
+        'flags': [
+            'window.__PUBLIC_PATH__=\'https://teletype.in/\'',
+            'property="og:site_name" content="Teletype"',
+            'teletype.in/rss/',
+        ],
+        'regex': r'window\.__INITIAL_STATE__=(\{[\s\S]+?\});window\.__PUBLIC_PATH__=',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            _extract_teletype_blog,
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('uri'),
+            'fullname': lambda x: x.get('name') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'image': lambda x: x.get('userpic') or None,
+            'is_verified': lambda x: x.get('verified'),
+            'follower_count': lambda x: x.get('subscriptions'),
+            'following_count': lambda x: x.get('subscribed'),
+            'website': lambda x: x.get('domain') or None,
+            'posts_count': lambda x: x.get('posts_count'),
+            'topics': lambda x: x.get('topics') or None,
+            'url': lambda x: (
+                'https://teletype.in/@{}'.format(x['uri'])
+                if x.get('uri') else None
+            )
+        },
     },
     'GDBrowser API': {
         'url_hints': ('gdbrowser.com',),
