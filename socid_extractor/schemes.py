@@ -270,18 +270,6 @@ def _discourse_user_field(soup, field):
     return None
 
 
-def _osu_field(soup, field):
-    """Extract a field from osu! data-initial-data JSON embedded in HTML."""
-    tag = soup.find(attrs={'data-initial-data': True})
-    if not tag:
-        return None
-    try:
-        data = json.loads(tag['data-initial-data'])
-    except (json.JSONDecodeError, ValueError, KeyError):
-        return None
-    return data.get('user', {}).get(field)
-
-
 def _fl_ld(soup, *keys):
     """Extract a nested value from FL.ru JSON-LD (application/ld+json)."""
     tag = soup.find('script', type='application/ld+json')
@@ -3783,7 +3771,7 @@ schemes = {
         },
     },
     "osu!": {
-        "url_hints": ("osu.ppy.sh"),
+        "url_hints": ("osu.ppy.sh",),
         "flags": ["data-initial-data=", "osu-layout"],
         "regex": r'data-initial-data="([^"]*)"',
         "extract_json": True,
@@ -3814,6 +3802,16 @@ schemes = {
             "is_banned": lambda x: x.get(
                 "is_restricted"
             ),  # maybe is_suspended instead of is_banned?
+            "title": lambda x: x.get("title") or None,
+            "is_bot": lambda x: x.get("is_bot"),
+            "is_active": lambda x: x.get("is_active"),
+            "is_supporter": lambda x: x.get("is_supporter"),
+            "previous_usernames": lambda x: ', '.join(x.get("previous_usernames") or []) or None,
+            "osu_pp": lambda x: (x.get("statistics") or {}).get("pp"),
+            "osu_global_rank": lambda x: (x.get("statistics") or {}).get("global_rank"),
+            "osu_country_rank": lambda x: (x.get("statistics") or {}).get("country_rank"),
+            "osu_play_count": lambda x: (x.get("statistics") or {}).get("play_count"),
+            "osu_hit_accuracy": lambda x: (x.get("statistics") or {}).get("hit_accuracy"),
             "social_links": lambda x: [
                 {"discord": x.get("discord")},
                 {"twitter/x": x.get("twitter")},
@@ -4809,37 +4807,6 @@ schemes = {
             'fullname': lambda x: (lambda m: m['content'].split(',')[1].strip() if ',' in m.get('content', '') else None)(x.find('meta', {'name': 'keywords'}) or {}) if x.find('meta', {'name': 'keywords'}) else None,
             'image': lambda x: (lambda i: i['src'] if i else None)(x.find('img', src=re.compile(r'avatars\.githubusercontent\.com'))),
             'location': lambda x: (lambda d: d.split('.')[-2].strip() if d and '.' in d else None)(x.find('meta', {'name': 'description'}).get('content', '') if x.find('meta', {'name': 'description'}) else None),
-        },
-    },
-    'osu!': {
-        'url_hints': ('osu.ppy.sh',),
-        'flags': ['data-initial-data=', 'osu-layout', 'play_count'],
-        'bs': True,
-        'fields': {
-            'uid': lambda x: _osu_field(x, 'id'),
-            'username': lambda x: _osu_field(x, 'username'),
-            'image': lambda x: _osu_field(x, 'avatar_url'),
-            'country': lambda x: (_osu_field(x, 'country') or {}).get('name') if isinstance(_osu_field(x, 'country'), dict) else None,
-            'country_code': lambda x: _osu_field(x, 'country_code'),
-            'title': lambda x: _osu_field(x, 'title') or None,
-            'occupation': lambda x: _osu_field(x, 'occupation') or None,
-            'interests': lambda x: _osu_field(x, 'interests') or None,
-            'website': lambda x: _osu_field(x, 'website') or None,
-            'twitter_username': lambda x: _osu_field(x, 'twitter') or None,
-            'discord_username': lambda x: _osu_field(x, 'discord') or None,
-            'is_bot': lambda x: _osu_field(x, 'is_bot'),
-            'is_active': lambda x: _osu_field(x, 'is_active'),
-            'is_deleted': lambda x: _osu_field(x, 'is_deleted'),
-            'is_supporter': lambda x: _osu_field(x, 'is_supporter'),
-            'follower_count': lambda x: _osu_field(x, 'follower_count'),
-            'posts_count': lambda x: _osu_field(x, 'post_count'),
-            'created_at': lambda x: _osu_field(x, 'join_date'),
-            'osu_pp': lambda x: (_osu_field(x, 'statistics') or {}).get('pp'),
-            'osu_global_rank': lambda x: (_osu_field(x, 'statistics') or {}).get('global_rank'),
-            'osu_country_rank': lambda x: (_osu_field(x, 'statistics') or {}).get('country_rank'),
-            'osu_play_count': lambda x: (_osu_field(x, 'statistics') or {}).get('play_count'),
-            'osu_hit_accuracy': lambda x: (_osu_field(x, 'statistics') or {}).get('hit_accuracy'),
-            'previous_usernames': lambda x: ', '.join(_osu_field(x, 'previous_usernames') or []) or None,
         },
     },
     'GOG': {
