@@ -1386,7 +1386,7 @@ def test_discourse_html_only_fires_on_a_profile():
             '<link rel="canonical" href="https://forum.example/u/sivel">')
     assert extract(deny) == {}
 
-
+    
 def test_a_broken_transform_skips_only_its_own_scheme():
     """A transform that gives up must not take the rest of the page with it."""
     from socid_extractor.schemes import schemes
@@ -1419,8 +1419,22 @@ def test_a_broken_transform_skips_only_its_own_scheme():
         schemes.update(original)
 
     assert info.get('username') == 'bob'
+    
+    
+def test_patreon_rsc_deref_reads_hex_row_ids():
+    """Patreon's RSC row ids are hex — a decimal pattern quietly loses row 10 and up."""
+    from socid_extractor.schemes import _patreon_rsc_deref
 
+    rsc = '2:{"a":1}\n5f:Tb,hello there\n60:T5,short\n'
 
+    assert _patreon_rsc_deref(rsc, '{"bio":"$5f"}') == '{"bio":"hello there"}'
+    assert _patreon_rsc_deref(rsc, '{"bio":"$60"}') == '{"bio":"short"}'
+    # a reference to a row that isn't there stays as it is, rather than blowing up
+    assert _patreon_rsc_deref(rsc, '{"bio":"$ff"}') == '{"bio":"$ff"}'
+    # and "$undefined" and friends are not row references at all
+    assert _patreon_rsc_deref(rsc, '{"bio":"$undefined"}') == '{"bio":"$undefined"}'
+
+    
 def test_no_flag_subset_shadows():
     """Detect scheme pairs where one's flags are a subset of another's.
 
