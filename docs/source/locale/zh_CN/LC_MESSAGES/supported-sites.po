@@ -26,11 +26,11 @@ msgstr "支持的站点"
 
 #: ../../source/supported-sites.rst:6 a22904d1e2984a649353d4aad360bc7f
 msgid ""
-"socid_extractor ships **130+ extraction schemes**. Each scheme targets one "
+"socid_extractor ships **250+ extraction schemes**. Each scheme targets one "
 "page shape — a site's profile HTML, a public JSON API, or an embedded state "
 "blob — and maps it onto the standard :doc:`field ontology <ontology>`."
 msgstr ""
-"socid_extractor 内置 **130+ 种提取方案**\\ 。每种提取方案针对一种页面形态——站点的个人资料页 HTML、公开的 JSON "
+"socid_extractor 内置 **250+ 种提取方案**\\ 。每种提取方案针对一种页面形态——站点的个人资料页 HTML、公开的 JSON "
 "API，或嵌入的状态数据块——并将其映射到标准的 :doc:`字段本体 <ontology>`。"
 
 #: ../../source/supported-sites.rst:11 4e448527d3e2496c922e35b817d6c598

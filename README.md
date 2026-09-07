@@ -11,7 +11,7 @@
 
 > Turn any public profile page into a structured account record — usernames, display names, bios, avatars, locations, joined-at dates, follower counts, external links, and the **stable internal identifiers** that uniquely pin an account across renames, redesigns, and deletions.
 
-`socid_extractor` parses HTML pages and API responses from 130+ platforms and returns a flat, machine-readable dictionary of account fields. No API keys required, no headless browser — just a single function call on response text.
+`socid_extractor` parses HTML pages and API responses from 250+ schemes and returns a flat, machine-readable dictionary of account fields. No API keys required, no headless browser — just a single function call on response text.
 
 **Why it's useful**
 
@@ -76,7 +76,7 @@ $ socid_extractor --url https://example.com/foo --skip-fetch-if-no-url-hint
 
 ## Supported sites
 
-[**260+ schemes** — see METHODS.md for the full list.](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md)
+[**250+ schemes**, covering roughly 2,000 of the sites Maigret checks — see METHODS.md for the full list.](https://github.com/soxoj/socid-extractor/blob/master/METHODS.md)
 
 A non-exhaustive sample:
 
