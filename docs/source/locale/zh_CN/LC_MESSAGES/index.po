@@ -50,12 +50,12 @@ msgstr ""
 
 #: ../../source/index.rst:11 549d593dab134fd09dbd18740375f8af
 msgid ""
-"It parses HTML pages and API responses from 130+ platforms and returns a "
+"It parses HTML pages and API responses from 250+ schemes and returns a "
 "flat, machine-readable dictionary of account fields. No API keys required, "
 "no headless browser — just a single :func:`~socid_extractor.extract` call on"
 " response text."
 msgstr ""
-"它解析来自 130+ 个平台的 HTML 页面和 API 响应，并返回一个扁平的、机器可读的账户字段字典。无需 API "
+"它解析来自 250+ 种提取方案的 HTML 页面和 API 响应，并返回一个扁平的、机器可读的账户字段字典。无需 API "
 "密钥，也无需无头浏览器——只需对响应文本调用一次 :func:`~socid_extractor.extract`。"
 
 #: ../../source/index.rst:15 fb84ed7f05fb49858f7bd4d825f4abe0

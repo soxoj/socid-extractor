@@ -3,7 +3,7 @@
 Supported sites
 ===============
 
-socid_extractor ships **130+ extraction schemes**. Each scheme targets one page shape —
+socid_extractor ships **250+ extraction schemes**. Each scheme targets one page shape —
 a site's profile HTML, a public JSON API, or an embedded state blob — and maps it onto
 the standard :doc:`field ontology <ontology>`.
 

@@ -8,7 +8,7 @@ usernames, display names, bios, avatars, locations, joined-at dates, follower co
 external links, and the **stable internal identifiers** that uniquely pin an account
 across renames, redesigns, and deletions.
 
-It parses HTML pages and API responses from 130+ platforms and returns a flat,
+It parses HTML pages and API responses from 250+ schemes and returns a flat,
 machine-readable dictionary of account fields. No API keys required, no headless
 browser — just a single :func:`~socid_extractor.extract` call on response text.
 
