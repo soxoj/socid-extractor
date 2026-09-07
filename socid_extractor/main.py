@@ -104,6 +104,12 @@ def _extract_by_schemes(page):
 
                 transformed = transform(scheme_data, extracted)
 
+                if not isinstance(transformed, str):
+                    # a transform hit PROCESS_ERRORS and gave up; that is this
+                    # scheme's problem, not a reason to fail the whole page
+                    logging.debug('Transform did not produce JSON, skipping scheme')
+                    continue
+
                 json_data = json.loads(transformed)
 
                 if json_data == {}:
