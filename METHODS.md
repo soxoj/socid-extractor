@@ -266,5 +266,6 @@
 261 | Wikidot user |  |  |
 262 | Couchsurfing person |  |  |
 263 | ReverbNation artist |  |  |
+264 | XenForo | [xenforo](https://github.com/soxoj/socid-extractor/search?q=test_xenforo) |  |
 
-The table has been updated at 2026-09-07 21:26:08.324494 UTC
+The table has been updated at 2026-09-07 22:00:38.122362 UTC
