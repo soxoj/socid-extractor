@@ -2854,10 +2854,14 @@ schemes = {
         },
     },
     # Every MediaWiki wiki answers the same users query, so this is not just
-    # Wikipedia. What differs between them is where api.php sits. The page says
-    # so itself in <link rel="EditURI">, but a url_mutation rewrites the URL
-    # without ever seeing the page, so the candidates are offered by measured
-    # frequency — and each miss costs a request, since callers fetch them all.
+    # Wikipedia. What differs between them is where api.php sits, and it is not
+    # where the user page sits: on 105 of 157 wikis measured the two paths
+    # disagree, /wiki for the page and /w for the API being the classic pair.
+    # So candidates are built from the host and not from the page's own path —
+    # that alone is the difference between 55% and 97% of them resolving. The
+    # page announces its path in <link rel="EditURI">, but a url_mutation
+    # rewrites the URL without ever seeing the page. Each miss costs a request,
+    # since callers fetch every candidate.
     # The pipe in usprop stays unencoded: %7C is refused outright by some wikis.
     'MediaWiki API': {
         'url_hints': ('wikipedia.org', '/wiki/user:', '/user:'),
@@ -2867,23 +2871,23 @@ schemes = {
         'url_mutations': [
             {
                 # 60.5% of the wikis maigret knows keep api.php at the root
-                'from': r'https?://(?P<base>[^?#]*?)/(?:wiki/)?User:(?P<username>[^/?#]+)',
-                'to': 'https://{base}/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
+                'from': r'https?://(?P<host>[^/?#]+)[^?#]*?/(?:wiki/)?User:(?P<username>[^/?#]+)',
+                'to': 'https://{host}/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
             },
             {
                 # another 31% under /w
-                'from': r'https?://(?P<base>[^?#]*?)/(?:wiki/)?User:(?P<username>[^/?#]+)',
-                'to': 'https://{base}/w/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
+                'from': r'https?://(?P<host>[^/?#]+)[^?#]*?/(?:wiki/)?User:(?P<username>[^/?#]+)',
+                'to': 'https://{host}/w/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
             },
             {
                 # then /mediawiki
-                'from': r'https?://(?P<base>[^?#]*?)/(?:wiki/)?User:(?P<username>[^/?#]+)',
-                'to': 'https://{base}/mediawiki/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
+                'from': r'https?://(?P<host>[^/?#]+)[^?#]*?/(?:wiki/)?User:(?P<username>[^/?#]+)',
+                'to': 'https://{host}/mediawiki/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
             },
             {
                 # and /wiki — the four together cover 97.6% of them
-                'from': r'https?://(?P<base>[^?#]*?)/(?:wiki/)?User:(?P<username>[^/?#]+)',
-                'to': 'https://{base}/wiki/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
+                'from': r'https?://(?P<host>[^/?#]+)[^?#]*?/(?:wiki/)?User:(?P<username>[^/?#]+)',
+                'to': 'https://{host}/wiki/api.php?action=query&list=users&ususers={username}&usprop=editcount|registration|groups|gender&format=json',
             },
         ],
         'fields': {

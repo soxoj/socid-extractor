@@ -1448,6 +1448,9 @@ def test_mediawiki_mutation_offers_both_api_paths():
         'https://wiki.openstreetmap.org/mediawiki/api.php', 'https://wiki.openstreetmap.org/wiki/api.php']
     assert paths('https://imslp.org/wiki/User:Hfredrich416hk')[:2] == [
         'https://imslp.org/api.php', 'https://imslp.org/w/api.php']
+    # the page's own path says nothing about the API's: wiki.dolibarr.org serves
+    # the page under /index.php and the API at the root, and it is far from alone
+    assert paths('https://wiki.dolibarr.org/index.php/User:Eldy')[0] == 'https://wiki.dolibarr.org/api.php'
     # a subpage of a user page is not the user
     assert 'ususers=Jimbo_Wales&' in mutate_url('https://en.wikipedia.org/wiki/User:Jimbo_Wales/sandbox')[0][0]
 
