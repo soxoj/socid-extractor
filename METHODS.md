@@ -164,7 +164,7 @@
 159 | DBLP person record |  |  |
 160 | Scholia author profile |  |  |
 161 | BuyMeACoffee | [buymeacoffee](https://github.com/soxoj/socid-extractor/search?q=test_buymeacoffee) |  |
-162 | Discourse API |  |  |
+162 | Discourse API | [discourse_api](https://github.com/soxoj/socid-extractor/search?q=test_discourse_api) |  |
 163 | Snapchat | [snapchat](https://github.com/soxoj/socid-extractor/search?q=test_snapchat) |  |
 164 | Bio Site | [bio_site](https://github.com/soxoj/socid-extractor/search?q=test_bio_site) |  |
 165 | Faceit API | [faceit_api](https://github.com/soxoj/socid-extractor/search?q=test_faceit_api) |  |
@@ -215,56 +215,55 @@
 210 | Poe.com profile |  |  |
 211 | Gumroad profile |  |  |
 212 | Mastodon HTML profile |  |  |
-213 | Discourse HTML profile |  |  |
+213 | Discourse HTML profile | [discourse_html_profile](https://github.com/soxoj/socid-extractor/search?q=test_discourse_html_profile) |  |
 214 | Mastodon API |  |  |
-215 | Discourse Forums |  |  |
-216 | FL.ru |  |  |
-217 | Manifold Markets |  |  |
-218 | VSCO |  |  |
-219 | Mojang API |  |  |
-220 | OP.GG |  |  |
-221 | coder.social |  |  |
-222 | GOG |  |  |
-223 | Kick API |  |  |
-224 | Academia.edu |  |  |
-225 | TradingView |  |  |
-226 | Geocaching |  |  |
-227 | Rutracker |  |  |
-228 | Weburg |  |  |
-229 | Pokemon Showdown |  |  |
-230 | ImageShack |  |  |
-231 | Replit |  |  |
-232 | Itch.io |  |  |
-233 | Giphy |  |  |
-234 | Wattpad HTML profile |  |  |
-235 | Venmo |  |  |
-236 | Tumblr blog |  |  |
-237 | Drive2.ru |  |  |
-238 | Lichess API |  |  |
-239 | Hackerrank API |  |  |
-240 | Kongregate API |  |  |
-241 | WordPress.com site API |  |  |
-242 | Codecademy profile |  |  |
-243 | About.me profile |  |  |
-244 | Fur Affinity profile |  |  |
-245 | Pikabu profile |  |  |
-246 | Codepen profile |  |  |
-247 | Letterboxd profile |  |  |
-248 | Gitee profile |  |  |
-249 | Slack workspace |  |  |
-250 | Instructables member |  |  |
-251 | Envato Author profile |  |  |
-252 | Kwork freelancer |  |  |
-253 | Freesound user |  |  |
-254 | Star Citizen citizen |  |  |
-255 | Dribbble profile |  |  |
-256 | Depop shop |  |  |
-257 | ModDB member |  |  |
-258 | Xbox Gamertag |  |  |
-259 | DonationAlerts streamer |  |  |
-260 | CCM profile |  |  |
-261 | Wikidot user |  |  |
-262 | Couchsurfing person |  |  |
-263 | ReverbNation artist |  |  |
+215 | FL.ru |  |  |
+216 | Manifold Markets |  |  |
+217 | VSCO |  |  |
+218 | Mojang API |  |  |
+219 | OP.GG |  |  |
+220 | coder.social |  |  |
+221 | GOG |  |  |
+222 | Kick API |  |  |
+223 | Academia.edu |  |  |
+224 | TradingView |  |  |
+225 | Geocaching |  |  |
+226 | Rutracker |  |  |
+227 | Weburg |  |  |
+228 | Pokemon Showdown |  |  |
+229 | ImageShack |  |  |
+230 | Replit |  |  |
+231 | Itch.io |  |  |
+232 | Giphy |  |  |
+233 | Wattpad HTML profile |  |  |
+234 | Venmo |  |  |
+235 | Tumblr blog |  |  |
+236 | Drive2.ru |  |  |
+237 | Lichess API |  |  |
+238 | Hackerrank API |  |  |
+239 | Kongregate API |  |  |
+240 | WordPress.com site API |  |  |
+241 | Codecademy profile |  |  |
+242 | About.me profile |  |  |
+243 | Fur Affinity profile |  |  |
+244 | Pikabu profile |  |  |
+245 | Codepen profile |  |  |
+246 | Letterboxd profile |  |  |
+247 | Gitee profile |  |  |
+248 | Slack workspace |  |  |
+249 | Instructables member |  |  |
+250 | Envato Author profile |  |  |
+251 | Kwork freelancer |  |  |
+252 | Freesound user |  |  |
+253 | Star Citizen citizen |  |  |
+254 | Dribbble profile |  |  |
+255 | Depop shop |  |  |
+256 | ModDB member |  |  |
+257 | Xbox Gamertag |  |  |
+258 | DonationAlerts streamer |  |  |
+259 | CCM profile |  |  |
+260 | Wikidot user |  |  |
+261 | Couchsurfing person |  |  |
+262 | ReverbNation artist |  |  |
 
-The table has been updated at 2026-09-06 16:23:52.636011 UTC
+The table has been updated at 2026-09-06 17:32:40.442453 UTC

@@ -1344,6 +1344,49 @@ def test_orcid_url_mutations_target_five_platforms():
 # Structural / meta tests
 # ---------------------------------------------------------------------------
 
+def test_discourse_mutation_covers_the_shapes_maigret_stores():
+    """maigret keeps Discourse accounts as {urlMain}/u/{username}/summary."""
+    from socid_extractor.main import mutate_url
+
+    def mutated(url):
+        return [u for u, _ in mutate_url(url) if u.endswith('.json')]
+
+    # the plain profile link, and the /summary one that goes into the database
+    assert mutated('https://forum.ansible.com/u/sivel') == ['https://forum.ansible.com/u/sivel.json']
+    assert mutated('https://forum.ansible.com/u/sivel/summary') == ['https://forum.ansible.com/u/sivel.json']
+    # a forum living under a path, with the doubled slash the database renders
+    assert mutated('https://www.freecodecamp.org/forum//u/JeremyLT/summary') == [
+        'https://www.freecodecamp.org/forum/u/JeremyLT.json']
+    # dots belong in Discourse usernames
+    assert mutated('https://forum.cs-cart.ru/u/a.shishkin/summary') == [
+        'https://forum.cs-cart.ru/u/a.shishkin.json']
+    # but an already mutated URL must not collect a second .json
+    assert mutated('https://forum.ansible.com/u/sivel.json') == []
+    # and a thread is not a profile
+    assert mutated('https://discuss.python.org/t/some-thread/1234') == []
+
+
+def test_discourse_html_only_fires_on_a_profile():
+    """Every page of a forum has the generator tag and other people's avatars."""
+    shell = (
+        '<meta name="generator" content="Discourse 2026.9.0-latest - https://github.com/discourse/discourse">'
+        '<meta id="data-discourse-setup" data-discourse_theme_id="2">'
+        '<meta property="og:image" content="https://cdn/user_avatar/forum.example/someone/45/1_2.png">'
+    )
+    profile = shell + '<link rel="canonical" href="https://forum.example/u/sivel">'
+    topic = shell + '<link rel="canonical" href="https://forum.example/t/some-thread/1234">'
+
+    assert extract(profile).get('username') == 'sivel'
+    # a thread names whoever posted in it first — that is not the page's subject
+    assert extract(topic) == {}
+    # instances that refuse anonymous profiles still serve the canonical link, so a
+    # username with nothing of the account's own attached is the request echoed back
+    deny = ('<meta name="generator" content="Discourse 2026.9.0-latest">'
+            '<meta id="data-discourse-setup" data-discourse_theme_id="2">'
+            '<link rel="canonical" href="https://forum.example/u/sivel">')
+    assert extract(deny) == {}
+
+
 def test_no_flag_subset_shadows():
     """Detect scheme pairs where one's flags are a subset of another's.
 

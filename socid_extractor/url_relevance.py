@@ -28,4 +28,10 @@ def check_url_relevance(url):
         for hint in (*hints, *_name_fallback_tokens(scheme_name)):
             if len(hint) > 1 and hint in low:
                 return True
+        # A scheme that knows how to rewrite this URL is a hint in itself: schemes
+        # keyed on a route rather than on a host (Discourse and the like) match any
+        # domain, and listing those domains by hand is exactly what they avoid.
+        for mutation in scheme_data.get('url_mutations') or ():
+            if re.search(mutation['from'], url):
+                return True
     return False
