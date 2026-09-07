@@ -1817,3 +1817,23 @@ def test_discourse_html_profile():
     assert info.get('username') == 'hugovk'
     assert info.get('bio')
     assert 'user_avatar' in info.get('image', '')
+
+
+def test_mediawiki_api():
+    """MediaWiki API"""
+    # the /w/ candidate is the one Wikipedia answers; the root one 404s
+    url = [u for u, _ in mutate_url('https://en.wikipedia.org/wiki/User:Jimbo_Wales') if '/w/api.php' in u][0]
+    info = extract(parse(url)[0])
+
+    assert info.get('uid') == '24'
+    assert info.get('username') == 'Jimbo Wales'
+    assert info.get('created_at') == '2001-03-27T20:47:31Z'
+    assert 'founder' in info.get('groups', '')
+
+
+def test_mediawiki_user_page():
+    """MediaWiki user page"""
+    # what maigret reads without --enrich: the page it already fetches
+    info = extract(parse('https://wiki.openstreetmap.org/User:Leijurv')[0])
+
+    assert info.get('username') == 'Leijurv'

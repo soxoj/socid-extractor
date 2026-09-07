@@ -829,8 +829,8 @@ def test_scratch_api_json():
     assert info.get('is_scratchteam') == 'False'
 
 
-def test_wikipedia_user_api_json():
-    """Wikipedia user API: extract user info from MediaWiki user query with editcount."""
+def test_mediawiki_api_json():
+    """MediaWiki API: extract user info from a users query with editcount."""
     body = json.dumps({
         "batchcomplete": "",
         "query": {
@@ -1435,6 +1435,38 @@ def test_patreon_rsc_deref_reads_hex_row_ids():
     assert _patreon_rsc_deref(rsc, '{"bio":"$undefined"}') == '{"bio":"$undefined"}'
 
     
+def test_mediawiki_mutation_offers_both_api_paths():
+    """api.php sits at the root on some wikis and under /w/ on others."""
+    from socid_extractor.main import mutate_url
+
+    def paths(url):
+        return [u.split('?')[0] for u, _ in mutate_url(url)]
+
+    # the shape maigret stores, with and without the /wiki/ subpath
+    assert paths('https://wiki.openstreetmap.org/User:Leijurv') == [
+        'https://wiki.openstreetmap.org/api.php', 'https://wiki.openstreetmap.org/w/api.php',
+        'https://wiki.openstreetmap.org/mediawiki/api.php', 'https://wiki.openstreetmap.org/wiki/api.php']
+    assert paths('https://imslp.org/wiki/User:Hfredrich416hk')[:2] == [
+        'https://imslp.org/api.php', 'https://imslp.org/w/api.php']
+    # the page's own path says nothing about the API's: wiki.dolibarr.org serves
+    # the page under /index.php and the API at the root, and it is far from alone
+    assert paths('https://wiki.dolibarr.org/index.php/User:Eldy')[0] == 'https://wiki.dolibarr.org/api.php'
+    # a subpage of a user page is not the user
+    assert 'ususers=Jimbo_Wales&' in mutate_url('https://en.wikipedia.org/wiki/User:Jimbo_Wales/sandbox')[0][0]
+
+
+def test_mediawiki_user_page_needs_the_account_to_exist():
+    """wgRelevantUserName is missing on a user page nobody registered."""
+    page = ('<div class="mw-body-content">'
+            'RLCONF={"wgCanonicalNamespace":"User","wgRelevantUserName":"Leijurv"}</div>')
+    assert extract(page).get('username') == 'Leijurv'
+
+    # the page still renders for an unregistered name, just without the variable
+    missing = ('<div class="mw-body-content">'
+               'RLCONF={"wgCanonicalNamespace":"User","mw-userpage-userdoesnotexist":1}</div>')
+    assert extract(missing) == {}
+
+
 def test_no_flag_subset_shadows():
     """Detect scheme pairs where one's flags are a subset of another's.
 
