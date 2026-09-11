@@ -252,6 +252,51 @@ def _search_group(pattern, text, group=1):
     match = re.search(pattern, text or '')
     return match.group(group) if match else None
 
+def _xenforo_profile(page):
+    """Read a XenForo member page, which has no API behind it.
+
+    The forum answers /members/?username=<name> with a redirect to the profile,
+    and the profile carries the numeric id in two places. og:url is the one to
+    trust: it survives even the login wall many instances put in front of member
+    pages, and it is what tells a profile apart from the member listing a failed
+    search falls back to — that listing is full of other people's data-user-id
+    attributes.
+
+    Labels like "Messages" and "Joined" are localised, so nothing is read by
+    them: the counters are reached through the links they wrap, and the two
+    dates are the first two <time> elements of the member header, in order.
+    Those dates come rendered in the viewer's timezone, so the offset on them
+    depends on where the request came from.
+    """
+    def find(pattern):
+        match = re.search(pattern, page)
+        return match.group(1) if match else None
+
+    member = re.search(r'og:url"\s+content="[^"]*/members/([^/"]+)\.(\d+)/', page)
+    if member:
+        uid, username = member.group(2), unquote(member.group(1))
+    elif 'memberHeader' in page:
+        # a profile that ships no og:url — take the id off the header instead
+        uid, username = find(r'data-user-id="(\d+)"'), None
+    else:
+        return '{}'
+
+    def digits(value):
+        return re.sub(r'[^0-9]', '', value) or None if value else None
+
+    times = re.findall(r'<time[^>]*datetime="([^"]+)"', page)
+    return json.dumps({
+        'uid': uid,
+        'username': username,
+        'image': find(r'<img[^>]+src="([^"]*/avatars/[^"]+)"'),
+        'created_at': times[0] if times else None,
+        'latest_activity_at': times[1] if len(times) > 1 else None,
+        # counters come out of the page grouped, as "9,193"
+        'posts_count': digits(find(r'search/member\?user_id=\d+"[^>]*>\s*([\d,.\s]+?)\s*<')),
+        'xenforo_points': digits(find(r'/trophies"[^>]*>\s*([\d,.\s]+?)\s*<')),
+    })
+
+
 def _discourse_html_profile(page):
     """Pull what a Discourse profile page still carries in its server-rendered HTML.
 
@@ -5457,6 +5502,23 @@ schemes = {
             'fullname': lambda x: _meta_re(x, 'og:title', r'^(.+?)(?:\s*\|\s*)'),
             'bio': lambda x: _meta(x, 'og:description'),
             'image': lambda x: (lambda v: v if v and 'rn-logo' not in (v or '') else None)(_meta(x, 'og:image')),
+        },
+    },
+    # XenForo has no public API — everything comes off the member page, and one
+    # scheme covers every instance of it.
+    'XenForo': {
+        'flags': ['data-user-id="', '/members/'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_xenforo_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('image'),
+            'created_at': lambda x: x.get('created_at'),
+            'latest_activity_at': lambda x: x.get('latest_activity_at'),
+            'posts_count': lambda x: x.get('posts_count'),
+            'xenforo_points': lambda x: x.get('xenforo_points'),
         },
     },
 }

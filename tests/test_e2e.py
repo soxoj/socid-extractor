@@ -1817,3 +1817,15 @@ def test_discourse_html_profile():
     assert info.get('username') == 'hugovk'
     assert info.get('bio')
     assert 'user_avatar' in info.get('image', '')
+
+
+def test_xenforo():
+    """XenForo"""
+    # the URL shape maigret stores: a member search that redirects to the profile
+    info = extract(parse('https://nullcave.club/members/?username=lomba_ii')[0])
+
+    assert info.get('uid') == '36147'
+    assert info.get('username') == 'lomba_ii'
+    # XenForo renders times in the viewer's timezone, so only the date is stable
+    assert info.get('created_at', '').startswith('2024-01-3')
+    assert info.get('posts_count', '').isdigit()
