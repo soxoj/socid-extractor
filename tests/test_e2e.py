@@ -419,7 +419,8 @@ def test_behance():
     assert 'appreciations' in info
 
 
-def test_500px():
+@pytest.mark.skip(reason="down")
+def test_500px():  # Broken. API answers with error 1503, a platform migration.
     """500px GraphQL API"""
     mutated_url = mutate_url('https://500px.com/p/the-maksimov')
     url, add_headers = mutated_url[0]
