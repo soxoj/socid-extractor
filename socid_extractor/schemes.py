@@ -7,6 +7,19 @@ from urllib.parse import unquote
 from .utils import *
 
 
+def _nodebb_profile(page):
+    """Accept a NodeBB profile object, excluding errors and user listings."""
+    try:
+        data = json.loads(page)
+    except ValueError:
+        return '{}'
+    if not isinstance(data, dict) or not data.get('uid') or not data.get('username'):
+        return '{}'
+    if not all(key in data for key in ('userslug', 'joindate', 'postcount', 'icon:bgColor', 'email:confirmed')):
+        return '{}'
+    return json.dumps(data)
+
+
 # Helpers for the Virgool RSC profile scheme (see "Virgool" entry below).
 def _virgool_parse_rsc_rows(chunk_text):
     """Split an RSC push payload into ``{chunk_id: parsed_json}``.
@@ -5520,6 +5533,32 @@ schemes = {
             'posts_count': lambda x: x.get('posts_count'),
             'xenforo_points': lambda x: x.get('xenforo_points'),
         },
+    },
+    'NodeBB API': {
+        'flags': ['"userslug"', '"joindate"', '"postcount"', '"icon:bgColor"', '"email:confirmed"'],
+        'regex': r'^\s*(\{[\s\S]+\})\s*$',
+        'extract_json': True,
+        'transforms': [_nodebb_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('picture'),
+            'created_at': lambda x: parse_datetime(x.get('joindate')),
+            'latest_activity_at': lambda x: parse_datetime(x.get('lastonline')),
+            'posts_count': lambda x: x.get('postcount'),
+            'follower_count': lambda x: x.get('followerCount'),
+            'following_count': lambda x: x.get('followingCount'),
+        },
+        'url_hints': ('/user/',),
+        'url_mutations': [{
+            # Profile URLs contain a userslug, which need not equal the username.
+            # Use the slug endpoint rather than /api/user/username/<slug>. Preserve
+            # the scheme and installation path, and do not mutate API URLs again.
+            'from': r'^(?P<base>https?://[^/?#]+(?:/(?!api(?:/|$))[^/?#]+)*?)/user/'
+                    r'(?P<userslug>[^/?#]+)(?:/|$|[?#])',
+            'to': '{base}/api/user/{userslug}',
+        }],
     },
 }
 

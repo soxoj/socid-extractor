@@ -1798,6 +1798,16 @@ def test_visnesscard_api_e2e():
     assert 'Detroit' in info.get('location', '')
 
 
+def test_nodebb_api():
+    """NodeBB API"""
+    url, _ = mutate_url('https://bbs.aw-ol.com/user/whycan')[0]
+    info = extract(parse(url, timeout=15)[0])
+    assert info.get('_extractor') == 'NodeBB API'
+    assert info.get('uid') == '44'
+    assert info.get('username') == 'whycan'
+    assert info.get('created_at') == '2021-05-17 15:16:25.374 UTC'
+
+
 def test_discourse_api():
     """Discourse API"""
     # a host that is not in the url_hints list — the mutation has to carry it
