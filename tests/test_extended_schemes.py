@@ -141,3 +141,101 @@ def test_visnesscard_api_json():
     assert 'icon.png' in info.get('image', '')
     assert info.get('views_count') == '30'
     assert info.get('created_at') == '2021-04-08T20:24:43.823'
+
+
+def test_flarum_api_single_user():
+    """Flarum API: extract single user details."""
+    body = json.dumps({
+        "links": {
+            "first": "https://discuss.flarum.org/api/users?filter%5Bq%5D=luceos"
+        },
+        "data": [
+            {
+                "type": "users",
+                "id": "1",
+                "attributes": {
+                    "username": "luceos",
+                    "displayName": "Luceos Dev",
+                    "avatarUrl": "https://discuss.flarum.org/assets/avatars/1.png",
+                    "bio": "Flarum core team member",
+                    "joinTime": "2015-08-20T10:00:00+00:00",
+                    "lastSeenAt": "2026-03-01T12:00:00+00:00",
+                    "discussionCount": 150,
+                    "commentCount": 3500,
+                },
+            }
+        ]
+    })
+    info = extract(body)
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'luceos'
+    assert info.get('fullname') == 'Luceos Dev'
+    assert info.get('image') == 'https://discuss.flarum.org/assets/avatars/1.png'
+    assert info.get('bio') == 'Flarum core team member'
+    assert info.get('created_at') == '2015-08-20T10:00:00+00:00'
+    assert info.get('latest_activity_at') == '2026-03-01T12:00:00+00:00'
+    assert info.get('posts_count') == '150'
+    assert info.get('comments_count') == '3500'
+
+
+def test_flarum_api_multi_user_exact_match():
+    """Flarum API: match queried username among multiple search results."""
+    body = json.dumps({
+        "links": {
+            "first": "https://community.nodebb.org/api/users?filter[q]=rammiro"
+        },
+        "data": [
+            {
+                "type": "users",
+                "id": "10",
+                "attributes": {
+                    "username": "rammiro_fan",
+                    "displayName": "Fan of Rammiro",
+                    "avatarUrl": None,
+                    "bio": None,
+                    "joinTime": "2021-01-01T00:00:00+00:00",
+                    "lastSeenAt": None,
+                    "discussionCount": 2,
+                    "commentCount": 10,
+                },
+            },
+            {
+                "type": "users",
+                "id": "42",
+                "attributes": {
+                    "username": "rammiro",
+                    "displayName": "Rammiro",
+                    "avatarUrl": "https://avatar.example.com/42.jpg",
+                    "bio": "Active contributor",
+                    "joinTime": "2019-05-15T08:30:00+00:00",
+                    "lastSeenAt": "2026-02-28T18:00:00+00:00",
+                    "discussionCount": 45,
+                    "commentCount": 620,
+                },
+            },
+        ]
+    })
+    info = extract(body)
+    assert info.get('uid') == '42'
+    assert info.get('username') == 'rammiro'
+    assert info.get('fullname') == 'Rammiro'
+    assert info.get('image') == 'https://avatar.example.com/42.jpg'
+    assert info.get('bio') == 'Active contributor'
+    assert info.get('created_at') == '2019-05-15T08:30:00+00:00'
+    assert info.get('latest_activity_at') == '2026-02-28T18:00:00+00:00'
+    assert info.get('posts_count') == '45'
+    assert info.get('comments_count') == '620'
+
+
+def test_flarum_api_forbidden_error():
+    """Flarum API: 403 permission denied returns empty dict."""
+    body = json.dumps({
+        "errors": [
+            {
+                "status": "403",
+                "code": "permission_denied"
+            }
+        ]
+    })
+    info = extract(body)
+    assert info == {}

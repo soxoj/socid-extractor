@@ -333,6 +333,55 @@ def _discourse_html_profile(page):
     return json.dumps({'username': username, 'bio': bio, 'image': image})
 
 
+def _flarum_api_user(payload):
+    """Extract the matching user object from a Flarum JSON:API response.
+
+    Flarum answers GET /api/users?filter[q]={name} with a JSON:API document.
+    Because filter[q] is a search, data can contain multiple users or none.
+    We match the exact username from the query URL in links, or return the
+    single user if only one was returned.
+    """
+    if not isinstance(payload, dict):
+        return {}
+
+    data = payload.get('data')
+    if isinstance(data, dict):
+        # Direct user object (e.g. GET /api/users/{id})
+        return data
+    if not isinstance(data, list) or not data:
+        return {}
+
+    # Try to extract the queried username from links.first or links.self
+    target = None
+    links = payload.get('links') or {}
+    for link_key in ('first', 'self'):
+        url_str = links.get(link_key, '')
+        if url_str:
+            import urllib.parse
+            parsed = urllib.parse.urlparse(url_str)
+            query = urllib.parse.parse_qs(parsed.query)
+            q_list = query.get('filter[q]') or query.get('filter%5Bq%5D') or query.get('q')
+            if q_list and q_list[0]:
+                target = q_list[0].strip()
+                break
+
+    if target:
+        target_lower = target.lower()
+        for item in data:
+            if isinstance(item, dict):
+                attrs = item.get('attributes') or {}
+                username = attrs.get('username') or ''
+                if username.lower() == target_lower:
+                    return item
+        return {}
+
+    # If no search query was detected in links and exactly one user was returned
+    if len(data) == 1 and isinstance(data[0], dict):
+        return data[0]
+
+    return {}
+
+
 def _fl_ld(soup, *keys):
     """Extract a nested value from FL.ru JSON-LD (application/ld+json)."""
     tag = soup.find('script', type='application/ld+json')
@@ -3630,6 +3679,28 @@ schemes = {
                 'to': 'https://{base}/u/{username}.json',
             },
         ],
+    },
+    'Flarum API': {
+        'flags': ['"joinTime"', '"discussionCount"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            _flarum_api_user,
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: str(x.get('id')) if x.get('id') is not None else None,
+            'username': lambda x: x.get('attributes', {}).get('username'),
+            'fullname': lambda x: x.get('attributes', {}).get('displayName') or None,
+            'image': lambda x: x.get('attributes', {}).get('avatarUrl') or None,
+            'created_at': lambda x: x.get('attributes', {}).get('joinTime'),
+            'latest_activity_at': lambda x: x.get('attributes', {}).get('lastSeenAt') or None,
+            'bio': lambda x: x.get('attributes', {}).get('bio') or None,
+            'posts_count': lambda x: x.get('attributes', {}).get('discussionCount'),
+            'comments_count': lambda x: x.get('attributes', {}).get('commentCount'),
+        },
+        'url_hints': ('/api/users',),
     },
     'Snapchat': {
         'flags': ['__NEXT_DATA__', '"userProfile":'],
