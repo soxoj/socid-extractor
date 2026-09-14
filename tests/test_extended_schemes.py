@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """Offline tests for schemes merged in from the extended plugin pack."""
 import json
+from pathlib import Path
 
-from socid_extractor.main import extract
+import pytest
+
+from socid_extractor.main import extract, mutate_url
 
 
 def test_gdbrowser_api_json():
@@ -141,3 +144,78 @@ def test_visnesscard_api_json():
     assert 'icon.png' in info.get('image', '')
     assert info.get('views_count') == '30'
     assert info.get('created_at') == '2021-04-08T20:24:43.823'
+
+
+def test_nodebb_api_json():
+    """NodeBB API: extract a saved response without making a request."""
+    # Captured 2026-09-13 from the public endpoint in issue #291:
+    # https://bbs.aw-ol.com/api/user/username/whycan
+    body = (Path(__file__).parent / 'fixtures' / 'nodebb_user.json').read_text(encoding='utf-8')
+    info = extract(body)
+    assert info.get('_extractor') == 'NodeBB API'
+    assert info.get('uid') == '44'
+    assert info.get('username') == 'whycan'
+    assert info.get('fullname') == 'whycan晕哥'
+    assert info.get('image') == '/assets/uploads/profile/44-profileavatar-1680058994111.jpeg'
+    assert info.get('created_at') == '2021-05-17 15:16:25.374 UTC'
+    assert info.get('latest_activity_at') == '2026-09-07 23:37:21.034 UTC'
+    assert info.get('posts_count') == '2104'
+    assert info.get('follower_count') == '76'
+    assert info.get('following_count') == '0'
+
+
+def test_nodebb_api_missing_optional_fields():
+    body = json.dumps({
+        'uid': 7, 'username': 'example', 'userslug': 'example',
+        'joindate': None, 'lastonline': 0, 'postcount': 0,
+        'icon:bgColor': '#009688', 'email:confirmed': False,
+    })
+    info = extract(body)
+    assert info.get('uid') == '7'
+    assert info.get('username') == 'example'
+    assert info.get('posts_count') == '0'
+    assert 'created_at' not in info
+    assert 'latest_activity_at' not in info
+    assert 'image' not in info
+
+
+@pytest.mark.parametrize('body', [
+    '{"status":{"code":"not-authorised","message":"Not authorised"}}',
+    '{"error":"Forbidden"}',
+    '<html><title>401 Unauthorized</title></html>',
+    '<html><title>404 Not Found</title></html>',
+    '{}',
+    # Platform markers in a nested user/list do not identify a profile page.
+    '{"users":[{"uid":7,"username":"example","userslug":"example",'
+    '"joindate":1621264585374,"postcount":0,"icon:bgColor":"#009688","email:confirmed":false}]}',
+    '{"userslug":"example","joindate":1621264585374,"postcount":0,'
+    '"icon:bgColor":"#009688","email:confirmed":false}',
+    '{"userslug":"example","joindate":1621264585374,"postcount":0,'
+    '"icon:bgColor":"#009688","email:confirmed":false,}',
+    # Other APIs can have usernames and post counts, without being NodeBB.
+    '{"id":7,"username":"example","postcount":12}',
+    '{"uid":7,"username":"example","userslug":"example","joindate":1621264585374}',
+])
+def test_nodebb_api_ignores_errors_and_unrelated_responses(body):
+    assert extract(body) == {}
+
+
+@pytest.mark.parametrize(('profile', 'api'), [
+    ('https://forum.example/user/alice', 'https://forum.example/api/user/alice'),
+    ('http://forum.example/user/alice/', 'http://forum.example/api/user/alice'),
+    ('https://forum.example/community/user/alice-smith', 'https://forum.example/community/api/user/alice-smith'),
+    ('https://forum.example/user/alice/posts?sort=newest#top', 'https://forum.example/api/user/alice'),
+    ('https://forum.example/user/%E7%94%A8%E6%88%B7?lang=en', 'https://forum.example/api/user/%E7%94%A8%E6%88%B7'),
+])
+def test_nodebb_profile_url_mutation(profile, api):
+    assert (api, set()) in mutate_url(profile)
+
+
+@pytest.mark.parametrize('url', [
+    'https://forum.example/api/user/alice',
+    'https://forum.example/api/user/username/alice',
+    'https://forum.example/community/api/user/alice',
+    'https://forum.example/user/',
+])
+def test_nodebb_api_url_is_not_mutated_again(url):
+    assert not any('/api/api/' in result or '/api/user/' in result for result, _ in mutate_url(url))
