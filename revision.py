@@ -93,7 +93,7 @@ def revision():
 
 		f.write(f'\nThe table has been updated at {datetime.utcnow()} UTC\n')
 
-	print(f'Total {len(m)} methods, {len(methods_without_tests)} without tests: ')
+	print(f'Total {len(methods)} methods, {len(methods_without_tests)} without tests: ')
 	print(methods_without_tests)
 
 if __name__ == "__main__":
