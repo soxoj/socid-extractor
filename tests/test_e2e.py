@@ -7,6 +7,15 @@ from socid_extractor.activation import get_twitter_headers
 from socid_extractor.main import parse, extract, mutate_url, HEADERS
 
 
+def test_lemmy_api():
+    """Lemmy API"""
+    body, status = parse('https://lemmy.nz/api/v3/user?username=Dave', timeout=10)
+    assert status == 200
+    info = extract(body)
+    assert info.get('uid') == '2'
+    assert info.get('username') == 'Dave'
+
+
 @pytest.mark.skip(reason="VK web is SPA; static fetch has no embed with ownerId (2026)")
 def test_vk_user_profile_full():
     """VK user profile"""
