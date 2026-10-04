@@ -1421,6 +1421,55 @@ def test_a_broken_transform_skips_only_its_own_scheme():
     assert info.get('username') == 'bob'
     
     
+def test_a_scheme_that_matches_non_json_skips_only_itself():
+    """json.loads on a capture that is not JSON must not abandon the page."""
+    from socid_extractor.schemes import schemes
+
+    # the shape maigret's bot hit ~50 times a day: a scheme matched a page,
+    # its first transform was json.loads, and the capture was not JSON
+    marker = '"valueerror-guard-fixture"'
+    broken = {
+        'flags': [marker],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [json.loads, lambda x: {'username': x['user']}, json.dumps],
+    }
+    working = {
+        'flags': [marker],
+        'regex': r'"user": "(?P<username>[^"]+)"',
+    }
+
+    original = dict(schemes)
+    schemes.clear()
+    schemes.update({'Broken fixture': broken, 'Working fixture': working, **original})
+    try:
+        # trailing comma makes it invalid JSON, so json.loads raises
+        info = extract('{"valueerror-guard-fixture": 1, "user": "bob",}')
+    finally:
+        schemes.clear()
+        schemes.update(original)
+
+    assert info.get('username') == 'bob'
+
+
+def test_a_field_that_raises_valueerror_drops_only_that_field():
+    """One unparseable value must not cost the rest of the record."""
+    from socid_extractor.main import map_fields
+    from socid_extractor.utils import parse_datetime
+
+    # parse_datetime reads a 10-character value with no dash as a unix
+    # timestamp, so a site that starts sending something else of that length
+    # makes it raise — which used to abandon the whole page, username included
+    scheme = {'fields': {
+        'created_at': lambda x: parse_datetime(x['date']),
+        'username': lambda x: x['user'],
+    }}
+    values = map_fields(scheme, {'date': 'not a date', 'user': 'bob'})
+
+    assert values.get('username') == 'bob'
+    assert not values.get('created_at')
+
+
 def test_patreon_rsc_deref_reads_hex_row_ids():
     """Patreon's RSC row ids are hex — a decimal pattern quietly loses row 10 and up."""
     from socid_extractor.schemes import _patreon_rsc_deref
