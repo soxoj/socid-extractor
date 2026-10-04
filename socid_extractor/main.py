@@ -11,7 +11,13 @@ HEADERS = {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 }
 
-PROCESS_ERRORS = (AttributeError, KeyError, IndexError, TypeError)
+# Transforms and field lambdas run over untrusted page content, so these all
+# mean "this scheme does not fit this page" — never "abandon the page".
+# ValueError is in here for json.loads on a capture that is not JSON (its
+# JSONDecodeError subclasses it), for parse_datetime on a value whose length
+# matches a timestamp but whose content does not, and for helpers that raise
+# it deliberately.
+PROCESS_ERRORS = (AttributeError, KeyError, IndexError, TypeError, ValueError)
 
 
 def parse(url, cookies_str='', timeout=3, headers={}):
