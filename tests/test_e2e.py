@@ -428,8 +428,7 @@ def test_behance():
     assert 'appreciations' in info
 
 
-@pytest.mark.skip(reason="down")
-def test_500px():  # Broken. API answers with error 1503, a platform migration.
+def test_500px():
     """500px GraphQL API"""
     mutated_url = mutate_url('https://500px.com/p/the-maksimov')
     url, add_headers = mutated_url[0]
@@ -1512,7 +1511,8 @@ def test_paragraph_api_e2e():
     assert info.get('wallet_address') == '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 
 
-def test_fragment_e2e():
+@pytest.mark.skip(reason="broken")
+def test_fragment_e2e():  # Broken. The page is a bid list now, not one owner.
     """Fragment"""
     info = extract(parse('https://fragment.com/username/durov')[0])
 
@@ -1618,18 +1618,20 @@ def test_instagram_graphql_bio_links_and_tagged_usernames():
 
 def test_snapchat():
     """Snapchat"""
-    info = extract(parse('https://www.snapchat.com/@ogovorka')[0])
+    info = extract(parse('https://www.snapchat.com/@teamsnapchat')[0])
 
-    assert info.get('username') == 'ogovorka'
-    assert info.get('fullname') == 'Катерина Иванова'
-    assert info.get('bio') == 'Катерина Иванова is on Snapchat! (@ogovorka)'
-    assert info.get('url') == 'https://www.snapchat.com/@ogovorka'
+    assert info.get('username') == 'teamsnapchat'
+    assert info.get('fullname') == 'Team Snapchat'
+    # the bio is localised to whoever is looking ("is on" / "ist auf"), so only
+    # the handle inside it is worth asserting
+    assert '@teamsnapchat' in info.get('bio', '')
+    assert info.get('url') == 'https://www.snapchat.com/@teamsnapchat'
     assert info.get('image') in {
-        'https://www.snapchat.com/web-capture/www.snapchat.com/@ogovorka/preview/square.jpeg?xp_id=1',
-        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@ogovorka/preview/square.jpeg?xp_id=1',
+        'https://www.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
+        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
     }
     assert info.get(
-        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=ogovorka&type=SVG&bitmoji=enable'
+        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=teamsnapchat&type=SVG&bitmoji=enable'
     assert info.get('profile_type') == 'userInfo'
 
 

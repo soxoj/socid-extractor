@@ -53,7 +53,7 @@
 48 | D3.ru | [d3](https://github.com/soxoj/socid-extractor/search?q=test_d3) | requests from GitHub Actions CI servers are blocked |
 49 | Gitlab |  |  |
 50 | 500px userByUsername API |  |  |
-51 | 500px GraphQL API | [500px](https://github.com/soxoj/socid-extractor/search?q=test_500px) | down |
+51 | 500px GraphQL API | [500px](https://github.com/soxoj/socid-extractor/search?q=test_500px) |  |
 52 | Google Document API | [google_documents](https://github.com/soxoj/socid-extractor/search?q=test_google_documents) |  |
 53 | Google Document |  |  |
 54 | Google Maps contributions |  |  |
@@ -154,7 +154,7 @@
 149 | Smule |  |  |
 150 | Warpcast API | [warpcast_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_warpcast_api_e2e) |  |
 151 | Paragraph API | [paragraph_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_paragraph_api_e2e) |  |
-152 | Fragment | [fragment_e2e](https://github.com/soxoj/socid-extractor/search?q=test_fragment_e2e) |  |
+152 | Fragment | [fragment_e2e](https://github.com/soxoj/socid-extractor/search?q=test_fragment_e2e) | broken |
 153 | Tonometerbot | [tonometerbot_e2e](https://github.com/soxoj/socid-extractor/search?q=test_tonometerbot_e2e) | anti-bot / captcha / rate limiting from the site |
 154 | Spatial | [spatial_e2e](https://github.com/soxoj/socid-extractor/search?q=test_spatial_e2e) | requests from GitHub Actions CI servers are blocked |
 155 | OpenSea |  |  |
@@ -269,4 +269,4 @@
 264 | XenForo | [xenforo](https://github.com/soxoj/socid-extractor/search?q=test_xenforo) |  |
 265 | Lemmy API | [lemmy_api](https://github.com/soxoj/socid-extractor/search?q=test_lemmy_api) |  |
 
-The table has been updated at 2026-09-30 20:18:53.903814 UTC
+The table has been updated at 2026-10-06 09:09:55.928023 UTC
