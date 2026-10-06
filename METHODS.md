@@ -267,5 +267,6 @@
 262 | Couchsurfing person |  |  |
 263 | ReverbNation artist |  |  |
 264 | XenForo | [xenforo](https://github.com/soxoj/socid-extractor/search?q=test_xenforo) |  |
+265 | Lemmy API | [lemmy_api](https://github.com/soxoj/socid-extractor/search?q=test_lemmy_api) |  |
 
-The table has been updated at 2026-10-04 15:10:22.441908 UTC
+The table has been updated at 2026-10-06 09:09:55.928023 UTC

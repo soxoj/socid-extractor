@@ -5521,6 +5521,30 @@ schemes = {
             'xenforo_points': lambda x: x.get('xenforo_points'),
         },
     },
+    'Lemmy API': {
+        'flags': ['"person_view"', '"person"', '"actor_id"', '"counts"', '"published"'],
+        'regex': r'^\s*(\{[\s\S]+\})\s*$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('person_view') or {}).get('person') or {},
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('name'),
+            'fullname': lambda x: x.get('display_name'),
+            'bio': lambda x: x.get('bio'),
+            'image': lambda x: x.get('avatar'),
+            'created_at': lambda x: x.get('published'),
+        },
+        'url_hints': ('/u/', '/api/v3/user'),
+        'url_mutations': [{
+            # v3 only: other versions are not silently assumed to be compatible.
+            'from': r'^(?P<base>https?://[^/?#]+)/u/(?P<username>[A-Za-z0-9_-]+(?:@[A-Za-z0-9.-]+(?::[0-9]+)?)?)(?:/?(?:[?#].*)?)$',
+            'to': '{base}/api/v3/user?username={username}',
+        }],
+    },
 }
 
 # -- Plugin loading (must come after the built-in schemes dict is defined) --
