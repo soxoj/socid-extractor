@@ -40,6 +40,14 @@ The latest development version:
 pip install -U git+https://github.com/soxoj/socid-extractor.git
 ```
 
+On Linux, [OTinstaller](https://github.com/OSINTVerseHQ/OTinstaller) can install the PyPI release into its own virtualenv. It is a third-party tool manager, so please report problems with it [on the OTinstaller tracker](https://github.com/OSINTVerseHQ/OTinstaller/issues).
+
+```sh
+pipx install otinstaller
+otinstaller install socid-extractor
+otinstaller run socid-extractor -- url:https://www.deviantart.com/muse1908   # url: is passed as --url
+```
+
 ## Quick start
 
 **As a CLI:**
