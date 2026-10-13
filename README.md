@@ -44,6 +44,7 @@ On Linux, [OTinstaller](https://github.com/OSINTVerseHQ/OTinstaller) can install
 
 ```sh
 pipx install otinstaller
+otinstaller init
 otinstaller install socid-extractor
 otinstaller run socid-extractor -- url:https://www.deviantart.com/muse1908   # url: is passed as --url
 ```
