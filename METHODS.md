@@ -267,5 +267,6 @@
 262 | Couchsurfing person |  |  |
 263 | ReverbNation artist |  |  |
 264 | XenForo | [xenforo](https://github.com/soxoj/socid-extractor/search?q=test_xenforo) |  |
+265 | phpBB | [phpbb](https://github.com/soxoj/socid-extractor/search?q=test_phpbb), [phpbb_author_search](https://github.com/soxoj/socid-extractor/search?q=test_phpbb_author_search) |  |
 
-The table has been updated at 2026-10-04 15:10:22.441908 UTC
+The table has been updated at 2026-10-14 06:33:44.022971 UTC

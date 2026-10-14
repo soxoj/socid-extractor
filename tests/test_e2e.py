@@ -1832,3 +1832,26 @@ def test_xenforo():
     # XenForo renders times in the viewer's timezone, so only the date is stable
     assert info.get('created_at', '').startswith('2024-01-3')
     assert info.get('posts_count', '').isdigit()
+
+
+def test_phpbb():
+    """phpBB"""
+    # the URL shape maigret stores for boards that let anyone read the member
+    # list: the list filtered by name, which answers with the one exact match
+    info = extract(parse('https://forums.mozfr.org/memberlist.php?username=geckozonefr')[0])
+
+    assert info.get('uid') == '2'
+    assert info.get('username') == 'geckozonefr'
+    assert info.get('posts_count', '').isdigit()
+    # the join date comes as the board renders it, in the board's own language
+    assert info.get('created_at', '').startswith('10 juin 2003')
+
+
+def test_phpbb_author_search():
+    """phpBB"""
+    # the other shape maigret stores: the member's posts, each headed by the
+    # profile link. The search carries no counters, so only the identity is checked.
+    info = extract(parse('https://forum.openoffice.org/en/forum/search.php?author=alex')[0])
+
+    assert info.get('uid') == '1743'
+    assert info.get('username') == 'alex'
