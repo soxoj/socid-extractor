@@ -1435,6 +1435,28 @@ def test_patreon_rsc_deref_reads_hex_row_ids():
     assert _patreon_rsc_deref(rsc, '{"bio":"$undefined"}') == '{"bio":"$undefined"}'
 
     
+def test_xenforo_ignores_the_member_listing():
+    """A failed member search falls back to a listing full of other people's ids."""
+    header = ('<meta property="og:url" content="https://forum.example/members/manumuskin.35/" />'
+              '<span class="username" data-user-id="35">manumuskin</span>'
+              '<div class="memberHeader-blurb"><time datetime="2003-07-20T18:23:00-0400"></time>'
+              '<time datetime="2026-09-07T16:59:37-0400"></time></div>'
+              '<a href="/search/member?user_id=35">9,193</a>')
+    profile = extract(header)
+
+    assert profile.get('uid') == '35'
+    assert profile.get('username') == 'manumuskin'
+    assert profile.get('posts_count') == '9193'
+    assert profile.get('created_at') == '2003-07-20T18:23:00-0400'
+    assert profile.get('latest_activity_at') == '2026-09-07T16:59:37-0400'
+
+    # the listing carries member cards, so data-user-id is there — but it belongs
+    # to whoever the forum felt like showing, and og:url points at the listing
+    listing = ('<meta property="og:url" content="https://forum.example/members/" />'
+               '<a href="/members/someone-else.4242/" data-user-id="4242">Someone Else</a>')
+    assert extract(listing) == {}
+
+
 def test_no_flag_subset_shadows():
     """Detect scheme pairs where one's flags are a subset of another's.
 

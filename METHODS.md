@@ -53,7 +53,7 @@
 48 | D3.ru | [d3](https://github.com/soxoj/socid-extractor/search?q=test_d3) | requests from GitHub Actions CI servers are blocked |
 49 | Gitlab |  |  |
 50 | 500px userByUsername API |  |  |
-51 | 500px GraphQL API | [500px](https://github.com/soxoj/socid-extractor/search?q=test_500px) |  |
+51 | 500px GraphQL API | [500px](https://github.com/soxoj/socid-extractor/search?q=test_500px) | broken |
 52 | Google Document API | [google_documents](https://github.com/soxoj/socid-extractor/search?q=test_google_documents) |  |
 53 | Google Document |  |  |
 54 | Google Maps contributions |  |  |
@@ -154,7 +154,7 @@
 149 | Smule |  |  |
 150 | Warpcast API | [warpcast_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_warpcast_api_e2e) |  |
 151 | Paragraph API | [paragraph_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_paragraph_api_e2e) |  |
-152 | Fragment | [fragment_e2e](https://github.com/soxoj/socid-extractor/search?q=test_fragment_e2e) |  |
+152 | Fragment | [fragment_e2e](https://github.com/soxoj/socid-extractor/search?q=test_fragment_e2e) | broken |
 153 | Tonometerbot | [tonometerbot_e2e](https://github.com/soxoj/socid-extractor/search?q=test_tonometerbot_e2e) | anti-bot / captcha / rate limiting from the site |
 154 | Spatial | [spatial_e2e](https://github.com/soxoj/socid-extractor/search?q=test_spatial_e2e) | requests from GitHub Actions CI servers are blocked |
 155 | OpenSea |  |  |
@@ -180,8 +180,8 @@
 175 | Lens (Hey/Orb/Buttrfly) account | [lens_account](https://github.com/soxoj/socid-extractor/search?q=test_lens_account), [lens_account_absent](https://github.com/soxoj/socid-extractor/search?q=test_lens_account_absent) |  |
 176 | HuggingFace API | [huggingface_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_huggingface_api_e2e) |  |
 177 | HackerNews | [hackernews](https://github.com/soxoj/socid-extractor/search?q=test_hackernews) |  |
-178 | Teletype | [teletype](https://github.com/soxoj/socid-extractor/search?q=test_teletype) |  |
-179 | GDBrowser API | [gdbrowser_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_gdbrowser_api_e2e) |  |
+178 | Teletype | [teletype](https://github.com/soxoj/socid-extractor/search?q=test_teletype) | down |
+179 | GDBrowser API | [gdbrowser_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_gdbrowser_api_e2e) | cloudflare |
 180 | StreamElements API | [streamelements_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_streamelements_api_e2e) |  |
 181 | Streamlabs API | [streamlabs_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_streamlabs_api_e2e) |  |
 182 | Donatty API | [donatty_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_donatty_api_e2e) |  |
@@ -266,5 +266,6 @@
 261 | Wikidot user |  |  |
 262 | Couchsurfing person |  |  |
 263 | ReverbNation artist |  |  |
+264 | XenForo | [xenforo](https://github.com/soxoj/socid-extractor/search?q=test_xenforo) |  |
 
-The table has been updated at 2026-09-07 21:26:08.324494 UTC
+The table has been updated at 2026-10-18 14:51:21.255794 UTC
