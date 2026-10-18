@@ -2,7 +2,7 @@ from dateutil.parser import parse as parse_datetime_str
 import html
 import json
 import itertools
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote, urlparse
 
 from .utils import *
 
@@ -177,6 +177,58 @@ def _faceit_streaming_links(profile):
         if handle:
             links[platform.removesuffix('_id')] = handle
     return links
+
+
+def _vbulletin_id_from_href(href):
+    """Return a vBulletin profile id encoded in a profile/search link."""
+    parsed = urlparse(href)
+    page = parsed.path.rsplit('/', 1)[-1]
+    query = parse_qs(parsed.query)
+    if page in ('member.php', 'profile.php'):
+        return (query.get('u') or [None])[0]
+    if page == 'search.php' and (query.get('do') or [None])[0] == 'finduser':
+        return (query.get('u') or query.get('userid') or [None])[0]
+    return None
+
+
+def _vbulletin_uid(soup):
+    """Extract a profile id without treating thread participants as one profile."""
+    relpath = soup.find(string=lambda value: value and 'RELPATH' in value)
+    if relpath:
+        match = re.search(r'RELPATH\s*=\s*["\']member\.php\?u=(\d+)', relpath)
+        if match:
+            return match.group(1)
+
+    header = soup.find(id='memberinfoheader') or soup.find(id='avatar')
+    if header:
+        ids = {
+            _vbulletin_id_from_href(a.get('href', ''))
+            for a in header.find_all('a', href=True)
+        }
+        ids.discard(None)
+        if len(ids) == 1:
+            return ids.pop()
+
+    stats = soup.find(id='stats')
+    links = (
+        stats.find_all('a', href=True)
+        if stats else soup.find_all('a', href=True)
+    )
+    ids = {_vbulletin_id_from_href(a.get('href', '')) for a in links}
+    ids.discard(None)
+    return ids.pop() if len(ids) == 1 else None
+
+
+def _vbulletin_username(soup):
+    member_username = soup.find(class_='member_username')
+    if member_username:
+        return member_username.get_text(' ', strip=True)
+
+    username_box = soup.find(id='username_box')
+    heading = username_box.find('h1') if username_box else None
+    if heading:
+        return heading.get_text(' ', strip=True)
+    return None
 
 
 def _yt_redirect_urls(data):
@@ -2085,11 +2137,11 @@ schemes = {
         },
     },
     'vBulletinEngine': {
-        'flags': ['vBulletin.register_control'],
+        'flags': ['vBulletin'],
         'bs': True,
         'fields': {
-            'status': lambda x: x.find('span', {'class': 'online-status'}).findAll('span')[1].text,
-            'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
+            'uid': _vbulletin_uid,
+            'username': _vbulletin_username,
             'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
         }
     },
