@@ -1,0 +1,14 @@
+{
+  "person_view": {
+    "person": {
+      "id": 2,
+      "name": "Dave",
+      "display_name": "Dave",
+      "actor_id": "https://lemmy.nz/u/Dave",
+      "bio": "A public profile biography",
+      "avatar": "https://example.org/avatar.png",
+      "published": "2023-06-02T09:46:20.302035Z"
+    },
+    "counts": {"person_id": 2}
+  }
+}

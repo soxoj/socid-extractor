@@ -146,6 +146,49 @@ def test_visnesscard_api_json():
     assert info.get('created_at') == '2021-04-08T20:24:43.823'
 
 
+def test_vbulletin_v4_profile_identifiers():
+    """vBulletin 4 profile pages expose id in RELPATH and username in the header."""
+    html = '''
+    <meta name="generator" content="vBulletin 4.2.5">
+    <script>var RELPATH = "member.php?u=144363";</script>
+    <div id="memberinfoheader">
+      <a class="avatar" href="member.php?u=144363&amp;s=session">
+        <span class="avatarcontainer"><img src="avatar.png"></span>
+      </a>
+      <div id="userinfo"><span class="member_username">Adam</span></div>
+    </div>
+    <a class="username" href="member.php?u=60945">visitor</a>
+    '''
+    info = extract(html)
+    assert info.get('uid') == '144363'
+    assert info.get('username') == 'Adam'
+    assert info.get('image') == 'avatar.png'
+
+
+def test_vbulletin_v3_profile_identifiers():
+    """vBulletin 3 profile pages expose the id in finduser links."""
+    html = '''
+    <meta name="generator" content="vBulletin 3.8.8">
+    <div id="username_box"><h1>Alex <img src="offline.gif"></h1></div>
+    <div id="stats"><a href="search.php?do=finduser&amp;u=106">Find posts</a>
+      <a href="search.php?do=finduser&amp;u=106&amp;starteronly=1">Find threads</a></div>
+    '''
+    info = extract(html)
+    assert info.get('uid') == '106'
+    assert info.get('username') == 'Alex'
+
+
+def test_vbulletin_thread_with_multiple_participants_has_no_profile_id():
+    """A thread with several participant ids must not identify one as the profile."""
+    html = '''
+    <meta name="generator" content="vBulletin 4.2.5">
+    <a href="search.php?do=finduser&amp;u=106">Alex</a>
+    <a href="search.php?do=finduser&amp;u=2835">Snejana191</a>
+    '''
+    info = extract(html)
+    assert 'uid' not in info
+
+
 def test_nodebb_api_json():
     """NodeBB API: extract a saved response without making a request."""
     # Captured 2026-09-13 from the public endpoint in issue #291:

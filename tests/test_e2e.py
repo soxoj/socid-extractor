@@ -7,6 +7,15 @@ from socid_extractor.activation import get_twitter_headers
 from socid_extractor.main import parse, extract, mutate_url, HEADERS
 
 
+def test_lemmy_api():
+    """Lemmy API"""
+    body, status = parse('https://lemmy.nz/api/v3/user?username=Dave', timeout=10)
+    assert status == 200
+    info = extract(body)
+    assert info.get('uid') == '2'
+    assert info.get('username') == 'Dave'
+
+
 @pytest.mark.skip(reason="VK web is SPA; static fetch has no embed with ownerId (2026)")
 def test_vk_user_profile_full():
     """VK user profile"""
@@ -340,6 +349,7 @@ def test_yandex_o_user_profile():  # The page parsed redirects to realty.ya.ru. 
     assert info.get('score') == 'Ten'
 
 
+@pytest.mark.skip(reason="down")  # yandex.ru/q answers 504, including its own root
 def test_yandex_znatoki_user_profile():
     info = extract(parse('https://yandex.ru/q/profile/zftrw5fzczde6841qgmfn7d2ag/')[0])
 
@@ -419,8 +429,8 @@ def test_behance():
     assert 'appreciations' in info
 
 
-@pytest.mark.skip(reason="down")
-def test_500px():  # Broken. API answers with error 1503, a platform migration.
+@pytest.mark.skip(reason="broken")  # the API moved to api-neo.500px.com, scheme not updated yet
+def test_500px():
     """500px GraphQL API"""
     mutated_url = mutate_url('https://500px.com/p/the-maksimov')
     url, add_headers = mutated_url[0]
@@ -1503,7 +1513,8 @@ def test_paragraph_api_e2e():
     assert info.get('wallet_address') == '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
 
 
-def test_fragment_e2e():
+@pytest.mark.skip(reason="broken")
+def test_fragment_e2e():  # Broken. The page is a bid list now, not one owner.
     """Fragment"""
     info = extract(parse('https://fragment.com/username/durov')[0])
 
@@ -1609,18 +1620,20 @@ def test_instagram_graphql_bio_links_and_tagged_usernames():
 
 def test_snapchat():
     """Snapchat"""
-    info = extract(parse('https://www.snapchat.com/@ogovorka')[0])
+    info = extract(parse('https://www.snapchat.com/@teamsnapchat')[0])
 
-    assert info.get('username') == 'ogovorka'
-    assert info.get('fullname') == 'Катерина Иванова'
-    assert info.get('bio') == 'Катерина Иванова is on Snapchat! (@ogovorka)'
-    assert info.get('url') == 'https://www.snapchat.com/@ogovorka'
+    assert info.get('username') == 'teamsnapchat'
+    assert info.get('fullname') == 'Team Snapchat'
+    # the bio is localised to whoever is looking ("is on" / "ist auf"), so only
+    # the handle inside it is worth asserting
+    assert '@teamsnapchat' in info.get('bio', '')
+    assert info.get('url') == 'https://www.snapchat.com/@teamsnapchat'
     assert info.get('image') in {
-        'https://www.snapchat.com/web-capture/www.snapchat.com/@ogovorka/preview/square.jpeg?xp_id=1',
-        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@ogovorka/preview/square.jpeg?xp_id=1',
+        'https://www.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
+        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
     }
     assert info.get(
-        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=ogovorka&type=SVG&bitmoji=enable'
+        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=teamsnapchat&type=SVG&bitmoji=enable'
     assert info.get('profile_type') == 'userInfo'
 
 
@@ -1732,6 +1745,7 @@ def test_hackernews():
     assert int(info.get('karma', -1)) > 100000
     assert info.get('bio') == 'Bug fixer.'
 
+@pytest.mark.skip(reason="down")  # DNS resolves, nothing answers on 80 or 443
 def test_teletype():
     """Teletype"""
     info = extract(parse('https://teletype.in/@johndoe')[0])
@@ -1743,6 +1757,7 @@ def test_teletype():
     assert info.get('is_verified') == 'False'
 
 
+@pytest.mark.skip(reason="cloudflare")
 def test_gdbrowser_api_e2e():
     """GDBrowser API"""
     info = extract(parse('https://gdbrowser.com/api/profile/john')[0])
