@@ -215,6 +215,11 @@ def test_gravatar_avatar_url_mutates_to_the_json_endpoint():
     assert mutated('https://gravatar.com/inspectorg4dget') == [
         'https://en.gravatar.com/inspectorg4dget.json']
 
+    # Gravatar serves sha256 digests too, and the json endpoint answers to both
+    hash64 = '973dfe463ec85785f5f95af5ba3906eedb2d931c24e69824a89ea65dba4e813b'
+    assert mutated('https://gravatar.com/avatar/' + hash64) == [
+        'https://en.gravatar.com/' + hash64 + '.json']
+
 
 def test_twitchtracker_embedded_channel_script():
     """TwitchTracker: `window.channel` JS literal with id, login, created_at."""
