@@ -17,6 +17,10 @@ other OSINT tools. If you are looking for a ready-to-use username checker, start
 the :external+maigret:doc:`Maigret docs <index>`; this project is the extraction engine
 underneath it.
 
+For the mirror-image problem — a *share link* rather than a profile page — see
+`ShareTrace <https://github.com/soxoj/sharetrace>`_, which recovers who created or
+forwarded a shared URL.
+
 .. warning::
    **This tool is intended for educational and lawful purposes only.**
    The developers do not endorse or encourage any illegal activities or misuse of this tool.
