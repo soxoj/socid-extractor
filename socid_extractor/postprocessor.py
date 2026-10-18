@@ -72,17 +72,10 @@ class Gravatar:
         self.url = data['image']
         self.email_hash = self.extract_email_hash()
 
-        # old workaround
+        # A username that is just the avatar hash repeats the hash, it is not a name.
+        # Resolving the real one needs a fetch of en.gravatar.com/{hash}.json, which is
+        # the Gravatar scheme's url_mutations job (--enrich); parsing stays offline here.
         if self.email_hash and self.username == self.email_hash:
-            # DISABLED: get_username_from_url() does a blocking requests.head()
-            # with no timeout. A postprocessor must not touch the network -- it
-            # is a pure HTML parser. Maigret calls extract() synchronously inside
-            # a coroutine, so this hung the whole asyncio event loop (not just one
-            # site) whenever en.gravatar.com was slow. See LLM/socid_extractor_
-            # gravatar_postrprocessor_problem.md.
-            # TODO: move username resolution to maigret --enrich / url_mutations
-            #       (schemes.py already has a 'Gravatar' scheme). File an issue.
-            # self.username = self.get_username_from_url()
             self.username = ''
 
     def extract_email_hash(self):
@@ -93,18 +86,6 @@ class Gravatar:
 
     def make_main_url(self):
         return f'https://gravatar.com/{self.email_hash}'
-
-    # def make_en_url(self):
-    #     return f'https://en.gravatar.com/{self.email_hash}'
-
-    # def get_username_from_url(self):
-    #     import requests
-    #     gravatar_account_location = requests.head(self.make_en_url())
-    #     username = gravatar_account_location.headers.get('location', '').strip('/')
-    #     if username == 'profiles/no-such-user':
-    #         username = ''
-    #
-    #     return username
 
     def process(self):
         output = {}
