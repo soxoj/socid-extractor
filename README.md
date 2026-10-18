@@ -122,6 +122,10 @@ Maps to the following [SOWEL](https://sowel.soxoj.com/) techniques:
 - [**YaSeeker**](https://github.com/HowToFind-bot/YaSeeker) — gather all available information about a Yandex account by login/email.
 - [**Marple**](https://github.com/soxoj/marple) — scrape search-engine results for a given username.
 
+## See also
+
+- [**ShareTrace**](https://github.com/soxoj/sharetrace) — the mirror image of this project: `socid_extractor` reads a profile page, ShareTrace takes a *share link* (TikTok, Instagram, ChatGPT, Discord, Telegram and more) and recovers who created or forwarded it, decoding some share tokens offline. Nothing to install if you just want to try it: the community-run [Telegram bot](https://t.me/sharetrace_bot?start=c29jaWQtZXh0cmFjdG9yOnJlYWRtZQ) or [web UI](https://share.whopostedwhat.com/).
+
 ## Testing
 
 Install the test extras from [`pyproject.toml`](pyproject.toml), then run pytest:

@@ -2,9 +2,22 @@ from dateutil.parser import parse as parse_datetime_str
 import html
 import json
 import itertools
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote, urlparse
 
 from .utils import *
+
+
+def _nodebb_profile(page):
+    """Accept a NodeBB profile object, excluding errors and user listings."""
+    try:
+        data = json.loads(page)
+    except ValueError:
+        return '{}'
+    if not isinstance(data, dict) or not data.get('uid') or not data.get('username'):
+        return '{}'
+    if not all(key in data for key in ('userslug', 'joindate', 'postcount', 'icon:bgColor', 'email:confirmed')):
+        return '{}'
+    return json.dumps(data)
 
 
 # Helpers for the Virgool RSC profile scheme (see "Virgool" entry below).
@@ -177,6 +190,58 @@ def _faceit_streaming_links(profile):
         if handle:
             links[platform.removesuffix('_id')] = handle
     return links
+
+
+def _vbulletin_id_from_href(href):
+    """Return a vBulletin profile id encoded in a profile/search link."""
+    parsed = urlparse(href)
+    page = parsed.path.rsplit('/', 1)[-1]
+    query = parse_qs(parsed.query)
+    if page in ('member.php', 'profile.php'):
+        return (query.get('u') or [None])[0]
+    if page == 'search.php' and (query.get('do') or [None])[0] == 'finduser':
+        return (query.get('u') or query.get('userid') or [None])[0]
+    return None
+
+
+def _vbulletin_uid(soup):
+    """Extract a profile id without treating thread participants as one profile."""
+    relpath = soup.find(string=lambda value: value and 'RELPATH' in value)
+    if relpath:
+        match = re.search(r'RELPATH\s*=\s*["\']member\.php\?u=(\d+)', relpath)
+        if match:
+            return match.group(1)
+
+    header = soup.find(id='memberinfoheader') or soup.find(id='avatar')
+    if header:
+        ids = {
+            _vbulletin_id_from_href(a.get('href', ''))
+            for a in header.find_all('a', href=True)
+        }
+        ids.discard(None)
+        if len(ids) == 1:
+            return ids.pop()
+
+    stats = soup.find(id='stats')
+    links = (
+        stats.find_all('a', href=True)
+        if stats else soup.find_all('a', href=True)
+    )
+    ids = {_vbulletin_id_from_href(a.get('href', '')) for a in links}
+    ids.discard(None)
+    return ids.pop() if len(ids) == 1 else None
+
+
+def _vbulletin_username(soup):
+    member_username = soup.find(class_='member_username')
+    if member_username:
+        return member_username.get_text(' ', strip=True)
+
+    username_box = soup.find(id='username_box')
+    heading = username_box.find('h1') if username_box else None
+    if heading:
+        return heading.get_text(' ', strip=True)
+    return None
 
 
 def _yt_redirect_urls(data):
@@ -2159,11 +2224,11 @@ schemes = {
         },
     },
     'vBulletinEngine': {
-        'flags': ['vBulletin.register_control'],
+        'flags': ['vBulletin'],
         'bs': True,
         'fields': {
-            'status': lambda x: x.find('span', {'class': 'online-status'}).findAll('span')[1].text,
-            'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
+            'uid': _vbulletin_uid,
+            'username': _vbulletin_username,
             'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
         }
     },
@@ -5594,6 +5659,56 @@ schemes = {
             'posts_count': lambda x: x.get('posts_count'),
             'xenforo_points': lambda x: x.get('xenforo_points'),
         },
+    },
+    'Lemmy API': {
+        'flags': ['"person_view"', '"person"', '"actor_id"', '"counts"', '"published"'],
+        'regex': r'^\s*(\{[\s\S]+\})\s*$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('person_view') or {}).get('person') or {},
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('name'),
+            'fullname': lambda x: x.get('display_name'),
+            'bio': lambda x: x.get('bio'),
+            'image': lambda x: x.get('avatar'),
+            'created_at': lambda x: x.get('published'),
+        },
+        'url_hints': ('/u/', '/api/v3/user'),
+        'url_mutations': [{
+            # v3 only: other versions are not silently assumed to be compatible.
+            'from': r'^(?P<base>https?://[^/?#]+)/u/(?P<username>[A-Za-z0-9_-]+(?:@[A-Za-z0-9.-]+(?::[0-9]+)?)?)(?:/?(?:[?#].*)?)$',
+            'to': '{base}/api/v3/user?username={username}',
+        }],
+    },
+    'NodeBB API': {
+        'flags': ['"userslug"', '"joindate"', '"postcount"', '"icon:bgColor"', '"email:confirmed"'],
+        'regex': r'^\s*(\{[\s\S]+\})\s*$',
+        'extract_json': True,
+        'transforms': [_nodebb_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('picture'),
+            'created_at': lambda x: parse_datetime(x.get('joindate')),
+            'latest_activity_at': lambda x: parse_datetime(x.get('lastonline')),
+            'posts_count': lambda x: x.get('postcount'),
+            'follower_count': lambda x: x.get('followerCount'),
+            'following_count': lambda x: x.get('followingCount'),
+        },
+        'url_hints': ('/user/',),
+        'url_mutations': [{
+            # Profile URLs contain a userslug, which need not equal the username.
+            # Use the slug endpoint rather than /api/user/username/<slug>. Preserve
+            # the scheme and installation path, and do not mutate API URLs again.
+            'from': r'^(?P<base>https?://[^/?#]+(?:/(?!api(?:/|$))[^/?#]+)*?)/user/'
+                    r'(?P<userslug>[^/?#]+)(?:/|$|[?#])',
+            'to': '{base}/api/user/{userslug}',
+        }],
     },
     # phpBB has no public API either. One scheme reads the three pages a board
     # answers about a member: the member list filtered by name, the author
