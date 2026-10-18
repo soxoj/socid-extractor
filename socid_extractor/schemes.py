@@ -1188,8 +1188,15 @@ schemes = {
         'url_hints': ('gravatar.com', 'en.gravatar.com'),
         'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
         'url_mutations': [
+            # an avatar URL carries the email hash, which keys the JSON endpoint.
+            # Longest alternative first: a sha256 digest must not match as its
+            # own first 32 characters, which would ask about a different hash.
             {
-                'from': r'https?://.*?gravatar.com/(?P<username>[^/]+)',
+                'from': r'gravatar\.com/avatar/(?P<hash>[0-9a-f]{64}|[0-9a-f]{32})',
+                'to': 'https://en.gravatar.com/{hash}.json',
+            },
+            {
+                'from': r'https?://.*?gravatar\.com/(?!avatar/)(?P<username>[^/]+)',
                 'to': 'https://en.gravatar.com/{username}.json',
             }
         ],

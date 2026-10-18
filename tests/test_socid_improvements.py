@@ -168,6 +168,59 @@ def test_gravatar_postprocessor_requires_md5_hash():
     assert bad == {}
 
 
+def test_gravatar_postprocessor_is_offline(monkeypatch):
+    """
+    Verifies **Gravatar** postprocessor emits its fields with the network unavailable: the username
+    that is only the avatar hash is dropped, and resolving it is left to the scheme's url_mutations.
+
+    **Check:** `process()` under a patched `socket` raises nothing and returns the documented fields.
+    """
+    import socket
+
+    def no_network(*args, **kwargs):
+        raise AssertionError('the Gravatar postprocessor went to the network')
+
+    monkeypatch.setattr(socket.socket, 'connect', no_network)
+    monkeypatch.setattr(socket, 'create_connection', no_network)
+
+    hash32 = 'a' * 32
+    # the hash-as-username case is the one that used to call requests.head()
+    info = Gravatar({'username': hash32, 'image': 'https://secure.gravatar.com/avatar/' + hash32}).process()
+
+    assert info == {
+        'gravatar_url': 'https://gravatar.com/' + hash32,
+        'gravatar_email_md5_hash': hash32,
+    }
+
+
+def test_gravatar_avatar_url_mutates_to_the_json_endpoint():
+    """
+    Verifies the **Gravatar** scheme's url_mutations: an `/avatar/{hash}` URL -- the form the
+    `image` field carries -- becomes `https://en.gravatar.com/{hash}.json`, the endpoint that
+    returns the username, bio and links; the vanity-name form keeps mutating as before.
+
+    **Check:** `mutate_url` output for an avatar URL, a bare profile URL, and the absence of the
+    bogus `en.gravatar.com/avatar.json` a single greedy rule would have produced.
+    """
+    from socid_extractor.main import mutate_url
+
+    def mutated(url):
+        return [u for u, _hdrs in mutate_url(url)]
+
+    hash32 = '5b9c04999233026354268c2ee4237e04'
+    assert mutated('https://secure.gravatar.com/avatar/' + hash32) == [
+        'https://en.gravatar.com/' + hash32 + '.json']
+    assert mutated('https://0.gravatar.com/avatar/' + hash32 + '?s=100') == [
+        'https://en.gravatar.com/' + hash32 + '.json']
+    assert mutated('https://gravatar.com/inspectorg4dget') == [
+        'https://en.gravatar.com/inspectorg4dget.json']
+
+    # Gravatar serves sha256 digests too, and the json endpoint answers to both
+    hash64 = '973dfe463ec85785f5f95af5ba3906eedb2d931c24e69824a89ea65dba4e813b'
+    assert mutated('https://gravatar.com/avatar/' + hash64) == [
+        'https://en.gravatar.com/' + hash64 + '.json']
+
+
 def test_twitchtracker_embedded_channel_script():
     """TwitchTracker: `window.channel` JS literal with id, login, created_at."""
     html = """<!DOCTYPE html><html><head>
