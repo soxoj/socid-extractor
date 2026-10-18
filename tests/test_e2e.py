@@ -340,6 +340,7 @@ def test_yandex_o_user_profile():  # The page parsed redirects to realty.ya.ru. 
     assert info.get('score') == 'Ten'
 
 
+@pytest.mark.skip(reason="down")  # yandex.ru/q answers 504, including its own root
 def test_yandex_znatoki_user_profile():
     info = extract(parse('https://yandex.ru/q/profile/zftrw5fzczde6841qgmfn7d2ag/')[0])
 
@@ -419,6 +420,7 @@ def test_behance():
     assert 'appreciations' in info
 
 
+@pytest.mark.skip(reason="service no longer public")  # api.500px.com left DNS
 def test_500px():
     """500px GraphQL API"""
     mutated_url = mutate_url('https://500px.com/p/the-maksimov')
@@ -1734,6 +1736,7 @@ def test_hackernews():
     assert int(info.get('karma', -1)) > 100000
     assert info.get('bio') == 'Bug fixer.'
 
+@pytest.mark.skip(reason="down")  # DNS resolves, nothing answers on 80 or 443
 def test_teletype():
     """Teletype"""
     info = extract(parse('https://teletype.in/@johndoe')[0])
@@ -1745,6 +1748,7 @@ def test_teletype():
     assert info.get('is_verified') == 'False'
 
 
+@pytest.mark.skip(reason="cloudflare")
 def test_gdbrowser_api_e2e():
     """GDBrowser API"""
     info = extract(parse('https://gdbrowser.com/api/profile/john')[0])
