@@ -1857,6 +1857,7 @@ def test_xenforo():
     assert info.get('posts_count', '').isdigit()
 
 
+@pytest.mark.github_failed  # the member list answers runners without the member row
 def test_phpbb():
     """phpBB"""
     # the URL shape maigret stores for boards that let anyone read the member
