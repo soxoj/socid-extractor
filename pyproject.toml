@@ -78,6 +78,9 @@ Funding = "https://www.patreon.com/soxoj"
 [project.scripts]
 # Run with: socid_extractor <url>
 socid_extractor = "socid_extractor.cli:run"
+# The package installs as socid-extractor and the repo is named that way too,
+# so that is what people type. The import name has to keep the underscore.
+socid-extractor = "socid_extractor.cli:run"
 
 [tool.setuptools.dynamic]
 version = {attr = "socid_extractor.__version__"}

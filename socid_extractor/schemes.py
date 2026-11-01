@@ -2,9 +2,22 @@ from dateutil.parser import parse as parse_datetime_str
 import html
 import json
 import itertools
-from urllib.parse import unquote
+from urllib.parse import parse_qs, unquote, urlparse
 
 from .utils import *
+
+
+def _nodebb_profile(page):
+    """Accept a NodeBB profile object, excluding errors and user listings."""
+    try:
+        data = json.loads(page)
+    except ValueError:
+        return '{}'
+    if not isinstance(data, dict) or not data.get('uid') or not data.get('username'):
+        return '{}'
+    if not all(key in data for key in ('userslug', 'joindate', 'postcount', 'icon:bgColor', 'email:confirmed')):
+        return '{}'
+    return json.dumps(data)
 
 
 # Helpers for the Virgool RSC profile scheme (see "Virgool" entry below).
@@ -179,6 +192,58 @@ def _faceit_streaming_links(profile):
     return links
 
 
+def _vbulletin_id_from_href(href):
+    """Return a vBulletin profile id encoded in a profile/search link."""
+    parsed = urlparse(href)
+    page = parsed.path.rsplit('/', 1)[-1]
+    query = parse_qs(parsed.query)
+    if page in ('member.php', 'profile.php'):
+        return (query.get('u') or [None])[0]
+    if page == 'search.php' and (query.get('do') or [None])[0] == 'finduser':
+        return (query.get('u') or query.get('userid') or [None])[0]
+    return None
+
+
+def _vbulletin_uid(soup):
+    """Extract a profile id without treating thread participants as one profile."""
+    relpath = soup.find(string=lambda value: value and 'RELPATH' in value)
+    if relpath:
+        match = re.search(r'RELPATH\s*=\s*["\']member\.php\?u=(\d+)', relpath)
+        if match:
+            return match.group(1)
+
+    header = soup.find(id='memberinfoheader') or soup.find(id='avatar')
+    if header:
+        ids = {
+            _vbulletin_id_from_href(a.get('href', ''))
+            for a in header.find_all('a', href=True)
+        }
+        ids.discard(None)
+        if len(ids) == 1:
+            return ids.pop()
+
+    stats = soup.find(id='stats')
+    links = (
+        stats.find_all('a', href=True)
+        if stats else soup.find_all('a', href=True)
+    )
+    ids = {_vbulletin_id_from_href(a.get('href', '')) for a in links}
+    ids.discard(None)
+    return ids.pop() if len(ids) == 1 else None
+
+
+def _vbulletin_username(soup):
+    member_username = soup.find(class_='member_username')
+    if member_username:
+        return member_username.get_text(' ', strip=True)
+
+    username_box = soup.find(id='username_box')
+    heading = username_box.find('h1') if username_box else None
+    if heading:
+        return heading.get_text(' ', strip=True)
+    return None
+
+
 def _yt_redirect_urls(data):
     """Collect external destination URLs from youtube.com/redirect?...q= links in ytInitialData."""
     urls = set()
@@ -251,6 +316,125 @@ def _search_group(pattern, text, group=1):
     """First capture group of `pattern` in `text`, or None when it doesn't match."""
     match = re.search(pattern, text or '')
     return match.group(group) if match else None
+
+def _xenforo_profile(page):
+    """Read a XenForo member page, which has no API behind it.
+
+    The forum answers /members/?username=<name> with a redirect to the profile,
+    and the profile carries the numeric id in two places. og:url is the one to
+    trust: it survives even the login wall many instances put in front of member
+    pages, and it is what tells a profile apart from the member listing a failed
+    search falls back to — that listing is full of other people's data-user-id
+    attributes.
+
+    Labels like "Messages" and "Joined" are localised, so nothing is read by
+    them: the counters are reached through the links they wrap, and the two
+    dates are the first two <time> elements of the member header, in order.
+    Those dates come rendered in the viewer's timezone, so the offset on them
+    depends on where the request came from.
+    """
+    def find(pattern):
+        match = re.search(pattern, page)
+        return match.group(1) if match else None
+
+    member = re.search(r'og:url"\s+content="[^"]*/members/([^/"]+)\.(\d+)/', page)
+    if member:
+        uid, username = member.group(2), unquote(member.group(1))
+    elif 'memberHeader' in page:
+        # a profile that ships no og:url — take the id off the header instead
+        uid, username = find(r'data-user-id="(\d+)"'), None
+    else:
+        return '{}'
+
+    def digits(value):
+        return re.sub(r'[^0-9]', '', value) or None if value else None
+
+    times = re.findall(r'<time[^>]*datetime="([^"]+)"', page)
+    return json.dumps({
+        'uid': uid,
+        'username': username,
+        'image': find(r'<img[^>]+src="([^"]*/avatars/[^"]+)"'),
+        'created_at': times[0] if times else None,
+        'latest_activity_at': times[1] if len(times) > 1 else None,
+        # counters come out of the page grouped, as "9,193"
+        'posts_count': digits(find(r'search/member\?user_id=\d+"[^>]*>\s*([\d,.\s]+?)\s*<')),
+        'xenforo_points': digits(find(r'/trophies"[^>]*>\s*([\d,.\s]+?)\s*<')),
+    })
+
+
+def _phpbb_profile(page):
+    """Read what a phpBB board shows about one member, which has no API behind it.
+
+    maigret reaches a member two ways, and both answers carry the numeric id in
+    the profile link, memberlist.php?mode=viewprofile&u=<id>: the member list
+    filtered by name (memberlist.php?username=<name>) comes back with one row,
+    and an author search (search.php?author=<name>) comes back with that
+    member's posts, each headed by the same link. The profile page itself
+    (memberlist.php?mode=viewprofile&u=<id>) names its owner in the first row
+    of its details list and carries the id in the "search user's posts" link.
+
+    One person on the page is what tells an answer about a member apart from a
+    listing: a keyword search lists posts by everyone and an unfiltered member
+    list is the whole board, so a page with several ids yields nothing rather
+    than whoever is on top. The login wall, the flood-control notice and the
+    "no matches" notice carry none of the three shapes and yield nothing too.
+
+    Labels like "Posts" and "Joined" are localised, so nothing is read by them:
+    the counters sit in the cell and the link that carry them, and the join date
+    is the first row of the details list, in the board's own language and
+    timezone. The id is read from the link and never from the page text.
+    """
+    member_link = r'<a href="[^"]*memberlist\.php\?mode=viewprofile(?:&amp;|&)u=(\d+)[^"]*"[^>]*>([^<]+)</a>'
+
+    def digits(value):
+        return re.sub(r'[^0-9]', '', value) or None if value else None
+
+    def text(fragment):
+        return html.unescape(re.sub(r'<[^>]+>', '', fragment)).strip() or None
+
+    # an author search: every post on the page is headed by the same member.
+    # The name is compared across posts rather than the link, because a URL
+    # rewriting mod can leave the two forms side by side on one page, and a
+    # post whose author has no profile link carries a name but no id.
+    posts = re.findall(r'<dl class="postprofile[^"]*">[\s\S]*?</dl>', page)
+    if posts:
+        names = {text(_search_group(r'<dt class="author">[^<]*<(?:a|span)[^>]*>([^<]+)<', block)) for block in posts}
+        uids = {_search_group(member_link, block) for block in posts} - {None}
+        if None in names or len(names) != 1 or len(uids) != 1:
+            return '{}'
+        return json.dumps({'uid': uids.pop(), 'username': names.pop()})
+
+    # the member list filtered by name: exactly one row names a member
+    listing = re.search(r'<table[^>]*id="memberlist"[\s\S]*?</table>', page)
+    if listing:
+        rows = [row for row in re.findall(r'<tr[^>]*>[\s\S]*?</tr>', listing.group(0)) if re.search(member_link, row)]
+        if len(rows) != 1:
+            return '{}'
+        row = rows[0]
+        member = re.search(member_link, row)
+        return json.dumps({
+            'uid': member.group(1),
+            'username': member.group(2).strip(),
+            'created_at': _search_group(r'<td>\s*([^<]*?)\s*</td>', row),
+            # the count is a link to the member's posts when search is enabled
+            'posts_count': digits(_search_group(r'<td class="posts">\s*(?:<a[^>]*>)?\s*([\d,.\s]+?)\s*<', row)),
+            'website': _search_group(r'<td class="info">[\s\S]*?<a[^>]*href="([^"]+)"', row),
+        })
+
+    # the profile page: its owner is the first row of the details list
+    details = re.search(r'<dl class="left-box details profile-details">[\s\S]*?<dd>([\s\S]*?)</dd>', page)
+    uid = _search_group(r'href="[^"]*search\.php\?author_id=(\d+)', page)
+    if not details or not uid:
+        return '{}'
+    # the block that holds the search link starts with the join date
+    activity = re.search(r'<dl class="details">(?:(?!</dl>)[\s\S])*?author_id=' + uid, page)
+    return json.dumps({
+        'uid': uid,
+        'username': text(details.group(1)),
+        'created_at': _search_group(r'<dd>\s*([^<]*?)\s*</dd>', activity.group(0)) if activity else None,
+        'posts_count': digits(_search_group(r'<dd>\s*([\d,.\s]+?)\s*(?:\||<)', activity.group(0))) if activity else None,
+    })
+
 
 def _discourse_html_profile(page):
     """Pull what a Discourse profile page still carries in its server-rendered HTML.
@@ -1078,8 +1262,15 @@ schemes = {
         'url_hints': ('gravatar.com', 'en.gravatar.com'),
         'flags': ['gravatar.com\\/avatar', 'thumbnailUrl'],
         'url_mutations': [
+            # an avatar URL carries the email hash, which keys the JSON endpoint.
+            # Longest alternative first: a sha256 digest must not match as its
+            # own first 32 characters, which would ask about a different hash.
             {
-                'from': r'https?://.*?gravatar.com/(?P<username>[^/]+)',
+                'from': r'gravatar\.com/avatar/(?P<hash>[0-9a-f]{64}|[0-9a-f]{32})',
+                'to': 'https://en.gravatar.com/{hash}.json',
+            },
+            {
+                'from': r'https?://.*?gravatar\.com/(?!avatar/)(?P<username>[^/]+)',
                 'to': 'https://en.gravatar.com/{username}.json',
             }
         ],
@@ -2040,11 +2231,11 @@ schemes = {
         },
     },
     'vBulletinEngine': {
-        'flags': ['vBulletin.register_control'],
+        'flags': ['vBulletin'],
         'bs': True,
         'fields': {
-            'status': lambda x: x.find('span', {'class': 'online-status'}).findAll('span')[1].text,
-            'country': lambda x: (x.find('span', {'class': 'sprite_flags'}) or {}).get('title'),
+            'uid': _vbulletin_uid,
+            'username': _vbulletin_username,
             'image': lambda x: x.find('span', {'class': 'avatarcontainer'}).find('img').get('src'),
         }
     },
@@ -5498,6 +5689,90 @@ schemes = {
             'fullname': lambda x: _meta_re(x, 'og:title', r'^(.+?)(?:\s*\|\s*)'),
             'bio': lambda x: _meta(x, 'og:description'),
             'image': lambda x: (lambda v: v if v and 'rn-logo' not in (v or '') else None)(_meta(x, 'og:image')),
+        },
+    },
+    # XenForo has no public API — everything comes off the member page, and one
+    # scheme covers every instance of it.
+    'XenForo': {
+        'flags': ['data-user-id="', '/members/'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_xenforo_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('image'),
+            'created_at': lambda x: x.get('created_at'),
+            'latest_activity_at': lambda x: x.get('latest_activity_at'),
+            'posts_count': lambda x: x.get('posts_count'),
+            'xenforo_points': lambda x: x.get('xenforo_points'),
+        },
+    },
+    'Lemmy API': {
+        'flags': ['"person_view"', '"person"', '"actor_id"', '"counts"', '"published"'],
+        'regex': r'^\s*(\{[\s\S]+\})\s*$',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: (x.get('person_view') or {}).get('person') or {},
+            json.dumps,
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x.get('name'),
+            'fullname': lambda x: x.get('display_name'),
+            'bio': lambda x: x.get('bio'),
+            'image': lambda x: x.get('avatar'),
+            'created_at': lambda x: x.get('published'),
+        },
+        'url_hints': ('/u/', '/api/v3/user'),
+        'url_mutations': [{
+            # v3 only: other versions are not silently assumed to be compatible.
+            'from': r'^(?P<base>https?://[^/?#]+)/u/(?P<username>[A-Za-z0-9_-]+(?:@[A-Za-z0-9.-]+(?::[0-9]+)?)?)(?:/?(?:[?#].*)?)$',
+            'to': '{base}/api/v3/user?username={username}',
+        }],
+    },
+    'NodeBB API': {
+        'flags': ['"userslug"', '"joindate"', '"postcount"', '"icon:bgColor"', '"email:confirmed"'],
+        'regex': r'^\s*(\{[\s\S]+\})\s*$',
+        'extract_json': True,
+        'transforms': [_nodebb_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('picture'),
+            'created_at': lambda x: parse_datetime(x.get('joindate')),
+            'latest_activity_at': lambda x: parse_datetime(x.get('lastonline')),
+            'posts_count': lambda x: x.get('postcount'),
+            'follower_count': lambda x: x.get('followerCount'),
+            'following_count': lambda x: x.get('followingCount'),
+        },
+        'url_hints': ('/user/',),
+        'url_mutations': [{
+            # Profile URLs contain a userslug, which need not equal the username.
+            # Use the slug endpoint rather than /api/user/username/<slug>. Preserve
+            # the scheme and installation path, and do not mutate API URLs again.
+            'from': r'^(?P<base>https?://[^/?#]+(?:/(?!api(?:/|$))[^/?#]+)*?)/user/'
+                    r'(?P<userslug>[^/?#]+)(?:/|$|[?#])',
+            'to': '{base}/api/user/{userslug}',
+        }],
+    },
+    # phpBB has no public API either. One scheme reads the three pages a board
+    # answers about a member: the member list filtered by name, the author
+    # search, and the profile itself.
+    'phpBB': {
+        'url_hints': ('memberlist.php', 'search.php?author='),
+        'flags': ['id="phpbb"', 'memberlist.php?mode=viewprofile'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_phpbb_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'created_at': lambda x: x.get('created_at'),
+            'posts_count': lambda x: x.get('posts_count'),
+            'website': lambda x: x.get('website'),
         },
     },
 }

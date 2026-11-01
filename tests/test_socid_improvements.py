@@ -168,6 +168,59 @@ def test_gravatar_postprocessor_requires_md5_hash():
     assert bad == {}
 
 
+def test_gravatar_postprocessor_is_offline(monkeypatch):
+    """
+    Verifies **Gravatar** postprocessor emits its fields with the network unavailable: the username
+    that is only the avatar hash is dropped, and resolving it is left to the scheme's url_mutations.
+
+    **Check:** `process()` under a patched `socket` raises nothing and returns the documented fields.
+    """
+    import socket
+
+    def no_network(*args, **kwargs):
+        raise AssertionError('the Gravatar postprocessor went to the network')
+
+    monkeypatch.setattr(socket.socket, 'connect', no_network)
+    monkeypatch.setattr(socket, 'create_connection', no_network)
+
+    hash32 = 'a' * 32
+    # the hash-as-username case is the one that used to call requests.head()
+    info = Gravatar({'username': hash32, 'image': 'https://secure.gravatar.com/avatar/' + hash32}).process()
+
+    assert info == {
+        'gravatar_url': 'https://gravatar.com/' + hash32,
+        'gravatar_email_md5_hash': hash32,
+    }
+
+
+def test_gravatar_avatar_url_mutates_to_the_json_endpoint():
+    """
+    Verifies the **Gravatar** scheme's url_mutations: an `/avatar/{hash}` URL -- the form the
+    `image` field carries -- becomes `https://en.gravatar.com/{hash}.json`, the endpoint that
+    returns the username, bio and links; the vanity-name form keeps mutating as before.
+
+    **Check:** `mutate_url` output for an avatar URL, a bare profile URL, and the absence of the
+    bogus `en.gravatar.com/avatar.json` a single greedy rule would have produced.
+    """
+    from socid_extractor.main import mutate_url
+
+    def mutated(url):
+        return [u for u, _hdrs in mutate_url(url)]
+
+    hash32 = '5b9c04999233026354268c2ee4237e04'
+    assert mutated('https://secure.gravatar.com/avatar/' + hash32) == [
+        'https://en.gravatar.com/' + hash32 + '.json']
+    assert mutated('https://0.gravatar.com/avatar/' + hash32 + '?s=100') == [
+        'https://en.gravatar.com/' + hash32 + '.json']
+    assert mutated('https://gravatar.com/inspectorg4dget') == [
+        'https://en.gravatar.com/inspectorg4dget.json']
+
+    # Gravatar serves sha256 digests too, and the json endpoint answers to both
+    hash64 = '973dfe463ec85785f5f95af5ba3906eedb2d931c24e69824a89ea65dba4e813b'
+    assert mutated('https://gravatar.com/avatar/' + hash64) == [
+        'https://en.gravatar.com/' + hash64 + '.json']
+
+
 def test_twitchtracker_embedded_channel_script():
     """TwitchTracker: `window.channel` JS literal with id, login, created_at."""
     html = """<!DOCTYPE html><html><head>
@@ -1421,6 +1474,55 @@ def test_a_broken_transform_skips_only_its_own_scheme():
     assert info.get('username') == 'bob'
     
     
+def test_a_scheme_that_matches_non_json_skips_only_itself():
+    """json.loads on a capture that is not JSON must not abandon the page."""
+    from socid_extractor.schemes import schemes
+
+    # the shape maigret's bot hit ~50 times a day: a scheme matched a page,
+    # its first transform was json.loads, and the capture was not JSON
+    marker = '"valueerror-guard-fixture"'
+    broken = {
+        'flags': [marker],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [json.loads, lambda x: {'username': x['user']}, json.dumps],
+    }
+    working = {
+        'flags': [marker],
+        'regex': r'"user": "(?P<username>[^"]+)"',
+    }
+
+    original = dict(schemes)
+    schemes.clear()
+    schemes.update({'Broken fixture': broken, 'Working fixture': working, **original})
+    try:
+        # trailing comma makes it invalid JSON, so json.loads raises
+        info = extract('{"valueerror-guard-fixture": 1, "user": "bob",}')
+    finally:
+        schemes.clear()
+        schemes.update(original)
+
+    assert info.get('username') == 'bob'
+
+
+def test_a_field_that_raises_valueerror_drops_only_that_field():
+    """One unparseable value must not cost the rest of the record."""
+    from socid_extractor.main import map_fields
+    from socid_extractor.utils import parse_datetime
+
+    # parse_datetime reads a 10-character value with no dash as a unix
+    # timestamp, so a site that starts sending something else of that length
+    # makes it raise — which used to abandon the whole page, username included
+    scheme = {'fields': {
+        'created_at': lambda x: parse_datetime(x['date']),
+        'username': lambda x: x['user'],
+    }}
+    values = map_fields(scheme, {'date': 'not a date', 'user': 'bob'})
+
+    assert values.get('username') == 'bob'
+    assert not values.get('created_at')
+
+
 def test_patreon_rsc_deref_reads_hex_row_ids():
     """Patreon's RSC row ids are hex — a decimal pattern quietly loses row 10 and up."""
     from socid_extractor.schemes import _patreon_rsc_deref
@@ -1435,6 +1537,28 @@ def test_patreon_rsc_deref_reads_hex_row_ids():
     assert _patreon_rsc_deref(rsc, '{"bio":"$undefined"}') == '{"bio":"$undefined"}'
 
     
+def test_xenforo_ignores_the_member_listing():
+    """A failed member search falls back to a listing full of other people's ids."""
+    header = ('<meta property="og:url" content="https://forum.example/members/manumuskin.35/" />'
+              '<span class="username" data-user-id="35">manumuskin</span>'
+              '<div class="memberHeader-blurb"><time datetime="2003-07-20T18:23:00-0400"></time>'
+              '<time datetime="2026-09-07T16:59:37-0400"></time></div>'
+              '<a href="/search/member?user_id=35">9,193</a>')
+    profile = extract(header)
+
+    assert profile.get('uid') == '35'
+    assert profile.get('username') == 'manumuskin'
+    assert profile.get('posts_count') == '9193'
+    assert profile.get('created_at') == '2003-07-20T18:23:00-0400'
+    assert profile.get('latest_activity_at') == '2026-09-07T16:59:37-0400'
+
+    # the listing carries member cards, so data-user-id is there — but it belongs
+    # to whoever the forum felt like showing, and og:url points at the listing
+    listing = ('<meta property="og:url" content="https://forum.example/members/" />'
+               '<a href="/members/someone-else.4242/" data-user-id="4242">Someone Else</a>')
+    assert extract(listing) == {}
+
+
 def test_mediawiki_mutation_offers_both_api_paths():
     """api.php sits at the root on some wikis and under /w/ on others."""
     from socid_extractor.main import mutate_url
