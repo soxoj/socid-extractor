@@ -20,7 +20,7 @@ HEADERS = {
 PROCESS_ERRORS = (AttributeError, KeyError, IndexError, TypeError, ValueError)
 
 
-def parse(url, cookies_str='', timeout=3, headers={}):
+def parse(url, cookies_str='', timeout=10, headers={}):
     cookies = parse_cookies(cookies_str)
     req_headers = dict(HEADERS)
     req_headers.update(headers)
