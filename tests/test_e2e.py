@@ -1691,7 +1691,9 @@ def test_osu():
     assert info.get("username") == "peppy"
     assert info.get("country") == "Australia"
     assert info.get("country_code") == "AU"
-    assert info.get("created_at") == "2007-08-28T03:09:12+00:00"
+    # osu! spells the same instant as "...12Z" now and as "...12+00:00" before,
+    # so the suffix is theirs to change and the instant is what we assert
+    assert info.get("created_at").startswith("2007-08-28T03:09:12")
 
 
 def test_lens_account():
