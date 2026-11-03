@@ -52,7 +52,7 @@ def mutate_url(url):
     return mutate_results
 
 
-def transform(scheme_data, extracted_data):
+'''def transform(scheme_data, extracted_data):
     transforms = scheme_data.get('transforms', [])
     if transforms:
         for t in transforms:
@@ -63,8 +63,19 @@ def transform(scheme_data, extracted_data):
                 logging.debug(f'Transform error: {e}')
                 extracted_data = {}
             logging.debug(extracted_data)
-    return extracted_data
+    return extracted_data'''
 
+def transform(scheme_data, extracted_data, request_url=None):
+    for t in scheme_data.get('transforms', []):
+        try:
+            if scheme_data.get('transform_needs_url'):
+                extracted_data = t(extracted_data, request_url)
+            else:
+                extracted_data = t(extracted_data)
+        except PROCESS_ERRORS as e:
+            logging.debug(f'Transform error: {e}')
+            extracted_data = {}
+    return extracted_data
 
 def map_fields(scheme_data, transformed_data):
     values = {}
@@ -77,7 +88,7 @@ def map_fields(scheme_data, transformed_data):
     return values
 
 
-def _extract_by_schemes(page):
+def _extract_by_schemes(page, request_url=None):
     for scheme_name, scheme_data in schemes.items():
         flags = scheme_data['flags']
         found = all([flag in page for flag in flags])
@@ -108,7 +119,7 @@ def _extract_by_schemes(page):
                 extracted = regexp_group.group(1)
                 logging.debug('Extracted: %s', extracted)
 
-                transformed = transform(scheme_data, extracted)
+                transformed = transform(scheme_data, extracted, request_url=request_url)
 
                 if not isinstance(transformed, str):
                     # a transform hit PROCESS_ERRORS and gave up; that is this
@@ -146,7 +157,7 @@ def _extract_by_schemes(page):
                     extracted = regexp_group.group(1)
                     logging.debug('Extracted: %s', extracted)
 
-                    transformed_data = transform(scheme_data, extracted)
+                    transformed_data = transform(scheme_data, extracted, request_url=request_url)
                     values = map_fields(scheme_data, transformed_data)
 
         if use_html_parser:
@@ -176,8 +187,8 @@ def _extract_by_schemes(page):
     return {}
 
 
-def extract(page, use_ai_fallback=False):
-    result = _extract_by_schemes(page)
+def extract(page, use_ai_fallback=False, request_url=None):
+    result = _extract_by_schemes(page, request_url=request_url)
     # A falsy result means no scheme matched, or one matched but extracted
     # nothing (main.py's in-loop empty return) — both are fallback triggers.
     if result or not use_ai_fallback:
