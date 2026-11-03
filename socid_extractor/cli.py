@@ -117,7 +117,9 @@ def run():
                 continue
 
             page = get_site_response(url, cookies_str, url_headers)
-            info = extract(page, use_ai_fallback=args.ai_fallback)
+            info = extract(page, 
+                           use_ai_fallback=args.ai_fallback,
+                           request_url=url)
             if args.json:
                 jsonified = jsonify_info(info)
                 if jsonified:
