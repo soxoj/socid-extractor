@@ -3915,7 +3915,7 @@ schemes = {
     # POST https://api.bunq.me/v1/bunqme-fundraiser-profile
     # body: {"pointer":{"type":"URL","value":"https://bunq.me/{username}"}}
     # header: X-Bunq-Client-Request-Id (any value). Returns 404 for unknown names.
-    # The response also contains the account IBAN; it is deliberately not extracted.
+    # The IBAN is the payee account bunq.me publishes for receiving payments.
     'bunq.me API': {
         'url_hints': ('api.bunq.me', 'bunq.me'),
         'flags': ['"BunqMeFundraiserProfile":', '"pointer":', '"alias":'],
@@ -3942,6 +3942,9 @@ schemes = {
             ) or None,
             'bio': lambda x: safe_deep_get(
                 x, 'Response', 0, 'BunqMeFundraiserProfile', 'description'
+            ) or None,
+            'iban': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'iban'
             ) or None,
         },
     },

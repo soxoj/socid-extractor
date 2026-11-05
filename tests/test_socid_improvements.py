@@ -2741,7 +2741,7 @@ def test_bunq_me_fundraiser_profile_api_json():
     """bunq.me API: POST `api.bunq.me/v1/bunqme-fundraiser-profile` JSON (synthetic data).
 
     **Check:** `uid`, `username` (from the bunq.me URL), `fullname`, `image`,
-    `country_code`; the IBAN is never extracted; a 404 error body does not match.
+    `country_code`, `iban`; a 404 error body does not match.
     """
     body = json.dumps({"Response": [{"BunqMeFundraiserProfile": {
         "uuid": "00000000-0000-4000-8000-000000000001",
@@ -2765,8 +2765,7 @@ def test_bunq_me_fundraiser_profile_api_json():
     assert info.get('image') == 'https://example.com/a.jpg'
     assert info.get('country_code') == 'NL'
     assert 'bio' not in info
-    assert not any('iban' in k.lower() for k in info)
-    assert 'NL00BUNQ0000000000' not in info.values()
+    assert info.get('iban') == 'NL00BUNQ0000000000'
 
     not_found = '{"Error":[{"error_description":"bunq.me fundraiser profile not found."}]}'
     assert extract(not_found) == {}
