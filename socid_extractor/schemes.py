@@ -3946,6 +3946,15 @@ schemes = {
             'iban': lambda x: safe_deep_get(
                 x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'iban'
             ) or None,
+            # bunq invite/referral handle, kept verbatim. Either bunq-generated
+            # (FirstnameColourAnimal[digits]) or initials + surname.
+            'bunq_invite_username': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'invite_profile_name'
+            ) or None,
+            # PERSON or a business type, as returned by bunq
+            'account_type': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'type'
+            ) or None,
         },
     },
     'Codewars API': {

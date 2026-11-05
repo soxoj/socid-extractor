@@ -2741,7 +2741,8 @@ def test_bunq_me_fundraiser_profile_api_json():
     """bunq.me API: POST `api.bunq.me/v1/bunqme-fundraiser-profile` JSON (synthetic data).
 
     **Check:** `uid`, `username` (from the bunq.me URL), `fullname`, `image`,
-    `country_code`, `iban`; a 404 error body does not match.
+    `country_code`, `iban`, `bunq_invite_username` (verbatim), `account_type`;
+    a 404 error body does not match.
     """
     body = json.dumps({"Response": [{"BunqMeFundraiserProfile": {
         "uuid": "00000000-0000-4000-8000-000000000001",
@@ -2750,13 +2751,15 @@ def test_bunq_me_fundraiser_profile_api_json():
             "iban": "NL00BUNQ0000000000",
             "display_name": "J. Doe",
             "avatar": {"image": [{"urls": [{"type": "ORIGINAL", "url": "https://example.com/a.jpg"}]}]},
-            "label_user": {"display_name": "Jane", "public_nick_name": "Jane", "country": "000"},
+            "label_user": {"display_name": "Jane", "public_nick_name": "Jane", "country": "000",
+                           "type": "PERSON"},
             "country": "NL",
         },
         "currency": "EUR",
         "description": "",
         "pointer": {"type": "URL", "value": "https://bunq.me/janedoe", "name": "https://bunq.me/janedoe"},
         "status": "ACTIVE",
+        "invite_profile_name": "JaneMagentaLemur123456",
     }}]})
     info = extract(body)
     assert info.get('uid') == '00000000-0000-4000-8000-000000000001'
@@ -2766,6 +2769,8 @@ def test_bunq_me_fundraiser_profile_api_json():
     assert info.get('country_code') == 'NL'
     assert 'bio' not in info
     assert info.get('iban') == 'NL00BUNQ0000000000'
+    assert info.get('bunq_invite_username') == 'JaneMagentaLemur123456'
+    assert info.get('account_type') == 'PERSON'
 
     not_found = '{"Error":[{"error_description":"bunq.me fundraiser profile not found."}]}'
     assert extract(not_found) == {}

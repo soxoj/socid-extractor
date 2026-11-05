@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased]
-* Add extraction for the bunq.me fundraiser-profile API (uid, username, fullname, image, country_code, iban)
+* Add extraction for the bunq.me fundraiser-profile API (uid, username, fullname, image, country_code, iban, bunq_invite_username, account_type)
 
 ## [0.1.1] - 2026-07-13
 * Add extraction for BuyMeACoffee and fix Weibo test docstring by @kaifcodec in https://github.com/soxoj/socid-extractor/pull/251
