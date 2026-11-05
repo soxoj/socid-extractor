@@ -2735,3 +2735,38 @@ def test_deviantart_user_object_without_trailing_fields_still_works():
     assert info.get('_extractor') == 'DeviantArt'
     assert info.get('username') == 'rootkea'
     assert info.get('country') == 'Antarctica'
+
+
+def test_bunq_me_fundraiser_profile_api_json():
+    """bunq.me API: POST `api.bunq.me/v1/bunqme-fundraiser-profile` JSON (synthetic data).
+
+    **Check:** `uid`, `username` (from the bunq.me URL), `fullname`, `image`,
+    `country_code`; the IBAN is never extracted; a 404 error body does not match.
+    """
+    body = json.dumps({"Response": [{"BunqMeFundraiserProfile": {
+        "uuid": "00000000-0000-4000-8000-000000000001",
+        "color": None,
+        "alias": {
+            "iban": "NL00BUNQ0000000000",
+            "display_name": "J. Doe",
+            "avatar": {"image": [{"urls": [{"type": "ORIGINAL", "url": "https://example.com/a.jpg"}]}]},
+            "label_user": {"display_name": "Jane", "public_nick_name": "Jane", "country": "000"},
+            "country": "NL",
+        },
+        "currency": "EUR",
+        "description": "",
+        "pointer": {"type": "URL", "value": "https://bunq.me/janedoe", "name": "https://bunq.me/janedoe"},
+        "status": "ACTIVE",
+    }}]})
+    info = extract(body)
+    assert info.get('uid') == '00000000-0000-4000-8000-000000000001'
+    assert info.get('username') == 'janedoe'
+    assert info.get('fullname') == 'J. Doe'
+    assert info.get('image') == 'https://example.com/a.jpg'
+    assert info.get('country_code') == 'NL'
+    assert 'bio' not in info
+    assert not any('iban' in k.lower() for k in info)
+    assert 'NL00BUNQ0000000000' not in info.values()
+
+    not_found = '{"Error":[{"error_description":"bunq.me fundraiser profile not found."}]}'
+    assert extract(not_found) == {}

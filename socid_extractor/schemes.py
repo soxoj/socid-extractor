@@ -3912,6 +3912,39 @@ schemes = {
             'subscriber_count': lambda x: x.get('subscriberCount'),
         },
     },
+    # POST https://api.bunq.me/v1/bunqme-fundraiser-profile
+    # body: {"pointer":{"type":"URL","value":"https://bunq.me/{username}"}}
+    # header: X-Bunq-Client-Request-Id (any value). Returns 404 for unknown names.
+    # The response also contains the account IBAN; it is deliberately not extracted.
+    'bunq.me API': {
+        'url_hints': ('api.bunq.me', 'bunq.me'),
+        'flags': ['"BunqMeFundraiserProfile":', '"pointer":', '"alias":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: safe_deep_get(x, 'Response', 0, 'BunqMeFundraiserProfile', 'uuid'),
+            'username': lambda x: (safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'pointer', 'value', default=''
+            ).rstrip('/').rsplit('/', 1)[-1] or None),
+            'fullname': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'display_name'
+            ) or safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'display_name'
+            ),
+            'image': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'avatar', 'image', 0, 'urls', 0, 'url'
+            ) or safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'avatar',
+                'image', 0, 'urls', 0, 'url'
+            ),
+            'country_code': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'country'
+            ) or None,
+            'bio': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'description'
+            ) or None,
+        },
+    },
     'Codewars API': {
         'url_hints': ('codewars.com',),
         # ponytail: structural keys only — no user-dependent values (see FIELDS/flags rule)
