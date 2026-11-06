@@ -2774,3 +2774,44 @@ def test_bunq_me_fundraiser_profile_api_json():
 
     not_found = '{"Error":[{"error_description":"bunq.me fundraiser profile not found."}]}'
     assert extract(not_found) == {}
+
+
+def _bunq_me_body(country, iban):
+    """Minimal synthetic bunq.me fundraiser-profile response."""
+    return json.dumps({"Response": [{"BunqMeFundraiserProfile": {
+        "uuid": "00000000-0000-4000-8000-000000000002",
+        "alias": {"iban": iban, "display_name": "J. Doe", "country": country,
+                  "label_user": {"display_name": "Jane", "type": "PERSON"}},
+        "pointer": {"type": "URL", "value": "https://bunq.me/janedoe"},
+    }}]})
+
+
+def test_bunq_me_api_all_supported_iban_countries():
+    """bunq.me API: every country bunq currently issues IBANs in (DE, FR, IE, ES, IT, NL).
+
+    **Check:** `country_code` and `iban` come through verbatim for each country's
+    IBAN format (synthetic, all-zero account numbers of the correct length).
+    """
+    cases = {
+        'DE': 'DE00000000000000000000',        # 22
+        'FR': 'FR0000000000000000000000000',   # 27
+        'IE': 'IE00BUNQ00000000000000',        # 22
+        'ES': 'ES0000000000000000000000',      # 24
+        'IT': 'IT00X0000000000000000000000',   # 27
+        'NL': 'NL00BUNQ0000000000',            # 18
+    }
+    for country, iban in cases.items():
+        info = extract(_bunq_me_body(country, iban))
+        assert info.get('country_code') == country, country
+        assert info.get('iban') == iban, country
+
+
+def test_bunq_me_api_country_code_and_iban_country_can_differ():
+    """bunq.me API: `country_code` (alias.country) and the IBAN country are independent.
+
+    **Check:** a mismatched pair (NL account country, DE IBAN) is reported as-is;
+    neither value is derived from or overridden by the other.
+    """
+    info = extract(_bunq_me_body('NL', 'DE00000000000000000000'))
+    assert info.get('country_code') == 'NL'
+    assert info.get('iban') == 'DE00000000000000000000'

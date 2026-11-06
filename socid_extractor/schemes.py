@@ -3937,12 +3937,15 @@ schemes = {
                 x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'avatar',
                 'image', 0, 'urls', 0, 'url'
             ),
+            # bunq's alias.country, taken as-is. It is NOT derived from the IBAN and
+            # may in theory differ from the IBAN's country (its first two letters).
             'country_code': lambda x: safe_deep_get(
                 x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'country'
             ) or None,
             'bio': lambda x: safe_deep_get(
                 x, 'Response', 0, 'BunqMeFundraiserProfile', 'description'
             ) or None,
+            # Payee IBAN, verbatim. bunq currently issues IBANs in DE, FR, IE, ES, IT, NL.
             'iban': lambda x: safe_deep_get(
                 x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'iban'
             ) or None,
