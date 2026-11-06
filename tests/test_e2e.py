@@ -1901,3 +1901,42 @@ def test_mediawiki_user_page():
     info = extract(parse('https://wiki.openstreetmap.org/User:Leijurv')[0])
 
     assert info.get('username') == 'Leijurv'
+
+
+def _bunq_me_profile(username):
+    """POST the bunq.me fundraiser-profile lookup (parse() only does GET)."""
+    import requests
+
+    resp = requests.post(
+        'https://api.bunq.me/v1/bunqme-fundraiser-profile',
+        json={'pointer': {'type': 'URL', 'value': f'https://bunq.me/{username}'}},
+        headers={**HEADERS, 'X-Bunq-Client-Request-Id': 'socid_extractor'},
+        timeout=10,
+    )
+    return resp.text, resp.status_code
+
+
+def test_bunq_me_api():
+    """bunq.me API"""
+    import re
+
+    body, status = _bunq_me_profile('ali')
+    assert status == 200
+    info = extract(body)
+
+    # Shape-only assertions: this is a private person's payment profile, so no
+    # names, photos or account numbers are hard-coded here.
+    assert re.fullmatch(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', info.get('uid', ''))
+    assert info.get('username', '').lower() == 'ali'
+    assert info.get('fullname')
+    assert info.get('image', '').startswith('https://')
+    supported = {'DE', 'FR', 'IE', 'ES', 'IT', 'NL'}
+    assert info.get('country_code') in supported
+    assert re.fullmatch(r'[A-Z]{2}\d{2}[A-Z0-9]{10,30}', info.get('iban', ''))
+    assert info.get('iban')[:2] in supported
+    assert info.get('bunq_invite_username')
+    assert info.get('account_type')
+
+    body, status = _bunq_me_profile('noonewouldeverusethis7')
+    assert status == 404
+    assert extract(body) == {}

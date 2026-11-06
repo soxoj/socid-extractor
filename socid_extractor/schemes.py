@@ -3912,6 +3912,54 @@ schemes = {
             'subscriber_count': lambda x: x.get('subscriberCount'),
         },
     },
+    # POST https://api.bunq.me/v1/bunqme-fundraiser-profile
+    # body: {"pointer":{"type":"URL","value":"https://bunq.me/{username}"}}
+    # header: X-Bunq-Client-Request-Id (any value). Returns 404 for unknown names.
+    # The IBAN is the payee account bunq.me publishes for receiving payments.
+    'bunq.me API': {
+        'url_hints': ('api.bunq.me', 'bunq.me'),
+        'flags': ['"BunqMeFundraiserProfile":', '"pointer":', '"alias":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: safe_deep_get(x, 'Response', 0, 'BunqMeFundraiserProfile', 'uuid'),
+            'username': lambda x: (safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'pointer', 'value', default=''
+            ).rstrip('/').rsplit('/', 1)[-1] or None),
+            'fullname': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'display_name'
+            ) or safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'display_name'
+            ),
+            'image': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'avatar', 'image', 0, 'urls', 0, 'url'
+            ) or safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'avatar',
+                'image', 0, 'urls', 0, 'url'
+            ),
+            # bunq's alias.country, taken as-is. It is NOT derived from the IBAN and
+            # may in theory differ from the IBAN's country (its first two letters).
+            'country_code': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'country'
+            ) or None,
+            'bio': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'description'
+            ) or None,
+            # Payee IBAN, verbatim. bunq currently issues IBANs in DE, FR, IE, ES, IT, NL.
+            'iban': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'iban'
+            ) or None,
+            # bunq invite/referral handle, kept verbatim. Either bunq-generated
+            # (FirstnameColourAnimal[digits]) or initials + surname.
+            'bunq_invite_username': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'invite_profile_name'
+            ) or None,
+            # PERSON or a business type, as returned by bunq
+            'account_type': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'type'
+            ) or None,
+        },
+    },
     'Codewars API': {
         'url_hints': ('codewars.com',),
         # ponytail: structural keys only — no user-dependent values (see FIELDS/flags rule)
