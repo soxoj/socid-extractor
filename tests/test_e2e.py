@@ -1883,6 +1883,19 @@ def test_phpbb_author_search():
     assert info.get('username') == 'alex'
 
 
+def test_gitea_forgejo():
+    """Gitea / Forgejo"""
+    # gitea.com runs Gitea itself; the same scheme covers every Forgejo instance
+    info = extract(parse('https://gitea.com/lunny')[0])
+
+    assert info.get('username') == 'lunny'
+    assert info.get('fullname') == 'Lunny Xiao'
+    assert info.get('created_at') == '2018-11-27T17:33:38Z'
+    assert info.get('image', '').startswith('https://gitea.com/avatars/')
+    assert info.get('follower_count', '').isdigit()
+    assert info.get('following_count', '').isdigit()
+
+
 def test_mediawiki_api():
     """MediaWiki API"""
     # the /w/ candidate is the one Wikipedia answers; the root one 404s
