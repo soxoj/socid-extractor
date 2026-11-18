@@ -527,6 +527,35 @@ def test_gitlab_cookies():
     assert info.get('image') == 'https://gitlab.com/uploads/-/system/user/avatar/419655/avatar.png'
 
 
+def test_gitlab_api():
+    """Gitlab API"""
+    # an instance that is not gitlab.com: the scheme used to be pinned to that host
+    url, _ = mutate_url('https://gitlab.eclipse.org/gallasko')[0]
+    info = extract(parse(url, timeout=15)[0])
+
+    assert info.get('_extractor') == 'Gitlab API'
+    assert info.get('uid') == '19437'
+    assert info.get('username') == 'gallasko'
+    assert info.get('fullname') == 'Gallas Gaye'
+    assert info.get('state') == 'active'
+    assert info.get('website') == 'https://gitlab.eclipse.org/gallasko'
+
+
+def test_mastodon_api():
+    """Mastodon API"""
+    # mastodon.social was never in the list of 23 hosts this scheme used to carry
+    url, _ = mutate_url('https://mastodon.social/@Gargron')[0]
+    info = extract(parse(url, timeout=15)[0])
+
+    assert info.get('_extractor') == 'Mastodon API'
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'Gargron'
+    assert info.get('fullname') == 'Eugen Rochko'
+    assert info.get('created_at').startswith('2016-03-16')
+    # counts and last-seen move every day, so only their presence is asserted
+    assert int(info.get('posts_count')) > 0
+
+
 @pytest.mark.skip(reason='Failed in GitHub CI')
 def test_blogger():
     info = extract(parse('https://b0ltay.blogspot.ru')[0])
