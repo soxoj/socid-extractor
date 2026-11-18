@@ -527,6 +527,35 @@ def test_gitlab_cookies():
     assert info.get('image') == 'https://gitlab.com/uploads/-/system/user/avatar/419655/avatar.png'
 
 
+def test_gitlab_api():
+    """Gitlab API"""
+    # an instance that is not gitlab.com: the scheme used to be pinned to that host
+    url, _ = mutate_url('https://gitlab.eclipse.org/gallasko')[0]
+    info = extract(parse(url, timeout=15)[0])
+
+    assert info.get('_extractor') == 'Gitlab API'
+    assert info.get('uid') == '19437'
+    assert info.get('username') == 'gallasko'
+    assert info.get('fullname') == 'Gallas Gaye'
+    assert info.get('state') == 'active'
+    assert info.get('website') == 'https://gitlab.eclipse.org/gallasko'
+
+
+def test_mastodon_api():
+    """Mastodon API"""
+    # mastodon.social was never in the list of 23 hosts this scheme used to carry
+    url, _ = mutate_url('https://mastodon.social/@Gargron')[0]
+    info = extract(parse(url, timeout=15)[0])
+
+    assert info.get('_extractor') == 'Mastodon API'
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'Gargron'
+    assert info.get('fullname') == 'Eugen Rochko'
+    assert info.get('created_at').startswith('2016-03-16')
+    # counts and last-seen move every day, so only their presence is asserted
+    assert int(info.get('posts_count')) > 0
+
+
 @pytest.mark.skip(reason='Failed in GitHub CI')
 def test_blogger():
     info = extract(parse('https://b0ltay.blogspot.ru')[0])
@@ -1622,19 +1651,16 @@ def test_snapchat():
     """Snapchat"""
     info = extract(parse('https://www.snapchat.com/@teamsnapchat')[0])
 
+    # Only the ld+json fields are asserted. Snapchat withholds the meta tags from
+    # some clients -- CI gets a page with no description and no og:image, while
+    # the same request from a laptop gets both -- so bio and image are extracted
+    # when offered but cannot be required. The snapcode host moves too
+    # (app.snapchat.com -> gcp.api.snapchat.com), hence the match on shape.
     assert info.get('username') == 'teamsnapchat'
     assert info.get('fullname') == 'Team Snapchat'
-    # the bio is localised to whoever is looking ("is on" / "ist auf"), so only
-    # the handle inside it is worth asserting
-    assert '@teamsnapchat' in info.get('bio', '')
     assert info.get('url') == 'https://www.snapchat.com/@teamsnapchat'
-    assert info.get('image') in {
-        'https://www.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-    }
-    assert info.get(
-        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=teamsnapchat&type=SVG&bitmoji=enable'
-    assert info.get('profile_type') == 'userInfo'
+    assert 'deeplink/snapcode' in info.get('snapcode_image', '')
+    assert 'username=teamsnapchat' in info.get('snapcode_image', '')
 
 
 def test_bio_site():
@@ -1817,12 +1843,16 @@ def test_visnesscard_api_e2e():
 
 def test_nodebb_api():
     """NodeBB API"""
-    url, _ = mutate_url('https://bbs.aw-ol.com/user/whycan')[0]
+    # The previous fixture was a board that went down for maintenance and took
+    # this test with it. NodeBB runs on self-hosted forums only and its own
+    # community site sits behind Cloudflare, so there is no flagship instance to
+    # lean on: this is a founder account (uid 1) on a board that has stayed up.
+    url, _ = mutate_url('https://forum.easy-english-study.com/user/admin')[0]
     info = extract(parse(url, timeout=15)[0])
     assert info.get('_extractor') == 'NodeBB API'
-    assert info.get('uid') == '44'
-    assert info.get('username') == 'whycan'
-    assert info.get('created_at') == '2021-05-17 15:16:25.374 UTC'
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'admin'
+    assert info.get('created_at') == '2025-01-20 06:23:57.089 UTC'
 
 
 def test_discourse_api():

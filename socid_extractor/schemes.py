@@ -436,6 +436,59 @@ def _phpbb_profile(page):
     })
 
 
+def _paragraph_fullname(blog):
+    """Prefer the blog's own name over a displayName that is just the wallet.
+
+    Paragraph fills user.displayName with the raw 0x address when an author has
+    set no human name. That address is already reported as wallet_address, so
+    repeating it as a fullname says nothing; the blog name ("vitalik.eth") does.
+    """
+    user = blog.get('user') or {}
+    shown = ((user.get('displayName') or {}).get('fullName') or '').strip()
+    if shown.lower() == (user.get('wallet_address') or '').strip().lower():
+        shown = ''
+    return shown or blog.get('name') or None
+
+
+def _snapchat_profile(page):
+    """Read a Snapchat profile from its schema.org block.
+
+    Snapchat moved off the Next.js Pages Router, so the __NEXT_DATA__ blob the
+    two previous schemes parsed is gone from the page entirely. What stayed is
+    the ld+json ProfilePage, which carries the same identity fields and does not
+    depend on the framework underneath. The bio and the preview image are not in
+    it and are read from the meta tags, as elsewhere in this file.
+    """
+    def meta(pattern):
+        match = re.search(pattern, page)
+        return html.unescape(match.group(1)) if match else None
+
+    for raw in re.findall(
+        r'<script[^>]+type="application/ld\+json"[^>]*>([\s\S]*?)</script>', page
+    ):
+        try:
+            data = json.loads(raw)
+        except ValueError:
+            continue
+        if not isinstance(data, dict) or data.get('@type') != 'ProfilePage':
+            continue
+        person = data.get('mainEntity') or {}
+        identifier = person.get('identifier') or {}
+        return json.dumps({
+            'username': person.get('alternateName') or identifier.get('value'),
+            'fullname': person.get('name'),
+            # Snapchat does not serve the meta tags to every client, so these two
+            # can come back empty where the ld+json above still parses.
+            'bio': (meta(r'<meta[^>]+name="description"[^>]+content="([^"]*)"')
+                    or meta(r'<meta[^>]+property="og:description"[^>]+content="([^"]*)"')),
+            'url': person.get('url'),
+            'image': meta(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"'),
+            # ld+json puts the snapcode in `image`; the real preview lives in og:image.
+            'snapcode_image': person.get('image'),
+        })
+    return '{}'
+
+
 def _discourse_html_profile(page):
     """Pull what a Discourse profile page still carries in its server-rendered HTML.
 
@@ -529,33 +582,6 @@ def _sc_value(soup, label, strip=None):
                     text = text.lstrip(strip)
                 return text or None
     return None
-
-_MASTODON_INSTANCES = [
-    'vmst.io',
-    'tilde.zone',
-    'masto.nyc',
-    'graphics.social',
-    'expressional.social',
-    'federated.press',
-    'libretooth.gr',
-    'hostux.social',
-    'mapstodon.space',
-    'hcommons.social',
-    'hometech.social',
-    'nitecrew.rip',
-    'poweredbygay.social',
-    'vkl.world',
-    'tooting.ch',
-    'c.im',
-    'masto.ai',
-    'mastodon.online',
-    'toot.community',
-    'defcon.social',
-    'social.bund.de',
-    'toot.cat',
-    'infosec.exchange',
-]
-
 
 _PATREON_RSC_CHUNK_RE = re.compile(r'self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)')
 
@@ -805,14 +831,25 @@ schemes = {
         }
     },
     'Gitlab API': {
-        'url_hints': ('gitlab.com',),
-        'flags': ['avatar_url', 'https://gitlab.com', '"public_email"'],
+        'url_hints': ('gitlab', 'git.', 'forge', 'code.', 'lab.', 'src.', 'repo', 'scm'),
+        # The host literal is gone, and so is public_email: GitLab only started
+        # serving that field in 14.x, and requiring it dropped 7 of the 286
+        # instances maigret knows. web_url with state is signature enough --
+        # GitHub and Gitea both carry avatar_url but neither carries web_url.
+        'flags': ['avatar_url', '"web_url"', '"state"'],
         'regex': r'^\[({[\S\s]+?})\]$',
         'extract_json': True,
         'url_mutations': [
             {
-                'from': r'https://gitlab.com/(?P<username>.+)/?',
-                'to': 'https://gitlab.com/api/v4/users?username={username}',
+                # A GitLab profile is {host}/{username} with nothing in the path to
+                # key on, so the host carries the hint. These tokens appear in 281
+                # of the 286 instances maigret knows (98.3%); without them the rule
+                # would fire on every one-segment URL on the web. Anchored at the
+                # end so that {host}/group/project is left alone.
+                'from': r'^https?://(?P<host>[^/?#]*(?:gitlab|git|forge|lab\.|code\.'
+                        r'|src\.|repo|source|scm|devops|projects)[^/?#]*)'
+                        r'/(?P<username>[^/?#]+)/?$',
+                'to': 'https://{host}/api/v4/users?username={username}',
             }
         ],
         'fields': {
@@ -1560,9 +1597,14 @@ schemes = {
         'regex': r"feedSettingsHandler.subscribe\(this, 'users', '(?P<uid>\d+)'",
     },
     'Gitlab': {
-        'url_hints': ('gitlab.com',),
-        'flags': ['gitlab-static.net'],
-        'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
+        'url_hints': ('gitlab', 'git.', 'forge', 'code.', 'lab.', 'src.', 'repo', 'scm'),
+        # Both the old flag (gitlab-static.net) and the old regex (abuse_reports)
+        # are gone from the markup, so this scheme had stopped matching anywhere,
+        # gitlab.com included. js-user-profile-actions is what maigret keys on.
+        # It earns its place on instances whose API is shut: a blocked or hidden
+        # account still renders its numeric id here, and nothing else does.
+        'flags': ['js-user-profile-actions'],
+        'regex': r'data-user-id="(?P<uid>\d+)"',
     },
     '500px userByUsername API': {
         'url_hints': ('500px.com', 'api.500px.com'),
@@ -3495,7 +3537,7 @@ schemes = {
         'fields': {
             'uid': lambda x: x.get('id'),
             'paragraph_user_id': lambda x: x.get('userId'),
-            'fullname': lambda x: x.get('user', {}).get('displayName', {}).get('fullName') or x.get('name'),
+            'fullname': _paragraph_fullname,
             'username': lambda x: (x.get('lowercase_url') or '').lstrip('@') or None,
             'bio': lambda x: (x.get('user', {}).get('authorBio') or '').strip() or None,
             'image': lambda x: x.get('user', {}).get('avatar_url') or x.get('logo_url') or None,
@@ -3779,6 +3821,26 @@ schemes = {
             ),
         }
     },
+    'Snapchat': {
+        'url_hints': ('snapchat.com',),
+        # Not '@type":"ProfilePage' alone: schema.org is generic, the snapcode is not.
+        'flags': ['ProfilePage', 'deeplink/snapcode'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_snapchat_profile],
+        'fields': {
+            'username': lambda x: x.get('username') or None,
+            'fullname': lambda x: x.get('fullname') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'url': lambda x: x.get('url') or None,
+            'image': lambda x: x.get('image') or None,
+            'snapcode_image': lambda x: x.get('snapcode_image') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?snapchat\.com/add/(?P<username>[^/?#]+)',
+            'to': 'https://www.snapchat.com/@{username}',
+        }],
+    },
     'Discourse API': {
         'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
         'regex': r'^(\{[\s\S]+\})$',
@@ -3817,25 +3879,6 @@ schemes = {
                 'to': 'https://{base}/u/{username}.json',
             },
         ],
-    },
-    'Snapchat': {
-        'flags': ['__NEXT_DATA__', '"userProfile":'],
-        'regex': r'<script[^>]+id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
-        'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: x['props']['pageProps'],
-            json.dumps,
-        ],
-        'fields': {
-            'username': lambda x: x['userProfile']['userInfo'].get('username'),
-            'fullname': lambda x: x['userProfile']['userInfo'].get('displayName'),
-            'bio': lambda x: x.get('pageMetadata', {}).get('pageDescription', {}).get('value'),
-            'url': lambda x: x.get('linkPreview', {}).get('canonicalUrl'),
-            'image': lambda x: x.get('linkPreview', {}).get('twitterImage', {}).get('url'),
-            'snapcode_image': lambda x: x['userProfile']['userInfo'].get('snapcodeImageUrl'),
-            'profile_type': lambda x: x['userProfile'].get('$case'),
-        }
     },
     'Bio Site': {
         'url_hints': ('bio.site',),
@@ -4878,29 +4921,6 @@ schemes = {
             'interests': lambda x: ', '.join(a.text for a in x.find_all('a', class_='gsc_prf_inta')) or None,
         },
     },
-    'Snapchat profile': {
-        'url_hints': ('snapchat.com',),
-        'flags': ['__NEXT_DATA__', '"snapcodeImageUrl":', '"publicProfileInfo":'],
-        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
-        'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: x.get('props', {}).get('pageProps', {}).get('userProfile', {}).get('publicProfileInfo', {}),
-            json.dumps,
-        ],
-        'fields': {
-            'username': lambda x: x.get('username'),
-            'fullname': lambda x: x.get('title') or None,
-            'bio': lambda x: x.get('bio') or None,
-            'image': lambda x: x.get('profilePictureUrl') or None,
-            'website': lambda x: x.get('websiteUrl') or None,
-            'snapcode_url': lambda x: x.get('snapcodeImageUrl') or None,
-        },
-        'url_mutations': [{
-            'from': r'https?://(?:www\.)?snapchat\.com/add/(?P<username>[^/?#]+)',
-            'to': 'https://www.snapchat.com/add/{username}',
-        }],
-    },
     'Flipboard profile': {
         'url_hints': ('flipboard.com',),
         'flags': ['__PRELOADED_STATE__', 'authorDisplayName', 'authorUsername'],
@@ -5030,7 +5050,7 @@ schemes = {
         ],
     },
     'Mastodon API': {
-        'url_hints': tuple(_MASTODON_INSTANCES),
+        'url_hints': ('/@',),
         'flags': ['"followers_count":', '"avatar_static":', '"header_static":'],
         'regex': r'^(\{[\s\S]+\})$',
         'extract_json': True,
@@ -5051,10 +5071,13 @@ schemes = {
         },
         'url_mutations': [
             {
-                'from': r'https?://' + d.replace('.', r'\.') + r'/@(?P<username>[^/?#]+)',
-                'to': 'https://' + d + '/api/v1/accounts/lookup?acct={username}',
+                # Every Mastodon instance answers the same lookup endpoint, and the
+                # /@handle route is distinctive enough to key on, so the list of 23
+                # hardcoded hosts this replaced was only ever a list of the ones
+                # somebody had got round to adding.
+                'from': r'^https?://(?P<host>[^/?#]+)/@(?P<username>[^/?#]+)/?$',
+                'to': 'https://{host}/api/v1/accounts/lookup?acct={username}',
             }
-            for d in _MASTODON_INSTANCES
         ],
     },
     'FL.ru': {
