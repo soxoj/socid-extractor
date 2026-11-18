@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+* Add extraction for bbPress forums (username, fullname, image, registration, forum role, topic and reply counts)
 * Add extraction for the bunq.me fundraiser-profile API (uid, username, fullname, image, country_code, iban, bunq_invite_username, account_type)
 
 ## [0.1.1] - 2026-07-13
