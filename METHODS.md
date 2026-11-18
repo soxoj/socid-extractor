@@ -270,5 +270,6 @@
 265 | Lemmy API | [lemmy_api](https://github.com/soxoj/socid-extractor/search?q=test_lemmy_api) |  |
 266 | NodeBB API | [nodebb_api](https://github.com/soxoj/socid-extractor/search?q=test_nodebb_api) |  |
 267 | phpBB | [phpbb](https://github.com/soxoj/socid-extractor/search?q=test_phpbb), [phpbb_author_search](https://github.com/soxoj/socid-extractor/search?q=test_phpbb_author_search) | requests from GitHub Actions CI servers are blocked |
+268 | Gitea / Forgejo | [gitea_forgejo](https://github.com/soxoj/socid-extractor/search?q=test_gitea_forgejo) |  |
 
-The table has been updated at 2026-11-18 18:59:49.219635 UTC
+The table has been updated at 2026-11-18 19:20:02.110556 UTC

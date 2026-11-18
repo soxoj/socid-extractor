@@ -432,3 +432,108 @@ def test_phpbb_ignores_pages_about_other_people():
     wall = (PHPBB_BODY + '<h2 class="login-title">The board requires you to be registered and logged in to view profiles.</h2>'
             '<input type="hidden" name="redirect" value="./memberlist.php?mode=viewprofile&amp;u=1743&amp;sid=567f6e931545fafe7608ab2f5c759534" />')
     assert extract(wall) == {}
+
+
+# Gitea / Forgejo fixtures are the relevant lines of real profile pages, markup intact
+# (icons dropped): gitea.com/lunny (Gitea 1.2x layout, window config as JSON) and
+# code.uplex.de/Karsten (Forgejo layout, window config as a JS object). Both carry the
+# three flags the scheme keys on: the avatar card id, appSubUrl and a followers link.
+GITEA_PROFILE = """<meta property="og:title" content="Lunny Xiao">
+<meta property="og:type" content="profile">
+<meta property="og:image" content="https://gitea.com/avatars/5739143ce171af62d1ff0baa027dacfd5e5ffe9c28b7b92fc4ed02d952ab1cc3">
+<meta property="og:url" content="https://gitea.com/lunny">
+<script type="application/json" id="global-window-config">{"appSubUrl":"","appUrl":"https://gitea.com/"}</script>
+<div role="main" aria-label="Lunny Xiao" class="page-content user profile">
+<div id="profile-avatar-card" class="ui fitted segment">
+	<div class="flex-divided-list items-px-default muted-links">
+		<div class="item flex-relaxed-list">
+			<span class="tw-text-center">
+				lunny
+			</span>
+				<span class="tw-text-center">Lunny Xiao</span>
+			<div class="tw-text-center">
+				<a href="/lunny?tab=followers"><svg class="svg octicon-person"></svg>109 Followers</a> · <a href="/lunny?tab=following">93 Following</a>
+			</div>
+		</div>
+			<div class="item">
+				<span class="tw-flex-1">Silicon Valley</span>
+			</div>
+		<div class="item"><span><svg class="svg octicon-calendar"></svg>Joined on <relative-time weekday="" year="numeric" threshold="P0Y" month="short" day="numeric" prefix="" datetime="2018-11-27T17:33:38Z">2018-11-27</relative-time></span></div>
+	</div>
+</div>
+"""
+
+FORGEJO_PROFILE = r"""<meta property="og:title" content="Simon">
+<meta property="og:url" content="https://code.uplex.de/Karsten">
+<meta property="og:type" content="profile">
+<meta property="og:image" content="https://code.uplex.de/avatars/e42ffee59111f2ed474b3e765b93ac17">
+<script>
+	window.config = {
+		appUrl: 'https:\/\/code.uplex.de\/',
+		appSubUrl: '',
+	};
+</script>
+<div role="main" aria-label="Karsten" class="page-content user profile">
+<div id="profile-avatar-card" class="ui card">
+	<div class="content tw-break-anywhere profile-avatar-name">
+		<span class="header text center">Simon</span>
+		<span class="username">Karsten </span>
+		<div class="tw-mt-2 tw-flex tw-items-center tw-gap-2 tw-justify-center">
+			<span>
+				<a class="muted" href="/Karsten?tab=followers"><svg class="svg octicon-people"></svg>0 followers</a> · <a class="muted" href="/Karsten?tab=following">0 following</a>
+			</span>
+		</div>
+	</div>
+	<div class="extra content tw-break-anywhere">
+		<ul>
+			<li><svg class="svg octicon-calendar"></svg><span>Joined on <absolute-date weekday="" year="numeric" month="short" day="numeric" date="2025-10-27T21:22:41+01:00">2025-10-27</absolute-date></span></li>
+		</ul>
+	</div>
+</div>
+"""
+
+
+def test_gitea_profile_page():
+    """Gitea / Forgejo: the Gitea 1.2x profile layout."""
+    info = extract(GITEA_PROFILE)
+
+    assert info['_extractor'] == 'Gitea / Forgejo'
+    assert info['username'] == 'lunny'
+    assert info['fullname'] == 'Lunny Xiao'
+    assert info['image'] == 'https://gitea.com/avatars/5739143ce171af62d1ff0baa027dacfd5e5ffe9c28b7b92fc4ed02d952ab1cc3'
+    assert info['created_at'] == '2018-11-27T17:33:38Z'
+    assert info['follower_count'] == '109'
+    assert info['following_count'] == '93'
+
+
+def test_forgejo_profile_page():
+    """Gitea / Forgejo: the Forgejo layout, where the date is an <absolute-date>."""
+    info = extract(FORGEJO_PROFILE)
+
+    assert info['_extractor'] == 'Gitea / Forgejo'
+    assert info['username'] == 'Karsten'
+    assert info['fullname'] == 'Simon'
+    assert info['created_at'] == '2025-10-27T21:22:41+01:00'
+    assert info['follower_count'] == '0'
+    assert info['following_count'] == '0'
+
+
+def test_gitea_profile_edge_cases():
+    """Gitea / Forgejo: no full name, localised and grouped counts, a localhost avatar, no profile."""
+    # og:title falls back to the username when the user set no full name
+    bare = FORGEJO_PROFILE.replace('content="Simon"', 'content="Karsten"')
+    assert 'fullname' not in extract(bare)
+
+    # labels are localised and counts can carry separators: only the number is read
+    german = GITEA_PROFILE.replace('109 Followers', '1.234 Abonnenten').replace('93 Following', '5 Folgt')
+    info = extract(german)
+    assert info['follower_count'] == '1234'
+    assert info['following_count'] == '5'
+
+    # an instance that never set ROOT_URL links its avatars to localhost: dropped
+    local = GITEA_PROFILE.replace('https://gitea.com/avatars/', 'http://127.0.0.1:3000/avatars/')
+    assert 'image' not in extract(local)
+
+    # the same chrome without a followers link (an organisation page) names nobody
+    org = GITEA_PROFILE.replace('<a href="/lunny?tab=followers">', '<a href="/lunny?tab=members">')
+    assert extract(org) == {}

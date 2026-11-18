@@ -436,6 +436,57 @@ def _phpbb_profile(page):
     })
 
 
+def _gitea_profile(page):
+    """Read a Gitea or Forgejo user page (Forgejo is a Gitea fork with the same profile).
+
+    maigret checks these instances by the profile page itself, {host}/{username},
+    so the page is read rather than the /api/v1/users/<name> endpoint. The layout
+    differs between versions: Gitea 1.2x puts the name in plain spans inside
+    #profile-avatar-card, Forgejo in span.username under .profile-avatar-name.
+    Nothing is read by those classes. What every version shares is the
+    "?tab=followers" and "?tab=following" links, whose path ends in the username
+    and whose text starts with the count, the "Joined on" date as a machine-readable
+    attribute (datetime= on <relative-time>, date= on <absolute-date>), and the
+    og: tags, where og:title is the full name when the user set one and the
+    username otherwise.
+
+    Labels are localised ("Followers", "Abonnenten"), so counts are read as the
+    first number in the link text and the date only from the attribute. A page
+    without a followers link (an organisation, a login wall) yields nothing.
+    An avatar URL on localhost (an instance that never set its ROOT_URL) is dropped.
+    """
+    followers = re.search(r'<a[^>]*href="[^"]*/([^/"?]+)\?tab=followers"[^>]*>([\s\S]*?)</a>', page)
+    if not followers:
+        return '{}'
+    username = html.unescape(followers.group(1))
+
+    def count(fragment):
+        # "1,234 Followers", "1.234 Abonnenten": the first number, separators dropped
+        number = _search_group(r'(\d[\d,.\s]*)', re.sub(r'<[^>]+>', '', fragment or ''))
+        return re.sub(r'[^0-9]', '', number) if number else None
+
+    def og(prop):
+        value = _search_group(r'<meta property="og:' + prop + r'" content="([^"]*)"', page)
+        return (html.unescape(value).strip() or None) if value else None
+
+    image = og('image')
+    if image and re.match(r'https?://(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)', image):
+        image = None  # an instance whose ROOT_URL was never set links avatars to itself
+
+    following = _search_group(
+        r'<a[^>]*href="[^"]*/' + re.escape(followers.group(1)) + r'\?tab=following"[^>]*>([\s\S]*?)</a>', page)
+    title = og('title')
+    return json.dumps({
+        'username': username,
+        'fullname': title if title and title != username else None,
+        'image': image,
+        'created_at': _search_group(
+            r'Joined on\s*<(?:relative-time|absolute-date)\b[^>]*?\s(?:datetime|date)="([^"]+)"', page),
+        'follower_count': count(followers.group(2)),
+        'following_count': count(following),
+    })
+
+
 def _paragraph_fullname(blog):
     """Prefer the blog's own name over a displayName that is just the wallet.
 
@@ -5796,6 +5847,23 @@ schemes = {
             'created_at': lambda x: x.get('created_at'),
             'posts_count': lambda x: x.get('posts_count'),
             'website': lambda x: x.get('website'),
+        },
+    },
+    'Gitea / Forgejo': {
+        # self-hosted, so there is no single host to hint at; these are the names
+        # instances most often carry (gitea.com, codeberg.org, code.*, git.*)
+        'url_hints': ('gitea', 'forgejo', 'codeberg', 'code.', 'git.'),
+        'flags': ['id="profile-avatar-card"', 'appSubUrl', '?tab=followers'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_gitea_profile],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('image'),
+            'created_at': lambda x: x.get('created_at'),
+            'follower_count': lambda x: x.get('follower_count'),
+            'following_count': lambda x: x.get('following_count'),
         },
     },
 }
