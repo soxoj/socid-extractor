@@ -583,33 +583,6 @@ def _sc_value(soup, label, strip=None):
                 return text or None
     return None
 
-_MASTODON_INSTANCES = [
-    'vmst.io',
-    'tilde.zone',
-    'masto.nyc',
-    'graphics.social',
-    'expressional.social',
-    'federated.press',
-    'libretooth.gr',
-    'hostux.social',
-    'mapstodon.space',
-    'hcommons.social',
-    'hometech.social',
-    'nitecrew.rip',
-    'poweredbygay.social',
-    'vkl.world',
-    'tooting.ch',
-    'c.im',
-    'masto.ai',
-    'mastodon.online',
-    'toot.community',
-    'defcon.social',
-    'social.bund.de',
-    'toot.cat',
-    'infosec.exchange',
-]
-
-
 _PATREON_RSC_CHUNK_RE = re.compile(r'self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)')
 
 
@@ -858,14 +831,25 @@ schemes = {
         }
     },
     'Gitlab API': {
-        'url_hints': ('gitlab.com',),
-        'flags': ['avatar_url', 'https://gitlab.com', '"public_email"'],
+        'url_hints': ('gitlab', 'git.', 'forge', 'code.', 'lab.', 'src.', 'repo', 'scm'),
+        # The host literal is gone, and so is public_email: GitLab only started
+        # serving that field in 14.x, and requiring it dropped 7 of the 286
+        # instances maigret knows. web_url with state is signature enough --
+        # GitHub and Gitea both carry avatar_url but neither carries web_url.
+        'flags': ['avatar_url', '"web_url"', '"state"'],
         'regex': r'^\[({[\S\s]+?})\]$',
         'extract_json': True,
         'url_mutations': [
             {
-                'from': r'https://gitlab.com/(?P<username>.+)/?',
-                'to': 'https://gitlab.com/api/v4/users?username={username}',
+                # A GitLab profile is {host}/{username} with nothing in the path to
+                # key on, so the host carries the hint. These tokens appear in 281
+                # of the 286 instances maigret knows (98.3%); without them the rule
+                # would fire on every one-segment URL on the web. Anchored at the
+                # end so that {host}/group/project is left alone.
+                'from': r'^https?://(?P<host>[^/?#]*(?:gitlab|git|forge|lab\.|code\.'
+                        r'|src\.|repo|source|scm|devops|projects)[^/?#]*)'
+                        r'/(?P<username>[^/?#]+)/?$',
+                'to': 'https://{host}/api/v4/users?username={username}',
             }
         ],
         'fields': {
@@ -1613,9 +1597,14 @@ schemes = {
         'regex': r"feedSettingsHandler.subscribe\(this, 'users', '(?P<uid>\d+)'",
     },
     'Gitlab': {
-        'url_hints': ('gitlab.com',),
-        'flags': ['gitlab-static.net'],
-        'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
+        'url_hints': ('gitlab', 'git.', 'forge', 'code.', 'lab.', 'src.', 'repo', 'scm'),
+        # Both the old flag (gitlab-static.net) and the old regex (abuse_reports)
+        # are gone from the markup, so this scheme had stopped matching anywhere,
+        # gitlab.com included. js-user-profile-actions is what maigret keys on.
+        # It earns its place on instances whose API is shut: a blocked or hidden
+        # account still renders its numeric id here, and nothing else does.
+        'flags': ['js-user-profile-actions'],
+        'regex': r'data-user-id="(?P<uid>\d+)"',
     },
     '500px userByUsername API': {
         'url_hints': ('500px.com', 'api.500px.com'),
@@ -5013,7 +5002,7 @@ schemes = {
         ],
     },
     'Mastodon API': {
-        'url_hints': tuple(_MASTODON_INSTANCES),
+        'url_hints': ('/@',),
         'flags': ['"followers_count":', '"avatar_static":', '"header_static":'],
         'regex': r'^(\{[\s\S]+\})$',
         'extract_json': True,
@@ -5034,10 +5023,13 @@ schemes = {
         },
         'url_mutations': [
             {
-                'from': r'https?://' + d.replace('.', r'\.') + r'/@(?P<username>[^/?#]+)',
-                'to': 'https://' + d + '/api/v1/accounts/lookup?acct={username}',
+                # Every Mastodon instance answers the same lookup endpoint, and the
+                # /@handle route is distinctive enough to key on, so the list of 23
+                # hardcoded hosts this replaced was only ever a list of the ones
+                # somebody had got round to adding.
+                'from': r'^https?://(?P<host>[^/?#]+)/@(?P<username>[^/?#]+)/?$',
+                'to': 'https://{host}/api/v1/accounts/lookup?acct={username}',
             }
-            for d in _MASTODON_INSTANCES
         ],
     },
     'FL.ru': {

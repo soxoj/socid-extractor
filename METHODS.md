@@ -11,7 +11,7 @@
 6 | Facebook group | [facebook_group](https://github.com/soxoj/socid-extractor/search?q=test_facebook_group) | broken |
 7 | GitHub API | [github_api](https://github.com/soxoj/socid-extractor/search?q=test_github_api) | broken |
 8 | GitHub Social Accounts API |  |  |
-9 | Gitlab API |  |  |
+9 | Gitlab API | [gitlab_api](https://github.com/soxoj/socid-extractor/search?q=test_gitlab_api) |  |
 10 | Patreon | [patreon](https://github.com/soxoj/socid-extractor/search?q=test_patreon) | anti-bot / captcha / rate limiting from the site |
 11 | Patreon RSC | [patreon_rsc](https://github.com/soxoj/socid-extractor/search?q=test_patreon_rsc) | anti-bot / captcha / rate limiting from the site |
 12 | Flickr | [flickr](https://github.com/soxoj/socid-extractor/search?q=test_flickr) | failed from github CI infra IPs |
@@ -166,8 +166,8 @@
 161 | DBLP person record |  |  |
 162 | Scholia author profile |  |  |
 163 | BuyMeACoffee | [buymeacoffee](https://github.com/soxoj/socid-extractor/search?q=test_buymeacoffee) |  |
-164 | Discourse API | [discourse_api](https://github.com/soxoj/socid-extractor/search?q=test_discourse_api) |  |
-165 | Snapchat | [snapchat](https://github.com/soxoj/socid-extractor/search?q=test_snapchat) |  |
+164 | Snapchat | [snapchat](https://github.com/soxoj/socid-extractor/search?q=test_snapchat) |  |
+165 | Discourse API | [discourse_api](https://github.com/soxoj/socid-extractor/search?q=test_discourse_api) |  |
 166 | Bio Site | [bio_site](https://github.com/soxoj/socid-extractor/search?q=test_bio_site) |  |
 167 | Faceit API | [faceit_api](https://github.com/soxoj/socid-extractor/search?q=test_faceit_api) |  |
 168 | Fansly API | [fansly_api](https://github.com/soxoj/socid-extractor/search?q=test_fansly_api) |  |
@@ -217,7 +217,7 @@
 212 | Gumroad profile |  |  |
 213 | Mastodon HTML profile |  |  |
 214 | Discourse HTML profile | [discourse_html_profile](https://github.com/soxoj/socid-extractor/search?q=test_discourse_html_profile) |  |
-215 | Mastodon API |  |  |
+215 | Mastodon API | [mastodon_api](https://github.com/soxoj/socid-extractor/search?q=test_mastodon_api) |  |
 216 | FL.ru |  |  |
 217 | Manifold Markets |  |  |
 218 | VSCO |  |  |
@@ -271,4 +271,4 @@
 266 | NodeBB API | [nodebb_api](https://github.com/soxoj/socid-extractor/search?q=test_nodebb_api) |  |
 267 | phpBB | [phpbb](https://github.com/soxoj/socid-extractor/search?q=test_phpbb), [phpbb_author_search](https://github.com/soxoj/socid-extractor/search?q=test_phpbb_author_search) | requests from GitHub Actions CI servers are blocked |
 
-The table has been updated at 2026-10-24 23:51:39.068583 UTC
+The table has been updated at 2026-11-18 18:59:49.219635 UTC
