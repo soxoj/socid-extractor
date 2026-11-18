@@ -11,7 +11,7 @@
 6 | Facebook group | [facebook_group](https://github.com/soxoj/socid-extractor/search?q=test_facebook_group) | broken |
 7 | GitHub API | [github_api](https://github.com/soxoj/socid-extractor/search?q=test_github_api) | broken |
 8 | GitHub Social Accounts API |  |  |
-9 | Gitlab API |  |  |
+9 | Gitlab API | [gitlab_api](https://github.com/soxoj/socid-extractor/search?q=test_gitlab_api) |  |
 10 | Patreon | [patreon](https://github.com/soxoj/socid-extractor/search?q=test_patreon) | anti-bot / captcha / rate limiting from the site |
 11 | Patreon RSC | [patreon_rsc](https://github.com/soxoj/socid-extractor/search?q=test_patreon_rsc) | anti-bot / captcha / rate limiting from the site |
 12 | Flickr | [flickr](https://github.com/soxoj/socid-extractor/search?q=test_flickr) | failed from github CI infra IPs |
@@ -166,8 +166,8 @@
 161 | DBLP person record |  |  |
 162 | Scholia author profile |  |  |
 163 | BuyMeACoffee | [buymeacoffee](https://github.com/soxoj/socid-extractor/search?q=test_buymeacoffee) |  |
-164 | Discourse API | [discourse_api](https://github.com/soxoj/socid-extractor/search?q=test_discourse_api) |  |
-165 | Snapchat | [snapchat](https://github.com/soxoj/socid-extractor/search?q=test_snapchat) |  |
+164 | Snapchat | [snapchat](https://github.com/soxoj/socid-extractor/search?q=test_snapchat) |  |
+165 | Discourse API | [discourse_api](https://github.com/soxoj/socid-extractor/search?q=test_discourse_api) |  |
 166 | Bio Site | [bio_site](https://github.com/soxoj/socid-extractor/search?q=test_bio_site) |  |
 167 | Faceit API | [faceit_api](https://github.com/soxoj/socid-extractor/search?q=test_faceit_api) |  |
 168 | Fansly API | [fansly_api](https://github.com/soxoj/socid-extractor/search?q=test_fansly_api) |  |
@@ -210,67 +210,66 @@
 205 | Tapitag API |  |  |
 206 | Vivino API |  |  |
 207 | Google Scholar |  |  |
-208 | Snapchat profile |  |  |
-209 | Flipboard profile |  |  |
-210 | Clubhouse profile |  |  |
-211 | Coda.io profile |  |  |
-212 | Poe.com profile |  |  |
-213 | Gumroad profile |  |  |
-214 | Mastodon HTML profile |  |  |
-215 | Discourse HTML profile | [discourse_html_profile](https://github.com/soxoj/socid-extractor/search?q=test_discourse_html_profile) |  |
-216 | Mastodon API |  |  |
-217 | FL.ru |  |  |
-218 | Manifold Markets |  |  |
-219 | VSCO |  |  |
-220 | Mojang API |  |  |
-221 | OP.GG |  |  |
-222 | coder.social |  |  |
-223 | GOG |  |  |
-224 | Kick API |  |  |
-225 | Academia.edu |  |  |
-226 | TradingView |  |  |
-227 | Geocaching |  |  |
-228 | Rutracker |  |  |
-229 | Weburg |  |  |
-230 | Pokemon Showdown |  |  |
-231 | ImageShack |  |  |
-232 | Replit |  |  |
-233 | Itch.io |  |  |
-234 | Giphy |  |  |
-235 | Wattpad HTML profile |  |  |
-236 | Venmo |  |  |
-237 | Tumblr blog |  |  |
-238 | Drive2.ru |  |  |
-239 | Lichess API |  |  |
-240 | Hackerrank API |  |  |
-241 | Kongregate API |  |  |
-242 | WordPress.com site API |  |  |
-243 | Codecademy profile |  |  |
-244 | About.me profile |  |  |
-245 | Fur Affinity profile |  |  |
-246 | Pikabu profile |  |  |
-247 | Codepen profile |  |  |
-248 | Letterboxd profile |  |  |
-249 | Gitee profile |  |  |
-250 | Slack workspace |  |  |
-251 | Instructables member |  |  |
-252 | Envato Author profile |  |  |
-253 | Kwork freelancer |  |  |
-254 | Freesound user |  |  |
-255 | Star Citizen citizen |  |  |
-256 | Dribbble profile |  |  |
-257 | Depop shop |  |  |
-258 | ModDB member |  |  |
-259 | Xbox Gamertag |  |  |
-260 | DonationAlerts streamer |  |  |
-261 | CCM profile |  |  |
-262 | Wikidot user |  |  |
-263 | Couchsurfing person |  |  |
-264 | ReverbNation artist |  |  |
-265 | XenForo | [xenforo](https://github.com/soxoj/socid-extractor/search?q=test_xenforo) |  |
-266 | Lemmy API | [lemmy_api](https://github.com/soxoj/socid-extractor/search?q=test_lemmy_api) |  |
-267 | NodeBB API | [nodebb_api](https://github.com/soxoj/socid-extractor/search?q=test_nodebb_api) |  |
-268 | phpBB | [phpbb](https://github.com/soxoj/socid-extractor/search?q=test_phpbb), [phpbb_author_search](https://github.com/soxoj/socid-extractor/search?q=test_phpbb_author_search) | requests from GitHub Actions CI servers are blocked |
-269 | Gitea / Forgejo | [gitea_forgejo](https://github.com/soxoj/socid-extractor/search?q=test_gitea_forgejo) |  |
+208 | Flipboard profile |  |  |
+209 | Clubhouse profile |  |  |
+210 | Coda.io profile |  |  |
+211 | Poe.com profile |  |  |
+212 | Gumroad profile |  |  |
+213 | Mastodon HTML profile |  |  |
+214 | Discourse HTML profile | [discourse_html_profile](https://github.com/soxoj/socid-extractor/search?q=test_discourse_html_profile) |  |
+215 | Mastodon API | [mastodon_api](https://github.com/soxoj/socid-extractor/search?q=test_mastodon_api) |  |
+216 | FL.ru |  |  |
+217 | Manifold Markets |  |  |
+218 | VSCO |  |  |
+219 | Mojang API |  |  |
+220 | OP.GG |  |  |
+221 | coder.social |  |  |
+222 | GOG |  |  |
+223 | Kick API |  |  |
+224 | Academia.edu |  |  |
+225 | TradingView |  |  |
+226 | Geocaching |  |  |
+227 | Rutracker |  |  |
+228 | Weburg |  |  |
+229 | Pokemon Showdown |  |  |
+230 | ImageShack |  |  |
+231 | Replit |  |  |
+232 | Itch.io |  |  |
+233 | Giphy |  |  |
+234 | Wattpad HTML profile |  |  |
+235 | Venmo |  |  |
+236 | Tumblr blog |  |  |
+237 | Drive2.ru |  |  |
+238 | Lichess API |  |  |
+239 | Hackerrank API |  |  |
+240 | Kongregate API |  |  |
+241 | WordPress.com site API |  |  |
+242 | Codecademy profile |  |  |
+243 | About.me profile |  |  |
+244 | Fur Affinity profile |  |  |
+245 | Pikabu profile |  |  |
+246 | Codepen profile |  |  |
+247 | Letterboxd profile |  |  |
+248 | Gitee profile |  |  |
+249 | Slack workspace |  |  |
+250 | Instructables member |  |  |
+251 | Envato Author profile |  |  |
+252 | Kwork freelancer |  |  |
+253 | Freesound user |  |  |
+254 | Star Citizen citizen |  |  |
+255 | Dribbble profile |  |  |
+256 | Depop shop |  |  |
+257 | ModDB member |  |  |
+258 | Xbox Gamertag |  |  |
+259 | DonationAlerts streamer |  |  |
+260 | CCM profile |  |  |
+261 | Wikidot user |  |  |
+262 | Couchsurfing person |  |  |
+263 | ReverbNation artist |  |  |
+264 | XenForo | [xenforo](https://github.com/soxoj/socid-extractor/search?q=test_xenforo) |  |
+265 | Lemmy API | [lemmy_api](https://github.com/soxoj/socid-extractor/search?q=test_lemmy_api) |  |
+266 | NodeBB API | [nodebb_api](https://github.com/soxoj/socid-extractor/search?q=test_nodebb_api) |  |
+267 | phpBB | [phpbb](https://github.com/soxoj/socid-extractor/search?q=test_phpbb), [phpbb_author_search](https://github.com/soxoj/socid-extractor/search?q=test_phpbb_author_search) | requests from GitHub Actions CI servers are blocked |
+268 | Gitea / Forgejo | [gitea_forgejo](https://github.com/soxoj/socid-extractor/search?q=test_gitea_forgejo) |  |
 
-The table has been updated at 2026-11-14 05:32:10.389939 UTC
+The table has been updated at 2026-11-18 19:20:02.110556 UTC
