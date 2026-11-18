@@ -477,9 +477,12 @@ def _snapchat_profile(page):
         return json.dumps({
             'username': person.get('alternateName') or identifier.get('value'),
             'fullname': person.get('name'),
-            'bio': meta(r'<meta name="description" content="([^"]*)"'),
+            # Snapchat does not serve the meta tags to every client, so these two
+            # can come back empty where the ld+json above still parses.
+            'bio': (meta(r'<meta[^>]+name="description"[^>]+content="([^"]*)"')
+                    or meta(r'<meta[^>]+property="og:description"[^>]+content="([^"]*)"')),
             'url': person.get('url'),
-            'image': meta(r'<meta property="og:image" content="([^"]+)"'),
+            'image': meta(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"'),
             # ld+json puts the snapcode in `image`; the real preview lives in og:image.
             'snapcode_image': person.get('image'),
         })
