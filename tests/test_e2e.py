@@ -1622,19 +1622,16 @@ def test_snapchat():
     """Snapchat"""
     info = extract(parse('https://www.snapchat.com/@teamsnapchat')[0])
 
+    # Only the ld+json fields are asserted. Snapchat withholds the meta tags from
+    # some clients -- CI gets a page with no description and no og:image, while
+    # the same request from a laptop gets both -- so bio and image are extracted
+    # when offered but cannot be required. The snapcode host moves too
+    # (app.snapchat.com -> gcp.api.snapchat.com), hence the match on shape.
     assert info.get('username') == 'teamsnapchat'
     assert info.get('fullname') == 'Team Snapchat'
-    # the bio is localised to whoever is looking ("is on" / "ist auf"), so only
-    # the handle inside it is worth asserting
-    assert '@teamsnapchat' in info.get('bio', '')
     assert info.get('url') == 'https://www.snapchat.com/@teamsnapchat'
-    assert info.get('image') in {
-        'https://www.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-    }
-    assert info.get(
-        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=teamsnapchat&type=SVG&bitmoji=enable'
-    assert info.get('profile_type') == 'userInfo'
+    assert 'deeplink/snapcode' in info.get('snapcode_image', '')
+    assert 'username=teamsnapchat' in info.get('snapcode_image', '')
 
 
 def test_bio_site():
@@ -1817,12 +1814,16 @@ def test_visnesscard_api_e2e():
 
 def test_nodebb_api():
     """NodeBB API"""
-    url, _ = mutate_url('https://bbs.aw-ol.com/user/whycan')[0]
+    # The previous fixture was a board that went down for maintenance and took
+    # this test with it. NodeBB runs on self-hosted forums only and its own
+    # community site sits behind Cloudflare, so there is no flagship instance to
+    # lean on: this is a founder account (uid 1) on a board that has stayed up.
+    url, _ = mutate_url('https://forum.easy-english-study.com/user/admin')[0]
     info = extract(parse(url, timeout=15)[0])
     assert info.get('_extractor') == 'NodeBB API'
-    assert info.get('uid') == '44'
-    assert info.get('username') == 'whycan'
-    assert info.get('created_at') == '2021-05-17 15:16:25.374 UTC'
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'admin'
+    assert info.get('created_at') == '2025-01-20 06:23:57.089 UTC'
 
 
 def test_discourse_api():
