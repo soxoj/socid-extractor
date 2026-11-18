@@ -436,6 +436,56 @@ def _phpbb_profile(page):
     })
 
 
+def _paragraph_fullname(blog):
+    """Prefer the blog's own name over a displayName that is just the wallet.
+
+    Paragraph fills user.displayName with the raw 0x address when an author has
+    set no human name. That address is already reported as wallet_address, so
+    repeating it as a fullname says nothing; the blog name ("vitalik.eth") does.
+    """
+    user = blog.get('user') or {}
+    shown = ((user.get('displayName') or {}).get('fullName') or '').strip()
+    if shown.lower() == (user.get('wallet_address') or '').strip().lower():
+        shown = ''
+    return shown or blog.get('name') or None
+
+
+def _snapchat_profile(page):
+    """Read a Snapchat profile from its schema.org block.
+
+    Snapchat moved off the Next.js Pages Router, so the __NEXT_DATA__ blob the
+    two previous schemes parsed is gone from the page entirely. What stayed is
+    the ld+json ProfilePage, which carries the same identity fields and does not
+    depend on the framework underneath. The bio and the preview image are not in
+    it and are read from the meta tags, as elsewhere in this file.
+    """
+    def meta(pattern):
+        match = re.search(pattern, page)
+        return html.unescape(match.group(1)) if match else None
+
+    for raw in re.findall(
+        r'<script[^>]+type="application/ld\+json"[^>]*>([\s\S]*?)</script>', page
+    ):
+        try:
+            data = json.loads(raw)
+        except ValueError:
+            continue
+        if not isinstance(data, dict) or data.get('@type') != 'ProfilePage':
+            continue
+        person = data.get('mainEntity') or {}
+        identifier = person.get('identifier') or {}
+        return json.dumps({
+            'username': person.get('alternateName') or identifier.get('value'),
+            'fullname': person.get('name'),
+            'bio': meta(r'<meta name="description" content="([^"]*)"'),
+            'url': person.get('url'),
+            'image': meta(r'<meta property="og:image" content="([^"]+)"'),
+            # ld+json puts the snapcode in `image`; the real preview lives in og:image.
+            'snapcode_image': person.get('image'),
+        })
+    return '{}'
+
+
 def _discourse_html_profile(page):
     """Pull what a Discourse profile page still carries in its server-rendered HTML.
 
@@ -3495,7 +3545,7 @@ schemes = {
         'fields': {
             'uid': lambda x: x.get('id'),
             'paragraph_user_id': lambda x: x.get('userId'),
-            'fullname': lambda x: x.get('user', {}).get('displayName', {}).get('fullName') or x.get('name'),
+            'fullname': _paragraph_fullname,
             'username': lambda x: (x.get('lowercase_url') or '').lstrip('@') or None,
             'bio': lambda x: (x.get('user', {}).get('authorBio') or '').strip() or None,
             'image': lambda x: x.get('user', {}).get('avatar_url') or x.get('logo_url') or None,
@@ -3779,6 +3829,26 @@ schemes = {
             ),
         }
     },
+    'Snapchat': {
+        'url_hints': ('snapchat.com',),
+        # Not '@type":"ProfilePage' alone: schema.org is generic, the snapcode is not.
+        'flags': ['ProfilePage', 'deeplink/snapcode'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_snapchat_profile],
+        'fields': {
+            'username': lambda x: x.get('username') or None,
+            'fullname': lambda x: x.get('fullname') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'url': lambda x: x.get('url') or None,
+            'image': lambda x: x.get('image') or None,
+            'snapcode_image': lambda x: x.get('snapcode_image') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?snapchat\.com/add/(?P<username>[^/?#]+)',
+            'to': 'https://www.snapchat.com/@{username}',
+        }],
+    },
     'Discourse API': {
         'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
         'regex': r'^(\{[\s\S]+\})$',
@@ -3817,25 +3887,6 @@ schemes = {
                 'to': 'https://{base}/u/{username}.json',
             },
         ],
-    },
-    'Snapchat': {
-        'flags': ['__NEXT_DATA__', '"userProfile":'],
-        'regex': r'<script[^>]+id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
-        'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: x['props']['pageProps'],
-            json.dumps,
-        ],
-        'fields': {
-            'username': lambda x: x['userProfile']['userInfo'].get('username'),
-            'fullname': lambda x: x['userProfile']['userInfo'].get('displayName'),
-            'bio': lambda x: x.get('pageMetadata', {}).get('pageDescription', {}).get('value'),
-            'url': lambda x: x.get('linkPreview', {}).get('canonicalUrl'),
-            'image': lambda x: x.get('linkPreview', {}).get('twitterImage', {}).get('url'),
-            'snapcode_image': lambda x: x['userProfile']['userInfo'].get('snapcodeImageUrl'),
-            'profile_type': lambda x: x['userProfile'].get('$case'),
-        }
     },
     'Bio Site': {
         'url_hints': ('bio.site',),
@@ -4829,29 +4880,6 @@ schemes = {
             'website': lambda x: x.find(id='gsc_prf_ivh').find('a')['href'] if x.find(id='gsc_prf_ivh') and x.find(id='gsc_prf_ivh').find('a') else None,
             'interests': lambda x: ', '.join(a.text for a in x.find_all('a', class_='gsc_prf_inta')) or None,
         },
-    },
-    'Snapchat profile': {
-        'url_hints': ('snapchat.com',),
-        'flags': ['__NEXT_DATA__', '"snapcodeImageUrl":', '"publicProfileInfo":'],
-        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
-        'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: x.get('props', {}).get('pageProps', {}).get('userProfile', {}).get('publicProfileInfo', {}),
-            json.dumps,
-        ],
-        'fields': {
-            'username': lambda x: x.get('username'),
-            'fullname': lambda x: x.get('title') or None,
-            'bio': lambda x: x.get('bio') or None,
-            'image': lambda x: x.get('profilePictureUrl') or None,
-            'website': lambda x: x.get('websiteUrl') or None,
-            'snapcode_url': lambda x: x.get('snapcodeImageUrl') or None,
-        },
-        'url_mutations': [{
-            'from': r'https?://(?:www\.)?snapchat\.com/add/(?P<username>[^/?#]+)',
-            'to': 'https://www.snapchat.com/add/{username}',
-        }],
     },
     'Flipboard profile': {
         'url_hints': ('flipboard.com',),

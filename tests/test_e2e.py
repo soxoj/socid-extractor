@@ -1628,13 +1628,12 @@ def test_snapchat():
     # the handle inside it is worth asserting
     assert '@teamsnapchat' in info.get('bio', '')
     assert info.get('url') == 'https://www.snapchat.com/@teamsnapchat'
-    assert info.get('image') in {
-        'https://www.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-    }
-    assert info.get(
-        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=teamsnapchat&type=SVG&bitmoji=enable'
-    assert info.get('profile_type') == 'userInfo'
+    # Both images are served from hosts Snapchat reshuffles (app. -> gcp.api.,
+    # www. -> us-east1-aws.), so assert who the picture is of, not where it sits.
+    assert '@teamsnapchat' in info.get('image', '')
+    assert '/preview/' in info.get('image', '')
+    assert 'deeplink/snapcode' in info.get('snapcode_image', '')
+    assert 'username=teamsnapchat' in info.get('snapcode_image', '')
 
 
 def test_bio_site():
@@ -1817,12 +1816,16 @@ def test_visnesscard_api_e2e():
 
 def test_nodebb_api():
     """NodeBB API"""
-    url, _ = mutate_url('https://bbs.aw-ol.com/user/whycan')[0]
+    # The previous fixture was a board that went down for maintenance and took
+    # this test with it. NodeBB runs on self-hosted forums only and its own
+    # community site sits behind Cloudflare, so there is no flagship instance to
+    # lean on: this is a founder account (uid 1) on a board that has stayed up.
+    url, _ = mutate_url('https://forum.easy-english-study.com/user/admin')[0]
     info = extract(parse(url, timeout=15)[0])
     assert info.get('_extractor') == 'NodeBB API'
-    assert info.get('uid') == '44'
-    assert info.get('username') == 'whycan'
-    assert info.get('created_at') == '2021-05-17 15:16:25.374 UTC'
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'admin'
+    assert info.get('created_at') == '2025-01-20 06:23:57.089 UTC'
 
 
 def test_discourse_api():
