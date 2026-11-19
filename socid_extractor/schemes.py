@@ -20,6 +20,35 @@ def _nodebb_profile(page):
     return json.dumps(data)
 
 
+def _flarum_user(page, request_url):
+    try:
+        doc = json.loads(page)
+    except ValueError:
+        return '{}'
+    if not isinstance(doc, dict):
+        return '{}'
+    wanted = parse_qs(urlparse(request_url).query).get('filter[q]', [None])[0]
+    if not wanted:
+        return '{}'
+
+    data = doc.get('data')
+    candidates = data if isinstance(data, list) else [data] if isinstance(data, dict) else []
+
+    for user in candidates:
+        if not isinstance(user, dict):
+            continue
+        attributes = user.get('attributes')
+        if (
+            user.get('type') == 'users'
+            and isinstance(attributes, dict)
+            and isinstance(attributes.get('username'), str)
+            and attributes['username'].casefold() == wanted.casefold()
+        ):
+            return json.dumps(user)
+
+    return '{}'
+
+
 # Helpers for the Virgool RSC profile scheme (see "Virgool" entry below).
 def _virgool_parse_rsc_rows(chunk_text):
     """Split an RSC push payload into ``{chunk_id: parsed_json}``.
@@ -4089,6 +4118,52 @@ schemes = {
                 'to': 'https://{base}/u/{username}.json',
             },
         ],
+    },
+    'Flarum API': {
+        'flags': ['"displayName"', '"joinTime"', '"username"'],
+        'regex': r'^(\{[\s\S]+\})$',
+        'extract_json': True,
+        'transform_needs_url': True,
+        'transforms': [
+            _flarum_user
+        ],
+        'fields': {
+            'uid': lambda x: x.get('id'),
+            'username': lambda x: x['attributes'].get('username'),
+            'fullname': lambda x: x['attributes'].get('displayName') or None,
+            'image': lambda x: x['attributes'].get('avatarUrl') or None,
+            'created_at': lambda x: x['attributes'].get('joinTime'),
+        },
+        'url_mutations': [
+            {
+                # Flarum profiles live at /u/<name>, the same route Discourse uses,
+                # so both mutations are produced for such a link and only the one
+                # whose answer matches the flags yields a result.
+                # The base is captured for forums under a path;
+                # a trailing .json is refused so a mutated Flarum URL is not mutated again.
+                'from': r'https?://(?P<base>[^?#]*?)/+u/(?P<username>[^/?#]+?)(?<!\.json)(?:/|$|[?#])',
+                'to': 'https://{base}/api/users?filter[q]={username}',
+            },
+        ],
+    },
+    'Snapchat': {
+        'flags': ['__NEXT_DATA__', '"userProfile":'],
+        'regex': r'<script[^>]+id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
+        'extract_json': True,
+        'transforms': [
+            json.loads,
+            lambda x: x['props']['pageProps'],
+            json.dumps,
+        ],
+        'fields': {
+            'username': lambda x: x['userProfile']['userInfo'].get('username'),
+            'fullname': lambda x: x['userProfile']['userInfo'].get('displayName'),
+            'bio': lambda x: x.get('pageMetadata', {}).get('pageDescription', {}).get('value'),
+            'url': lambda x: x.get('linkPreview', {}).get('canonicalUrl'),
+            'image': lambda x: x.get('linkPreview', {}).get('twitterImage', {}).get('url'),
+            'snapcode_image': lambda x: x['userProfile']['userInfo'].get('snapcodeImageUrl'),
+            'profile_type': lambda x: x['userProfile'].get('$case'),
+        }
     },
     'Bio Site': {
         'url_hints': ('bio.site',),

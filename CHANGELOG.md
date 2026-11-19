@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+* Add extraction for Flarum forums (uid, username, fullname, image, registration) by @CallahanB-cpu in https://github.com/soxoj/socid-extractor/pull/310
 * Add extraction for BuddyPress member pages (uid, username, fullname, image, last activity)
 * Add extraction for Vanilla forums (username, image, registration, last activity, visits, points, role)
 * Refresh the request User-Agent -- the five-year-old Chrome 94 string had started getting 403s

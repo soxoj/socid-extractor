@@ -541,6 +541,22 @@ def test_gitlab_api():
     assert info.get('website') == 'https://gitlab.eclipse.org/gallasko'
 
 
+def test_flarum_api():
+    """Flarum API"""
+    # /u/<name> is Discourse's route too, so the link yields several mutations and
+    # only the Flarum one answers with a user object
+    url = next(u for u, _ in mutate_url('https://discuss.flarum.org/u/luceos') if '/api/users?' in u)
+    # filter[q] is a search, so the answer is a list and the transform has to pick
+    # the exact match out of it -- hence the request URL being passed in
+    info = extract(parse(url, timeout=15)[0], request_url=url)
+
+    assert info.get('_extractor') == 'Flarum API'
+    assert info.get('uid') == '1376'
+    assert info.get('username') == 'luceos'
+    assert info.get('created_at') == '2015-08-27T08:12:58+00:00'
+    assert info.get('image', '').startswith('https://discuss.flarum.org/assets/avatars/')
+
+
 def test_mastodon_api():
     """Mastodon API"""
     # mastodon.social was never in the list of 23 hosts this scheme used to carry
