@@ -7,6 +7,32 @@ from urllib.parse import parse_qs, unquote, urlparse
 from .utils import *
 
 
+def _habr_profile(page):
+    """Read the author record Habr renders into its Pinia store.
+
+    The store is assigned to window.__PINIA_STATE__ with more script following
+    on the same line, so a regex has no end to anchor on; raw_decode reads
+    exactly as far as the object goes and stops there.
+
+    Reading the store instead of a slice of it is also what keeps this working.
+    The previous version matched authorRefs with a regex that required the
+    record to end in a "reach" string, and Habr now sends "reach": null, which
+    silently cost every field on every profile.
+    """
+    start = re.search(r'window\.__PINIA_STATE__\s*=\s*', page)
+    if not start:
+        return '{}'
+    try:
+        store, _ = json.JSONDecoder().raw_decode(page[start.end():])
+    except ValueError:
+        return '{}'
+    # the alias is its own key here, next to a __ALIAS_STORE__ marker that is
+    # not a user; a page about one author carries exactly one real entry
+    refs = (store.get('users') or {}).get('authorRefs') or {}
+    user = next((v for k, v in refs.items() if k != '__ALIAS_STORE__' and isinstance(v, dict)), None)
+    return json.dumps(user) if user else '{}'
+
+
 def _nodebb_profile(page):
     """Accept a NodeBB profile object, excluding errors and user listings."""
     try:
@@ -1748,14 +1774,12 @@ schemes = {
     },
     'Habrahabr JSON': {
         'url_hints': ('habr.com', 'habrastorage'),
-        'flags': ['habrastorage.org', '"authorRefs":'],
-        'regex': r'"authorRefs":(\{"__ALIAS_STORE__":true,"[^"]+":\{[\s\S]+?"reach":"[^"]*"\}\})(?=,"author)',
+        # both are structural: habrastorage.org used to be here as well, but it
+        # only appears when the author has an avatar
+        'flags': ['__PINIA_STATE__', '"authorRefs":'],
+        'regex': r'^([\s\S]+)$',
         'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: next((v for k, v in x.items() if k != '__ALIAS_STORE__'), {}),
-            json.dumps,
-        ],
+        'transforms': [_habr_profile],
         'fields': {
             'username': lambda x: x.get('alias'),
             'about': lambda x: x.get('speciality') or None,
@@ -1768,7 +1792,13 @@ schemes = {
             'location': lambda x: x.get('location') or None,
             'image': lambda x: x.get('avatarUrl') or None,
             'follower_count': lambda x: (x.get('followStats') or {}).get('followersCount'),
-            'following_count': lambda x: (x.get('followStats') or {}).get('followStats'),
+            # read followStats a second time instead of the count inside it, so
+            # this field came back empty on every profile
+            'following_count': lambda x: (x.get('followStats') or {}).get('followCount'),
+            'registered_at': lambda x: x.get('registerDateTime'),
+            'last_activity_at': lambda x: x.get('lastActivityDateTime'),
+            'post_count': lambda x: (x.get('counterStats') or {}).get('postCount'),
+            'comment_count': lambda x: (x.get('counterStats') or {}).get('commentCount'),
         }
     },
     'My Mail.ru': {
