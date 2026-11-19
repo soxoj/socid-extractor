@@ -19,6 +19,7 @@ def _nodebb_profile(page):
         return '{}'
     return json.dumps(data)
 
+
 def _flarum_user(page, request_url):
     try:
         doc = json.loads(page)
@@ -46,7 +47,7 @@ def _flarum_user(page, request_url):
             return json.dumps(user)
 
     return '{}'
-    
+
 
 # Helpers for the Virgool RSC profile scheme (see "Virgool" entry below).
 def _virgool_parse_rsc_rows(chunk_text):
@@ -464,6 +465,269 @@ def _phpbb_profile(page):
     })
 
 
+def _gitea_profile(page):
+    """Read a Gitea or Forgejo user page (Forgejo is a Gitea fork with the same profile).
+
+    maigret checks these instances by the profile page itself, {host}/{username},
+    so the page is read rather than the /api/v1/users/<name> endpoint. The layout
+    differs between versions: Gitea 1.2x puts the name in plain spans inside
+    #profile-avatar-card, Forgejo in span.username under .profile-avatar-name.
+    Nothing is read by those classes. What every version shares is the
+    "?tab=followers" and "?tab=following" links, whose path ends in the username
+    and whose text starts with the count, the "Joined on" date as a machine-readable
+    attribute (datetime= on <relative-time>, date= on <absolute-date>), and the
+    og: tags, where og:title is the full name when the user set one and the
+    username otherwise.
+
+    Labels are localised ("Followers", "Abonnenten"), so counts are read as the
+    first number in the link text and the date only from the attribute. A page
+    without a followers link (an organisation, a login wall) yields nothing.
+    An avatar URL on localhost (an instance that never set its ROOT_URL) is dropped.
+    """
+    followers = re.search(r'<a[^>]*href="[^"]*/([^/"?]+)\?tab=followers"[^>]*>([\s\S]*?)</a>', page)
+    if not followers:
+        return '{}'
+    username = html.unescape(followers.group(1))
+
+    def count(fragment):
+        # "1,234 Followers", "1.234 Abonnenten": the first number, separators dropped
+        number = _search_group(r'(\d[\d,.\s]*)', re.sub(r'<[^>]+>', '', fragment or ''))
+        return re.sub(r'[^0-9]', '', number) if number else None
+
+    def og(prop):
+        value = _search_group(r'<meta property="og:' + prop + r'" content="([^"]*)"', page)
+        return (html.unescape(value).strip() or None) if value else None
+
+    image = og('image')
+    if image and re.match(r'https?://(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)', image):
+        image = None  # an instance whose ROOT_URL was never set links avatars to itself
+
+    following = _search_group(
+        r'<a[^>]*href="[^"]*/' + re.escape(followers.group(1)) + r'\?tab=following"[^>]*>([\s\S]*?)</a>', page)
+    title = og('title')
+    return json.dumps({
+        'username': username,
+        'fullname': title if title and title != username else None,
+        'image': image,
+        'created_at': _search_group(
+            r'Joined on\s*<(?:relative-time|absolute-date)\b[^>]*?\s(?:datetime|date)="([^"]+)"', page),
+        'follower_count': count(followers.group(2)),
+        'following_count': count(following),
+    })
+
+
+def _bbpress_profile(page):
+    """Read what a bbPress forum shows about one member.
+
+    bbPress has no API, and the WordPress REST user route is shut on nearly
+    every board that runs it, so the profile page is all there is. Themes
+    reskin that page freely, but the paragraphs below come from bbPress core
+    and carry classes of their own, so they are found by class and never by
+    position or by their labels, which are translated per board.
+
+    Two of them share the class bbp-user-forum-role: core prints the
+    registration age in the first and the forum role in the second. A board
+    that prints only one of the two breaks that order, so they are told apart
+    by content instead -- an age carries digits and a role does not.
+    """
+    # the block holds the member's link and picture; it ends at that link's
+    # close, which bounds it whatever a lazy-loading plugin puts in the img
+    avatar = _search_group(r'(<div[^>]*id=["\']bbp-user-avatar["\'][\s\S]*?</a>)', page)
+
+    def text(fragment):
+        plain = html.unescape(re.sub(r'<[^>]+>', ' ', fragment or ''))
+        return re.sub(r'\s+', ' ', plain).strip() or None
+
+    def paras(cls):
+        found = re.findall(r'<p[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>([\s\S]*?)</p>' % cls, page)
+        return [p for p in (text(f) for f in found) if p]
+
+    def tail(value):
+        # the labels are translated per board; the value follows the last colon
+        return value.split(':')[-1].strip() if value and ':' in value else value
+
+    def count(cls):
+        # "Replies Created: 2,001" -- the separator is the board's, not ours
+        found = re.findall(r'([\d][\d,.\u00a0\s]*)\s*$', ' '.join(paras(cls)) or '')
+        return re.sub(r'\D', '', found[-1]) if found else None
+
+    roles = paras('bbp-user-forum-role')
+    ages = [tail(p) for p in roles if re.search(r'\d', p)]
+    names = [tail(p) for p in roles if not re.search(r'\d', p)]
+
+    # an @nicename heading is bbPress core, but a theme can put its own text
+    # there, and the slug is also in the link the avatar block always carries
+    heading = text(_search_group(r'<h2[^>]*entry-title[^>]*>\s*(@[\s\S]*?)</h2>', page))
+
+    # a lazy-loading plugin leaves a placeholder in src and the real file in
+    # data-lazy-src, so the first source that is not inlined is the picture
+    sources = re.findall(r'(?:data-lazy-)?src=["\']([^"\']+)["\']', avatar or '')
+    image = next((s for s in sources if not s.startswith('data:')), None)
+
+    return json.dumps({k: v for k, v in {
+        'username': (heading or '').lstrip('@')
+                    or _search_group(r'href=["\'][^"\']*/users/([^/"\'?#]+)', avatar),
+        'fullname': html.unescape(_search_group(r'title=["\']([^"\']+)["\']', avatar) or '').strip(),
+        'image': html.unescape(image) if image else None,
+        # core prints an age relative to now; some boards print a date instead
+        'registered_ago': ages[0] if ages else None,
+        'registered_at': tail((paras('bbp-user-member-since') or [None])[0]),
+        'role': names[0] if names else None,
+        'topics_count': count('bbp-user-topic-count'),
+        'replies_count': count('bbp-user-reply-count'),
+        'bio': (paras('bbp-user-description') or [None])[0],
+    }.items() if v})
+
+
+def _buddypress_profile(page):
+    """Read what a BuddyPress member page shows about its owner.
+
+    BuddyPress is a WordPress plugin and themes rebuild its profile header
+    freely, so nothing here is read from the header's layout. What survives
+    reskinning is the avatar's class, which carries the member's WordPress id,
+    and the canonical URL, which carries the slug.
+
+    The id is taken only when the whole page names one member. A directory
+    page and an activity wall carry the same avatar markup for everyone listed
+    on them, and picking the first of those would report a bystander.
+    """
+    header = _search_group(r'(<div[^>]*id=["\']item-header[\s\S]{0,4000})', page)
+
+    username = (_search_group(r'rel=["\']canonical["\'][^>]*href=["\'][^"\']*/members/([^/"\'?#]+)', page)
+                or _search_group(r'property=["\']og:url["\'][^>]*content=["\'][^"\']*/members/([^/"\'?#]+)', page)
+                or _search_group(r'id=["\']item-header-avatar["\'][\s\S]{0,400}?href=["\'][^"\']*/members/([^/"\'?#]+)', page))
+    if not username:
+        return '{}'
+
+    ids = set(re.findall(r'class=["\'][^"\']*\buser-(\d+)-avatar', page))
+    uid = (ids.pop() if len(ids) == 1 else None) \
+        or _search_group(r'data-bp-item-id=["\'](\d+)', header or '') \
+        or _search_group(r'data-bb-user-id=["\'](\d+)', header or '')
+
+    # the member's display name heads the title, with the board's name after a
+    # dash, a pipe or a middle dot, depending on the theme
+    title = html.unescape(_search_group(r'<title[^>]*>([\s\S]{0,200}?)</title>', page) or '').strip()
+    fullname = (_search_group(r'property=["\']og:title["\'][^>]*content=["\']([^"\']+)', page)
+                or re.split(r'\s+[\u2013\u2014\u00b7\u2022|-]\s+', title)[0])
+
+    image = html.unescape(
+        _search_group(r'id=["\']item-header-avatar["\'][\s\S]{0,500}?<img[^>]*\ssrc=["\']([^"\']+)', page) or '')
+
+    return json.dumps({k: v for k, v in {
+        'uid': uid,
+        'username': username,
+        'fullname': html.unescape(fullname or '').strip() or None,
+        # Gravatar is linked without a scheme on some boards, and half a URL is
+        # no use to whoever reads this
+        'image': ('https:' + image if image.startswith('//') else image) or None,
+        # the one value on the page that is not written in the board's language
+        'last_activity_at': _search_group(r'data-livestamp=["\']([^"\']+)', page),
+    }.items() if v})
+
+
+def _vanilla_profile(page):
+    """Read what a Vanilla forum shows about one member.
+
+    Vanilla translates the labels in its About panel but not the class names
+    beside them, so every field here is found by class. The dates come out of
+    the <time> element's datetime attribute, already in ISO, while the text
+    next to it is the board's own wording ("May 16", "July 2023").
+
+    Section-Profile is on the body of a member's page and on nothing else. A
+    board that hides profiles behind a login answers the same URL with its
+    sign-in page, and without that check the forum's own name in the heading
+    would be reported as a member's name.
+    """
+    if 'Section-Profile' not in page:
+        return '{}'
+
+    def text(fragment):
+        plain = html.unescape(re.sub(r'<[^>]+>', ' ', fragment or ''))
+        return re.sub(r'\s+', ' ', plain).strip() or None
+
+    def field(cls):
+        # the label is a <dt> carrying the same class, so only the <dd> is read
+        return _search_group(r'<dd[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>([\s\S]{0,300}?)</dd>' % cls, page)
+
+    def stamp(cls):
+        return _search_group(
+            r'<dd[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>[\s\S]{0,200}?<time[^>]*datetime=["\']([^"\']+)' % cls,
+            page)
+
+    def digits(cls):
+        return re.sub(r'\D', '', text(field(cls)) or '') or None
+
+    username = (text(_search_group(r'itemprop=["\']name["\'][^>]*>([^<]{1,60})', page))
+                or text(_search_group(r'<h1[^>]*>([\s\S]{0,60}?)(?:<span|</h1>)', page)))
+    if not username:
+        return '{}'
+
+    return json.dumps({k: v for k, v in {
+        'username': username,
+        'image': html.unescape(_search_group(
+            r'class=["\'][^"\']*(?:ProfilePhotoLarge|ProfilePhoto|PhotoWrap)[^"\']*["\'][\s\S]{0,300}?<img[^>]*\ssrc=["\']([^"\']+)',
+            page) or ''),
+        'created_at': stamp('Joined'),
+        'last_active_at': stamp('LastActive'),
+        'visits_count': digits('Visits'),
+        'points': digits('Points'),
+        'role': text(field('Roles')),
+    }.items() if v})
+
+
+def _paragraph_fullname(blog):
+    """Prefer the blog's own name over a displayName that is just the wallet.
+
+    Paragraph fills user.displayName with the raw 0x address when an author has
+    set no human name. That address is already reported as wallet_address, so
+    repeating it as a fullname says nothing; the blog name ("vitalik.eth") does.
+    """
+    user = blog.get('user') or {}
+    shown = ((user.get('displayName') or {}).get('fullName') or '').strip()
+    if shown.lower() == (user.get('wallet_address') or '').strip().lower():
+        shown = ''
+    return shown or blog.get('name') or None
+
+
+def _snapchat_profile(page):
+    """Read a Snapchat profile from its schema.org block.
+
+    Snapchat moved off the Next.js Pages Router, so the __NEXT_DATA__ blob the
+    two previous schemes parsed is gone from the page entirely. What stayed is
+    the ld+json ProfilePage, which carries the same identity fields and does not
+    depend on the framework underneath. The bio and the preview image are not in
+    it and are read from the meta tags, as elsewhere in this file.
+    """
+    def meta(pattern):
+        match = re.search(pattern, page)
+        return html.unescape(match.group(1)) if match else None
+
+    for raw in re.findall(
+        r'<script[^>]+type="application/ld\+json"[^>]*>([\s\S]*?)</script>', page
+    ):
+        try:
+            data = json.loads(raw)
+        except ValueError:
+            continue
+        if not isinstance(data, dict) or data.get('@type') != 'ProfilePage':
+            continue
+        person = data.get('mainEntity') or {}
+        identifier = person.get('identifier') or {}
+        return json.dumps({
+            'username': person.get('alternateName') or identifier.get('value'),
+            'fullname': person.get('name'),
+            # Snapchat does not serve the meta tags to every client, so these two
+            # can come back empty where the ld+json above still parses.
+            'bio': (meta(r'<meta[^>]+name="description"[^>]+content="([^"]*)"')
+                    or meta(r'<meta[^>]+property="og:description"[^>]+content="([^"]*)"')),
+            'url': person.get('url'),
+            'image': meta(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"'),
+            # ld+json puts the snapcode in `image`; the real preview lives in og:image.
+            'snapcode_image': person.get('image'),
+        })
+    return '{}'
+
+
 def _discourse_html_profile(page):
     """Pull what a Discourse profile page still carries in its server-rendered HTML.
 
@@ -557,33 +821,6 @@ def _sc_value(soup, label, strip=None):
                     text = text.lstrip(strip)
                 return text or None
     return None
-
-_MASTODON_INSTANCES = [
-    'vmst.io',
-    'tilde.zone',
-    'masto.nyc',
-    'graphics.social',
-    'expressional.social',
-    'federated.press',
-    'libretooth.gr',
-    'hostux.social',
-    'mapstodon.space',
-    'hcommons.social',
-    'hometech.social',
-    'nitecrew.rip',
-    'poweredbygay.social',
-    'vkl.world',
-    'tooting.ch',
-    'c.im',
-    'masto.ai',
-    'mastodon.online',
-    'toot.community',
-    'defcon.social',
-    'social.bund.de',
-    'toot.cat',
-    'infosec.exchange',
-]
-
 
 _PATREON_RSC_CHUNK_RE = re.compile(r'self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)')
 
@@ -833,14 +1070,25 @@ schemes = {
         }
     },
     'Gitlab API': {
-        'url_hints': ('gitlab.com',),
-        'flags': ['avatar_url', 'https://gitlab.com', '"public_email"'],
+        'url_hints': ('gitlab', 'git.', 'forge', 'code.', 'lab.', 'src.', 'repo', 'scm'),
+        # The host literal is gone, and so is public_email: GitLab only started
+        # serving that field in 14.x, and requiring it dropped 7 of the 286
+        # instances maigret knows. web_url with state is signature enough --
+        # GitHub and Gitea both carry avatar_url but neither carries web_url.
+        'flags': ['avatar_url', '"web_url"', '"state"'],
         'regex': r'^\[({[\S\s]+?})\]$',
         'extract_json': True,
         'url_mutations': [
             {
-                'from': r'https://gitlab.com/(?P<username>.+)/?',
-                'to': 'https://gitlab.com/api/v4/users?username={username}',
+                # A GitLab profile is {host}/{username} with nothing in the path to
+                # key on, so the host carries the hint. These tokens appear in 281
+                # of the 286 instances maigret knows (98.3%); without them the rule
+                # would fire on every one-segment URL on the web. Anchored at the
+                # end so that {host}/group/project is left alone.
+                'from': r'^https?://(?P<host>[^/?#]*(?:gitlab|git|forge|lab\.|code\.'
+                        r'|src\.|repo|source|scm|devops|projects)[^/?#]*)'
+                        r'/(?P<username>[^/?#]+)/?$',
+                'to': 'https://{host}/api/v4/users?username={username}',
             }
         ],
         'fields': {
@@ -1588,9 +1836,14 @@ schemes = {
         'regex': r"feedSettingsHandler.subscribe\(this, 'users', '(?P<uid>\d+)'",
     },
     'Gitlab': {
-        'url_hints': ('gitlab.com',),
-        'flags': ['gitlab-static.net'],
-        'regex': r'abuse_reports.+?user_id=(?P<uid>\d+)"',
+        'url_hints': ('gitlab', 'git.', 'forge', 'code.', 'lab.', 'src.', 'repo', 'scm'),
+        # Both the old flag (gitlab-static.net) and the old regex (abuse_reports)
+        # are gone from the markup, so this scheme had stopped matching anywhere,
+        # gitlab.com included. js-user-profile-actions is what maigret keys on.
+        # It earns its place on instances whose API is shut: a blocked or hidden
+        # account still renders its numeric id here, and nothing else does.
+        'flags': ['js-user-profile-actions'],
+        'regex': r'data-user-id="(?P<uid>\d+)"',
     },
     '500px userByUsername API': {
         'url_hints': ('500px.com', 'api.500px.com'),
@@ -3523,7 +3776,7 @@ schemes = {
         'fields': {
             'uid': lambda x: x.get('id'),
             'paragraph_user_id': lambda x: x.get('userId'),
-            'fullname': lambda x: x.get('user', {}).get('displayName', {}).get('fullName') or x.get('name'),
+            'fullname': _paragraph_fullname,
             'username': lambda x: (x.get('lowercase_url') or '').lstrip('@') or None,
             'bio': lambda x: (x.get('user', {}).get('authorBio') or '').strip() or None,
             'image': lambda x: x.get('user', {}).get('avatar_url') or x.get('logo_url') or None,
@@ -3807,6 +4060,26 @@ schemes = {
             ),
         }
     },
+    'Snapchat': {
+        'url_hints': ('snapchat.com',),
+        # Not '@type":"ProfilePage' alone: schema.org is generic, the snapcode is not.
+        'flags': ['ProfilePage', 'deeplink/snapcode'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_snapchat_profile],
+        'fields': {
+            'username': lambda x: x.get('username') or None,
+            'fullname': lambda x: x.get('fullname') or None,
+            'bio': lambda x: x.get('bio') or None,
+            'url': lambda x: x.get('url') or None,
+            'image': lambda x: x.get('image') or None,
+            'snapcode_image': lambda x: x.get('snapcode_image') or None,
+        },
+        'url_mutations': [{
+            'from': r'https?://(?:www\.)?snapchat\.com/add/(?P<username>[^/?#]+)',
+            'to': 'https://www.snapchat.com/@{username}',
+        }],
+    },
     'Discourse API': {
         'flags': ['"trust_level"', '"badge_count"', '"profile_view_count"'],
         'regex': r'^(\{[\s\S]+\})$',
@@ -3864,9 +4137,9 @@ schemes = {
         'url_mutations': [
             {
                 # Flarum profiles live at /u/<name>, the same route Discourse uses,
-                # so both mutations are produced for such a link and only the one 
+                # so both mutations are produced for such a link and only the one
                 # whose answer matches the flags yields a result.
-                # The base is captured for forums under a path; 
+                # The base is captured for forums under a path;
                 # a trailing .json is refused so a mutated Flarum URL is not mutated again.
                 'from': r'https?://(?P<base>[^?#]*?)/+u/(?P<username>[^/?#]+?)(?<!\.json)(?:/|$|[?#])',
                 'to': 'https://{base}/api/users?filter[q]={username}',
@@ -3965,6 +4238,54 @@ schemes = {
             'fullname': lambda x: x.get('displayName') or None,
             'follower_count': lambda x: x.get('followCount'),
             'subscriber_count': lambda x: x.get('subscriberCount'),
+        },
+    },
+    # POST https://api.bunq.me/v1/bunqme-fundraiser-profile
+    # body: {"pointer":{"type":"URL","value":"https://bunq.me/{username}"}}
+    # header: X-Bunq-Client-Request-Id (any value). Returns 404 for unknown names.
+    # The IBAN is the payee account bunq.me publishes for receiving payments.
+    'bunq.me API': {
+        'url_hints': ('api.bunq.me', 'bunq.me'),
+        'flags': ['"BunqMeFundraiserProfile":', '"pointer":', '"alias":'],
+        'regex': r'^({[\S\s]+})$',
+        'extract_json': True,
+        'fields': {
+            'uid': lambda x: safe_deep_get(x, 'Response', 0, 'BunqMeFundraiserProfile', 'uuid'),
+            'username': lambda x: (safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'pointer', 'value', default=''
+            ).rstrip('/').rsplit('/', 1)[-1] or None),
+            'fullname': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'display_name'
+            ) or safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'display_name'
+            ),
+            'image': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'avatar', 'image', 0, 'urls', 0, 'url'
+            ) or safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'avatar',
+                'image', 0, 'urls', 0, 'url'
+            ),
+            # bunq's alias.country, taken as-is. It is NOT derived from the IBAN and
+            # may in theory differ from the IBAN's country (its first two letters).
+            'country_code': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'country'
+            ) or None,
+            'bio': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'description'
+            ) or None,
+            # Payee IBAN, verbatim. bunq currently issues IBANs in DE, FR, IE, ES, IT, NL.
+            'iban': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'iban'
+            ) or None,
+            # bunq invite/referral handle, kept verbatim. Either bunq-generated
+            # (FirstnameColourAnimal[digits]) or initials + surname.
+            'bunq_invite_username': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'invite_profile_name'
+            ) or None,
+            # PERSON or a business type, as returned by bunq
+            'account_type': lambda x: safe_deep_get(
+                x, 'Response', 0, 'BunqMeFundraiserProfile', 'alias', 'label_user', 'type'
+            ) or None,
         },
     },
     'Codewars API': {
@@ -4885,29 +5206,6 @@ schemes = {
             'interests': lambda x: ', '.join(a.text for a in x.find_all('a', class_='gsc_prf_inta')) or None,
         },
     },
-    'Snapchat profile': {
-        'url_hints': ('snapchat.com',),
-        'flags': ['__NEXT_DATA__', '"snapcodeImageUrl":', '"publicProfileInfo":'],
-        'regex': r'id="__NEXT_DATA__"[^>]*>([\s\S]+?)</script>',
-        'extract_json': True,
-        'transforms': [
-            json.loads,
-            lambda x: x.get('props', {}).get('pageProps', {}).get('userProfile', {}).get('publicProfileInfo', {}),
-            json.dumps,
-        ],
-        'fields': {
-            'username': lambda x: x.get('username'),
-            'fullname': lambda x: x.get('title') or None,
-            'bio': lambda x: x.get('bio') or None,
-            'image': lambda x: x.get('profilePictureUrl') or None,
-            'website': lambda x: x.get('websiteUrl') or None,
-            'snapcode_url': lambda x: x.get('snapcodeImageUrl') or None,
-        },
-        'url_mutations': [{
-            'from': r'https?://(?:www\.)?snapchat\.com/add/(?P<username>[^/?#]+)',
-            'to': 'https://www.snapchat.com/add/{username}',
-        }],
-    },
     'Flipboard profile': {
         'url_hints': ('flipboard.com',),
         'flags': ['__PRELOADED_STATE__', 'authorDisplayName', 'authorUsername'],
@@ -5037,7 +5335,7 @@ schemes = {
         ],
     },
     'Mastodon API': {
-        'url_hints': tuple(_MASTODON_INSTANCES),
+        'url_hints': ('/@',),
         'flags': ['"followers_count":', '"avatar_static":', '"header_static":'],
         'regex': r'^(\{[\s\S]+\})$',
         'extract_json': True,
@@ -5058,10 +5356,13 @@ schemes = {
         },
         'url_mutations': [
             {
-                'from': r'https?://' + d.replace('.', r'\.') + r'/@(?P<username>[^/?#]+)',
-                'to': 'https://' + d + '/api/v1/accounts/lookup?acct={username}',
+                # Every Mastodon instance answers the same lookup endpoint, and the
+                # /@handle route is distinctive enough to key on, so the list of 23
+                # hardcoded hosts this replaced was only ever a list of the ones
+                # somebody had got round to adding.
+                'from': r'^https?://(?P<host>[^/?#]+)/@(?P<username>[^/?#]+)/?$',
+                'to': 'https://{host}/api/v1/accounts/lookup?acct={username}',
             }
-            for d in _MASTODON_INSTANCES
         ],
     },
     'FL.ru': {
@@ -5828,6 +6129,74 @@ schemes = {
             'created_at': lambda x: x.get('created_at'),
             'posts_count': lambda x: x.get('posts_count'),
             'website': lambda x: x.get('website'),
+        },
+    },
+    'Gitea / Forgejo': {
+        # self-hosted, so there is no single host to hint at; these are the names
+        # instances most often carry (gitea.com, codeberg.org, code.*, git.*)
+        'url_hints': ('gitea', 'forgejo', 'codeberg', 'code.', 'git.'),
+        'flags': ['id="profile-avatar-card"', 'appSubUrl', '?tab=followers'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_gitea_profile],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('image'),
+            'created_at': lambda x: x.get('created_at'),
+            'follower_count': lambda x: x.get('follower_count'),
+            'following_count': lambda x: x.get('following_count'),
+        },
+    },
+    'bbPress': {
+        # a WordPress plugin, so the forum lives wherever the site keeps it;
+        # these are the path pieces bbPress itself puts in a profile URL
+        'url_hints': ('/forums/users/', '/forums/profile/', 'bbpress'),
+        'flags': ['bbpress-forums', 'bbp-user-profile'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_bbpress_profile],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('image'),
+            'registered_ago': lambda x: x.get('registered_ago'),
+            'registered_at': lambda x: x.get('registered_at'),
+            'role': lambda x: x.get('role'),
+            'topics_count': lambda x: x.get('topics_count'),
+            'replies_count': lambda x: x.get('replies_count'),
+            'bio': lambda x: x.get('bio'),
+        },
+    },
+    'BuddyPress': {
+        # a WordPress plugin; /members/ is the path BuddyPress itself uses
+        'url_hints': ('/members/', 'buddypress'),
+        'flags': ['buddypress', '/members/', '-avatar avatar-'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_buddypress_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('image'),
+            'last_activity_at': lambda x: x.get('last_activity_at'),
+        },
+    },
+    'Vanilla': {
+        'url_hints': ('/profile/', 'vanillaforums'),
+        'flags': ['gdn.meta', 'Section-Profile'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_vanilla_profile],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('image'),
+            'created_at': lambda x: x.get('created_at'),
+            'last_active_at': lambda x: x.get('last_active_at'),
+            'visits_count': lambda x: x.get('visits_count'),
+            'points': lambda x: x.get('points'),
+            'role': lambda x: x.get('role'),
         },
     },
 }

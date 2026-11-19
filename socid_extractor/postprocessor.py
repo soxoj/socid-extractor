@@ -79,9 +79,12 @@ class Gravatar:
             self.username = ''
 
     def extract_email_hash(self):
-        gravatar_re = re.search(r'gravatar\.com/avatar/(\w{32})', self.url)
+        # The longer form is matched first and bounded on the right: \w{32}
+        # alone took the front half of a sha256 and let it pass as an md5,
+        # which made up both the hash and the profile URL built from it.
+        gravatar_re = re.search(r'gravatar\.com/avatar/([0-9a-f]{64}|[0-9a-f]{32})(?![0-9a-f])', self.url, re.I)
         if gravatar_re:
-            return gravatar_re.group(1)
+            return gravatar_re.group(1).lower()
         return ''
 
     def make_main_url(self):
@@ -93,7 +96,10 @@ class Gravatar:
         if is_valid_gravatar_email_hash(self.email_hash):
             output = {
                 'gravatar_url': self.make_main_url(),
-                'gravatar_email_md5_hash': self.email_hash,
+                # named for what it actually is, so nothing tries to look up
+                # a sha256 somewhere that expects an md5
+                ('gravatar_email_md5_hash' if len(self.email_hash) == 32
+                 else 'gravatar_email_sha256_hash'): self.email_hash,
             }
             if self.username:
                 output['gravatar_username'] = self.username

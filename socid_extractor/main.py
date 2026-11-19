@@ -7,7 +7,7 @@ from .postprocessor import POSTPROCESSORS
 from .utils import parse_cookies
 
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.3729.169 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36',
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 }
 
@@ -52,19 +52,6 @@ def mutate_url(url):
     return mutate_results
 
 
-'''def transform(scheme_data, extracted_data):
-    transforms = scheme_data.get('transforms', [])
-    if transforms:
-        for t in transforms:
-            logging.debug(t)
-            try:
-                extracted_data = t(extracted_data)
-            except PROCESS_ERRORS as e:
-                logging.debug(f'Transform error: {e}')
-                extracted_data = {}
-            logging.debug(extracted_data)
-    return extracted_data'''
-
 def transform(scheme_data, extracted_data, request_url=None):
     for t in scheme_data.get('transforms', []):
         try:
@@ -76,6 +63,7 @@ def transform(scheme_data, extracted_data, request_url=None):
             logging.debug(f'Transform error: {e}')
             extracted_data = {}
     return extracted_data
+
 
 def map_fields(scheme_data, transformed_data):
     values = {}

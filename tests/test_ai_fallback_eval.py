@@ -205,7 +205,7 @@ def test_guard_fixture_uncovered(name):
 # ── Wiring: extract() flag branching, AI call monkeypatched out (no key) ────
 
 def test_flag_off_never_calls_ai(monkeypatch):
-    monkeypatch.setattr('socid_extractor.main._extract_by_schemes', lambda page: {})
+    monkeypatch.setattr('socid_extractor.main._extract_by_schemes', lambda page, request_url=None: {})
     monkeypatch.setattr(ai_fallback, 'extract_with_ai',
                         lambda page: pytest.fail('AI called with flag off'))
     assert extract('<html>uncovered</html>', use_ai_fallback=False) == {}
@@ -213,7 +213,7 @@ def test_flag_off_never_calls_ai(monkeypatch):
 
 def test_scheme_match_wins_over_ai(monkeypatch):
     monkeypatch.setattr('socid_extractor.main._extract_by_schemes',
-                        lambda page: {'username': 'x', '_extractor': 'SomeScheme'})
+                        lambda page, request_url=None: {'username': 'x', '_extractor': 'SomeScheme'})
     monkeypatch.setattr(ai_fallback, 'extract_with_ai',
                         lambda page: pytest.fail('AI called though a scheme matched'))
     assert extract('<html>covered</html>', use_ai_fallback=True) == {
@@ -221,7 +221,7 @@ def test_scheme_match_wins_over_ai(monkeypatch):
 
 
 def test_uncovered_with_flag_calls_ai(monkeypatch):
-    monkeypatch.setattr('socid_extractor.main._extract_by_schemes', lambda page: {})
+    monkeypatch.setattr('socid_extractor.main._extract_by_schemes', lambda page, request_url=None: {})
     monkeypatch.setattr(ai_fallback, 'extract_with_ai',
                         lambda page: {'username': 'davidk_reads', '_extractor': 'ai_fallback'})
     assert extract('<html>uncovered</html>', use_ai_fallback=True) == {

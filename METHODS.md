@@ -11,7 +11,7 @@
 6 | Facebook group | [facebook_group](https://github.com/soxoj/socid-extractor/search?q=test_facebook_group) | broken |
 7 | GitHub API | [github_api](https://github.com/soxoj/socid-extractor/search?q=test_github_api) | broken |
 8 | GitHub Social Accounts API |  |  |
-9 | Gitlab API |  |  |
+9 | Gitlab API | [gitlab_api](https://github.com/soxoj/socid-extractor/search?q=test_gitlab_api) |  |
 10 | Patreon | [patreon](https://github.com/soxoj/socid-extractor/search?q=test_patreon) | anti-bot / captcha / rate limiting from the site |
 11 | Patreon RSC | [patreon_rsc](https://github.com/soxoj/socid-extractor/search?q=test_patreon_rsc) | anti-bot / captcha / rate limiting from the site |
 12 | Flickr | [flickr](https://github.com/soxoj/socid-extractor/search?q=test_flickr) | failed from github CI infra IPs |
@@ -166,51 +166,51 @@
 161 | DBLP person record |  |  |
 162 | Scholia author profile |  |  |
 163 | BuyMeACoffee | [buymeacoffee](https://github.com/soxoj/socid-extractor/search?q=test_buymeacoffee) |  |
-164 | Discourse API | [discourse_api](https://github.com/soxoj/socid-extractor/search?q=test_discourse_api) |  |
-165 | Snapchat | [snapchat](https://github.com/soxoj/socid-extractor/search?q=test_snapchat) |  |
+164 | Snapchat | [snapchat](https://github.com/soxoj/socid-extractor/search?q=test_snapchat) |  |
+165 | Discourse API | [discourse_api](https://github.com/soxoj/socid-extractor/search?q=test_discourse_api) |  |
 166 | Bio Site | [bio_site](https://github.com/soxoj/socid-extractor/search?q=test_bio_site) |  |
 167 | Faceit API | [faceit_api](https://github.com/soxoj/socid-extractor/search?q=test_faceit_api) |  |
 168 | Fansly API | [fansly_api](https://github.com/soxoj/socid-extractor/search?q=test_fansly_api) |  |
-169 | Codewars API |  |  |
-170 | Minds API |  |  |
-171 | HackerNoon API |  |  |
-172 | Polar API |  |  |
-173 | thanks.dev API |  |  |
-174 | Matrix profile API |  |  |
-175 | osu! | [osu](https://github.com/soxoj/socid-extractor/search?q=test_osu) |  |
-176 | Lens (Hey/Orb/Buttrfly) account | [lens_account](https://github.com/soxoj/socid-extractor/search?q=test_lens_account), [lens_account_absent](https://github.com/soxoj/socid-extractor/search?q=test_lens_account_absent) |  |
-177 | HuggingFace API | [huggingface_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_huggingface_api_e2e) |  |
-178 | HackerNews | [hackernews](https://github.com/soxoj/socid-extractor/search?q=test_hackernews) |  |
-179 | Teletype | [teletype](https://github.com/soxoj/socid-extractor/search?q=test_teletype) | down |
-180 | GDBrowser API | [gdbrowser_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_gdbrowser_api_e2e) | cloudflare |
-181 | StreamElements API | [streamelements_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_streamelements_api_e2e) |  |
-182 | Streamlabs API | [streamlabs_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_streamlabs_api_e2e) |  |
-183 | Donatty API | [donatty_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_donatty_api_e2e) |  |
-184 | VisnessCard API | [visnesscard_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_visnesscard_api_e2e) | requests from GitHub Actions CI servers are blocked |
-185 | Codeforces API |  |  |
-186 | Discogs API |  |  |
-187 | iNaturalist API |  |  |
-188 | Pronouny API |  |  |
-189 | Zepeto API |  |  |
-190 | OnlyFans API |  |  |
-191 | eToro API |  |  |
-192 | Gettr API |  |  |
-193 | Habbo API |  |  |
-194 | Hackadvisor API |  |  |
-195 | Pillowfort JSON API |  |  |
-196 | Scored API |  |  |
-197 | YesWeHack API |  |  |
-198 | Destream API |  |  |
-199 | Tipeeestream API |  |  |
-200 | Komi API |  |  |
-201 | Cropty API |  |  |
-202 | Redgifs API |  |  |
-203 | Tappy API |  |  |
-204 | Komoot API |  |  |
-205 | Tapitag API |  |  |
-206 | Vivino API |  |  |
-207 | Google Scholar |  |  |
-208 | Snapchat profile |  |  |
+169 | bunq.me API | [bunq_me_api](https://github.com/soxoj/socid-extractor/search?q=test_bunq_me_api) |  |
+170 | Codewars API |  |  |
+171 | Minds API |  |  |
+172 | HackerNoon API |  |  |
+173 | Polar API |  |  |
+174 | thanks.dev API |  |  |
+175 | Matrix profile API |  |  |
+176 | osu! | [osu](https://github.com/soxoj/socid-extractor/search?q=test_osu) |  |
+177 | Lens (Hey/Orb/Buttrfly) account | [lens_account](https://github.com/soxoj/socid-extractor/search?q=test_lens_account), [lens_account_absent](https://github.com/soxoj/socid-extractor/search?q=test_lens_account_absent) |  |
+178 | HuggingFace API | [huggingface_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_huggingface_api_e2e) |  |
+179 | HackerNews | [hackernews](https://github.com/soxoj/socid-extractor/search?q=test_hackernews) |  |
+180 | Teletype | [teletype](https://github.com/soxoj/socid-extractor/search?q=test_teletype) | down |
+181 | GDBrowser API | [gdbrowser_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_gdbrowser_api_e2e) | cloudflare |
+182 | StreamElements API | [streamelements_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_streamelements_api_e2e) |  |
+183 | Streamlabs API | [streamlabs_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_streamlabs_api_e2e) |  |
+184 | Donatty API | [donatty_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_donatty_api_e2e) |  |
+185 | VisnessCard API | [visnesscard_api_e2e](https://github.com/soxoj/socid-extractor/search?q=test_visnesscard_api_e2e) | requests from GitHub Actions CI servers are blocked |
+186 | Codeforces API |  |  |
+187 | Discogs API |  |  |
+188 | iNaturalist API |  |  |
+189 | Pronouny API |  |  |
+190 | Zepeto API |  |  |
+191 | OnlyFans API |  |  |
+192 | eToro API |  |  |
+193 | Gettr API |  |  |
+194 | Habbo API |  |  |
+195 | Hackadvisor API |  |  |
+196 | Pillowfort JSON API |  |  |
+197 | Scored API |  |  |
+198 | YesWeHack API |  |  |
+199 | Destream API |  |  |
+200 | Tipeeestream API |  |  |
+201 | Komi API |  |  |
+202 | Cropty API |  |  |
+203 | Redgifs API |  |  |
+204 | Tappy API |  |  |
+205 | Komoot API |  |  |
+206 | Tapitag API |  |  |
+207 | Vivino API |  |  |
+208 | Google Scholar |  |  |
 209 | Flipboard profile |  |  |
 210 | Clubhouse profile |  |  |
 211 | Coda.io profile |  |  |
@@ -218,7 +218,7 @@
 213 | Gumroad profile |  |  |
 214 | Mastodon HTML profile |  |  |
 215 | Discourse HTML profile | [discourse_html_profile](https://github.com/soxoj/socid-extractor/search?q=test_discourse_html_profile) |  |
-216 | Mastodon API |  |  |
+216 | Mastodon API | [mastodon_api](https://github.com/soxoj/socid-extractor/search?q=test_mastodon_api) |  |
 217 | FL.ru |  |  |
 218 | Manifold Markets |  |  |
 219 | VSCO |  |  |
@@ -271,5 +271,9 @@
 266 | Lemmy API | [lemmy_api](https://github.com/soxoj/socid-extractor/search?q=test_lemmy_api) |  |
 267 | NodeBB API | [nodebb_api](https://github.com/soxoj/socid-extractor/search?q=test_nodebb_api) |  |
 268 | phpBB | [phpbb](https://github.com/soxoj/socid-extractor/search?q=test_phpbb), [phpbb_author_search](https://github.com/soxoj/socid-extractor/search?q=test_phpbb_author_search) | requests from GitHub Actions CI servers are blocked |
+269 | Gitea / Forgejo | [gitea_forgejo](https://github.com/soxoj/socid-extractor/search?q=test_gitea_forgejo) |  |
+270 | bbPress | [bbpress](https://github.com/soxoj/socid-extractor/search?q=test_bbpress) |  |
+271 | BuddyPress | [buddypress](https://github.com/soxoj/socid-extractor/search?q=test_buddypress) |  |
+272 | Vanilla | [vanilla](https://github.com/soxoj/socid-extractor/search?q=test_vanilla), [vanilla_about_panel](https://github.com/soxoj/socid-extractor/search?q=test_vanilla_about_panel) |  |
 
-The table has been updated at 2026-10-24 23:51:39.068583 UTC
+The table has been updated at 2026-11-18 21:40:55.938188 UTC

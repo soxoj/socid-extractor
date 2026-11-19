@@ -527,6 +527,51 @@ def test_gitlab_cookies():
     assert info.get('image') == 'https://gitlab.com/uploads/-/system/user/avatar/419655/avatar.png'
 
 
+def test_gitlab_api():
+    """Gitlab API"""
+    # an instance that is not gitlab.com: the scheme used to be pinned to that host
+    url, _ = mutate_url('https://gitlab.eclipse.org/gallasko')[0]
+    info = extract(parse(url, timeout=15)[0])
+
+    assert info.get('_extractor') == 'Gitlab API'
+    assert info.get('uid') == '19437'
+    assert info.get('username') == 'gallasko'
+    assert info.get('fullname') == 'Gallas Gaye'
+    assert info.get('state') == 'active'
+    assert info.get('website') == 'https://gitlab.eclipse.org/gallasko'
+
+
+def test_flarum_api():
+    """Flarum API"""
+    # /u/<name> is Discourse's route too, so the link yields several mutations and
+    # only the Flarum one answers with a user object
+    url = next(u for u, _ in mutate_url('https://discuss.flarum.org/u/luceos') if '/api/users?' in u)
+    # filter[q] is a search, so the answer is a list and the transform has to pick
+    # the exact match out of it -- hence the request URL being passed in
+    info = extract(parse(url, timeout=15)[0], request_url=url)
+
+    assert info.get('_extractor') == 'Flarum API'
+    assert info.get('uid') == '1376'
+    assert info.get('username') == 'luceos'
+    assert info.get('created_at') == '2015-08-27T08:12:58+00:00'
+    assert info.get('image', '').startswith('https://discuss.flarum.org/assets/avatars/')
+
+
+def test_mastodon_api():
+    """Mastodon API"""
+    # mastodon.social was never in the list of 23 hosts this scheme used to carry
+    url, _ = mutate_url('https://mastodon.social/@Gargron')[0]
+    info = extract(parse(url, timeout=15)[0])
+
+    assert info.get('_extractor') == 'Mastodon API'
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'Gargron'
+    assert info.get('fullname') == 'Eugen Rochko'
+    assert info.get('created_at').startswith('2016-03-16')
+    # counts and last-seen move every day, so only their presence is asserted
+    assert int(info.get('posts_count')) > 0
+
+
 @pytest.mark.skip(reason='Failed in GitHub CI')
 def test_blogger():
     info = extract(parse('https://b0ltay.blogspot.ru')[0])
@@ -1622,19 +1667,16 @@ def test_snapchat():
     """Snapchat"""
     info = extract(parse('https://www.snapchat.com/@teamsnapchat')[0])
 
+    # Only the ld+json fields are asserted. Snapchat withholds the meta tags from
+    # some clients -- CI gets a page with no description and no og:image, while
+    # the same request from a laptop gets both -- so bio and image are extracted
+    # when offered but cannot be required. The snapcode host moves too
+    # (app.snapchat.com -> gcp.api.snapchat.com), hence the match on shape.
     assert info.get('username') == 'teamsnapchat'
     assert info.get('fullname') == 'Team Snapchat'
-    # the bio is localised to whoever is looking ("is on" / "ist auf"), so only
-    # the handle inside it is worth asserting
-    assert '@teamsnapchat' in info.get('bio', '')
     assert info.get('url') == 'https://www.snapchat.com/@teamsnapchat'
-    assert info.get('image') in {
-        'https://www.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-        'https://us-east1-aws.api.snapchat.com/web-capture/www.snapchat.com/@teamsnapchat/preview/square.jpeg?xp_id=1',
-    }
-    assert info.get(
-        'snapcode_image') == 'https://app.snapchat.com/web/deeplink/snapcode?username=teamsnapchat&type=SVG&bitmoji=enable'
-    assert info.get('profile_type') == 'userInfo'
+    assert 'deeplink/snapcode' in info.get('snapcode_image', '')
+    assert 'username=teamsnapchat' in info.get('snapcode_image', '')
 
 
 def test_bio_site():
@@ -1817,12 +1859,16 @@ def test_visnesscard_api_e2e():
 
 def test_nodebb_api():
     """NodeBB API"""
-    url, _ = mutate_url('https://bbs.aw-ol.com/user/whycan')[0]
+    # The previous fixture was a board that went down for maintenance and took
+    # this test with it. NodeBB runs on self-hosted forums only and its own
+    # community site sits behind Cloudflare, so there is no flagship instance to
+    # lean on: this is a founder account (uid 1) on a board that has stayed up.
+    url, _ = mutate_url('https://forum.easy-english-study.com/user/admin')[0]
     info = extract(parse(url, timeout=15)[0])
     assert info.get('_extractor') == 'NodeBB API'
-    assert info.get('uid') == '44'
-    assert info.get('username') == 'whycan'
-    assert info.get('created_at') == '2021-05-17 15:16:25.374 UTC'
+    assert info.get('uid') == '1'
+    assert info.get('username') == 'admin'
+    assert info.get('created_at') == '2025-01-20 06:23:57.089 UTC'
 
 
 def test_discourse_api():
@@ -1883,6 +1929,82 @@ def test_phpbb_author_search():
     assert info.get('username') == 'alex'
 
 
+def test_gitea_forgejo():
+    """Gitea / Forgejo"""
+    # gitea.com runs Gitea itself; the same scheme covers every Forgejo instance
+    info = extract(parse('https://gitea.com/lunny')[0])
+
+    assert info.get('username') == 'lunny'
+    assert info.get('fullname') == 'Lunny Xiao'
+    assert info.get('created_at') == '2018-11-27T17:33:38Z'
+    assert info.get('image', '').startswith('https://gitea.com/avatars/')
+    assert info.get('follower_count', '').isdigit()
+    assert info.get('following_count', '').isdigit()
+
+
+def test_bbpress():
+    """bbPress"""
+    # the WordPress support forums are the largest bbPress board there is, and
+    # the only reason this account is the fixture: it was opened in 2003 and the
+    # board prints that date outright, where bbPress core prints "N years ago"
+    info = extract(parse('https://wordpress.org/support/users/matt/', timeout=15)[0])
+
+    assert info.get('_extractor') == 'bbPress'
+    assert info.get('username') == 'matt'
+    assert info.get('fullname') == 'Matt Mullenweg'
+    assert info.get('registered_at') == 'April 4th, 2003'
+    # the role is in the board's own language, and this board speaks English
+    assert info.get('role') == 'Keymaster'
+    assert info.get('topics_count', '').isdigit()
+    # the counter is printed with a thousands separator at this size
+    assert int(info.get('replies_count')) > 1000
+    # Gravatar serves a sha256 of the address here; taking the first half of it
+    # for an md5 is what the postprocessor used to do
+    assert len(info.get('gravatar_email_sha256_hash', '')) == 64
+    assert info.get('gravatar_url', '').endswith(info.get('gravatar_email_sha256_hash', 'x'))
+
+
+def test_buddypress():
+    """BuddyPress"""
+    # the project's own site, and a lead developer's account on it: the member
+    # stopped posting in 2020, so the last-activity stamp no longer moves
+    info = extract(parse('https://buddypress.org/members/boonebgorges/', timeout=15)[0])
+
+    assert info.get('_extractor') == 'BuddyPress'
+    assert info.get('uid') == '2881701'
+    assert info.get('username') == 'boonebgorges'
+    # the title reads "Boone Gorges \u00b7 BuddyPress.org"; the board's name is not part of it
+    assert info.get('fullname') == 'Boone Gorges'
+    assert info.get('last_activity_at') == '2020-04-21T20:05:45+0000'
+    # the avatar is linked without a scheme here, and is given back with one
+    assert info.get('image', '').startswith('https://www.gravatar.com/avatar/')
+
+
+def test_vanilla():
+    """Vanilla"""
+    # a studio forum that has run Vanilla for years, which is the point of
+    # picking it; its theme drops the About panel, so only the identity is here
+    info = extract(parse('https://forums.beamdog.com/profile/JuliusBorisov', timeout=15)[0])
+
+    assert info.get('_extractor') == 'Vanilla'
+    assert info.get('username') == 'JuliusBorisov'
+    assert info.get('image', '').startswith('https://forums.beamdog.com/uploads/')
+
+
+def test_vanilla_about_panel():
+    """Vanilla"""
+    # a board that leaves Vanilla's About panel in place. Its labels are the
+    # board's own words, so everything below is read by class, and the dates
+    # come from the <time> element rather than the text beside it
+    info = extract(parse('https://vintagemoviepostersforum.com/profile/David', timeout=15)[0])
+
+    assert info.get('username') == 'David'
+    assert info.get('created_at') == '2014-03-29T05:33:15+00:00'
+    assert info.get('last_active_at') == '2020-07-27T20:57:44+00:00'
+    assert info.get('role') == 'Member'
+    assert info.get('visits_count', '').isdigit()
+
+
 def test_mediawiki_api():
     """MediaWiki API"""
     # the /w/ candidate is the one Wikipedia answers; the root one 404s
@@ -1901,3 +2023,42 @@ def test_mediawiki_user_page():
     info = extract(parse('https://wiki.openstreetmap.org/User:Leijurv')[0])
 
     assert info.get('username') == 'Leijurv'
+
+
+def _bunq_me_profile(username):
+    """POST the bunq.me fundraiser-profile lookup (parse() only does GET)."""
+    import requests
+
+    resp = requests.post(
+        'https://api.bunq.me/v1/bunqme-fundraiser-profile',
+        json={'pointer': {'type': 'URL', 'value': f'https://bunq.me/{username}'}},
+        headers={**HEADERS, 'X-Bunq-Client-Request-Id': 'socid_extractor'},
+        timeout=10,
+    )
+    return resp.text, resp.status_code
+
+
+def test_bunq_me_api():
+    """bunq.me API"""
+    import re
+
+    body, status = _bunq_me_profile('ali')
+    assert status == 200
+    info = extract(body)
+
+    # Shape-only assertions: this is a private person's payment profile, so no
+    # names, photos or account numbers are hard-coded here.
+    assert re.fullmatch(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', info.get('uid', ''))
+    assert info.get('username', '').lower() == 'ali'
+    assert info.get('fullname')
+    assert info.get('image', '').startswith('https://')
+    supported = {'DE', 'FR', 'IE', 'ES', 'IT', 'NL'}
+    assert info.get('country_code') in supported
+    assert re.fullmatch(r'[A-Z]{2}\d{2}[A-Z0-9]{10,30}', info.get('iban', ''))
+    assert info.get('iban')[:2] in supported
+    assert info.get('bunq_invite_username')
+    assert info.get('account_type')
+
+    body, status = _bunq_me_profile('noonewouldeverusethis7')
+    assert status == 404
+    assert extract(body) == {}
