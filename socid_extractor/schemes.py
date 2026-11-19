@@ -550,6 +550,102 @@ def _bbpress_profile(page):
     }.items() if v})
 
 
+def _buddypress_profile(page):
+    """Read what a BuddyPress member page shows about its owner.
+
+    BuddyPress is a WordPress plugin and themes rebuild its profile header
+    freely, so nothing here is read from the header's layout. What survives
+    reskinning is the avatar's class, which carries the member's WordPress id,
+    and the canonical URL, which carries the slug.
+
+    The id is taken only when the whole page names one member. A directory
+    page and an activity wall carry the same avatar markup for everyone listed
+    on them, and picking the first of those would report a bystander.
+    """
+    header = _search_group(r'(<div[^>]*id=["\']item-header[\s\S]{0,4000})', page)
+
+    username = (_search_group(r'rel=["\']canonical["\'][^>]*href=["\'][^"\']*/members/([^/"\'?#]+)', page)
+                or _search_group(r'property=["\']og:url["\'][^>]*content=["\'][^"\']*/members/([^/"\'?#]+)', page)
+                or _search_group(r'id=["\']item-header-avatar["\'][\s\S]{0,400}?href=["\'][^"\']*/members/([^/"\'?#]+)', page))
+    if not username:
+        return '{}'
+
+    ids = set(re.findall(r'class=["\'][^"\']*\buser-(\d+)-avatar', page))
+    uid = (ids.pop() if len(ids) == 1 else None) \
+        or _search_group(r'data-bp-item-id=["\'](\d+)', header or '') \
+        or _search_group(r'data-bb-user-id=["\'](\d+)', header or '')
+
+    # the member's display name heads the title, with the board's name after a
+    # dash, a pipe or a middle dot, depending on the theme
+    title = html.unescape(_search_group(r'<title[^>]*>([\s\S]{0,200}?)</title>', page) or '').strip()
+    fullname = (_search_group(r'property=["\']og:title["\'][^>]*content=["\']([^"\']+)', page)
+                or re.split(r'\s+[\u2013\u2014\u00b7\u2022|-]\s+', title)[0])
+
+    image = html.unescape(
+        _search_group(r'id=["\']item-header-avatar["\'][\s\S]{0,500}?<img[^>]*\ssrc=["\']([^"\']+)', page) or '')
+
+    return json.dumps({k: v for k, v in {
+        'uid': uid,
+        'username': username,
+        'fullname': html.unescape(fullname or '').strip() or None,
+        # Gravatar is linked without a scheme on some boards, and half a URL is
+        # no use to whoever reads this
+        'image': ('https:' + image if image.startswith('//') else image) or None,
+        # the one value on the page that is not written in the board's language
+        'last_activity_at': _search_group(r'data-livestamp=["\']([^"\']+)', page),
+    }.items() if v})
+
+
+def _vanilla_profile(page):
+    """Read what a Vanilla forum shows about one member.
+
+    Vanilla translates the labels in its About panel but not the class names
+    beside them, so every field here is found by class. The dates come out of
+    the <time> element's datetime attribute, already in ISO, while the text
+    next to it is the board's own wording ("May 16", "July 2023").
+
+    Section-Profile is on the body of a member's page and on nothing else. A
+    board that hides profiles behind a login answers the same URL with its
+    sign-in page, and without that check the forum's own name in the heading
+    would be reported as a member's name.
+    """
+    if 'Section-Profile' not in page:
+        return '{}'
+
+    def text(fragment):
+        plain = html.unescape(re.sub(r'<[^>]+>', ' ', fragment or ''))
+        return re.sub(r'\s+', ' ', plain).strip() or None
+
+    def field(cls):
+        # the label is a <dt> carrying the same class, so only the <dd> is read
+        return _search_group(r'<dd[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>([\s\S]{0,300}?)</dd>' % cls, page)
+
+    def stamp(cls):
+        return _search_group(
+            r'<dd[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>[\s\S]{0,200}?<time[^>]*datetime=["\']([^"\']+)' % cls,
+            page)
+
+    def digits(cls):
+        return re.sub(r'\D', '', text(field(cls)) or '') or None
+
+    username = (text(_search_group(r'itemprop=["\']name["\'][^>]*>([^<]{1,60})', page))
+                or text(_search_group(r'<h1[^>]*>([\s\S]{0,60}?)(?:<span|</h1>)', page)))
+    if not username:
+        return '{}'
+
+    return json.dumps({k: v for k, v in {
+        'username': username,
+        'image': html.unescape(_search_group(
+            r'class=["\'][^"\']*(?:ProfilePhotoLarge|ProfilePhoto|PhotoWrap)[^"\']*["\'][\s\S]{0,300}?<img[^>]*\ssrc=["\']([^"\']+)',
+            page) or ''),
+        'created_at': stamp('Joined'),
+        'last_active_at': stamp('LastActive'),
+        'visits_count': digits('Visits'),
+        'points': digits('Points'),
+        'role': text(field('Roles')),
+    }.items() if v})
+
+
 def _paragraph_fullname(blog):
     """Prefer the blog's own name over a displayName that is just the wallet.
 
@@ -5995,6 +6091,37 @@ schemes = {
             'topics_count': lambda x: x.get('topics_count'),
             'replies_count': lambda x: x.get('replies_count'),
             'bio': lambda x: x.get('bio'),
+        },
+    },
+    'BuddyPress': {
+        # a WordPress plugin; /members/ is the path BuddyPress itself uses
+        'url_hints': ('/members/', 'buddypress'),
+        'flags': ['buddypress', '/members/', '-avatar avatar-'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_buddypress_profile],
+        'fields': {
+            'uid': lambda x: x.get('uid'),
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('image'),
+            'last_activity_at': lambda x: x.get('last_activity_at'),
+        },
+    },
+    'Vanilla': {
+        'url_hints': ('/profile/', 'vanillaforums'),
+        'flags': ['gdn.meta', 'Section-Profile'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_vanilla_profile],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'image': lambda x: x.get('image'),
+            'created_at': lambda x: x.get('created_at'),
+            'last_active_at': lambda x: x.get('last_active_at'),
+            'visits_count': lambda x: x.get('visits_count'),
+            'points': lambda x: x.get('points'),
+            'role': lambda x: x.get('role'),
         },
     },
 }

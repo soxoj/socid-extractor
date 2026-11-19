@@ -1,6 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+* Add extraction for BuddyPress member pages (uid, username, fullname, image, last activity)
+* Add extraction for Vanilla forums (username, image, registration, last activity, visits, points, role)
+* Refresh the request User-Agent -- the five-year-old Chrome 94 string had started getting 403s
+* Add extraction for Gitea and Forgejo instances (username, fullname, image, registration, follower and following counts)
+* GitLab extraction now works on any instance, not only gitlab.com -- 286 of them are in maigret's database
+* Mastodon extraction now works on any instance, instead of the list of hosts it used to carry
 * Add extraction for bbPress forums (username, fullname, image, registration, forum role, topic and reply counts)
 * Add extraction for the bunq.me fundraiser-profile API (uid, username, fullname, image, country_code, iban, bunq_invite_username, account_type)
 
