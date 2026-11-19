@@ -418,18 +418,39 @@ def test_substack_public_profile_extended_fields():
     body = (
         '{"id":131049184,"handle":"soxoj","name":"Soxoj","bio":"x",'
         '"photo_url":"https://example/a.jpg","profile_set_up_at":"2023-02-24T08:50:43.727Z",'
+        '"subscriberCount":"1.4K+","subscriberCountNumber":1400,'
+        '"rough_num_free_subscribers":"Thousands","bestseller_tier":null,'
         '"twitterAccount":{"screen_name":"Sox0j","twitter_id":"1031199669488177153"},'
         '"publicationUsers":[{"publication":{"subdomain":"soxoj","name":"Soxoj on Substack",'
         '"hero_text":"OSINT mindset, methods, and tools"}}]}'
     )
     info = extract(body)
     assert info.get('username') == 'soxoj'
+    assert info.get('follower_count') == '1400'
+    assert info.get('substack_follower_range') == 'Thousands'
     assert info.get('created_at') == '2023-02-24T08:50:43.727Z'
     assert info.get('twitter_username') == 'Sox0j'
     assert info.get('twitter_id') == '1031199669488177153'
     assert info.get('publication_subdomain') == 'soxoj'
     assert info.get('publication_name') == 'Soxoj on Substack'
     assert info.get('publication_bio') == 'OSINT mindset, methods, and tools'
+
+
+def test_substack_hidden_subscriber_count():
+    """Substack public profile API: a profile that hides its count still reports a bucket."""
+    # Substack answers "See subscribers" and a zero rather than omitting the fields,
+    # so a profile with a hidden count must not come back claiming zero readers
+    body = (
+        '{"id":12009663,"handle":"astralcodexten","name":"Scott Alexander",'
+        '"subscriberCount":null,"subscriberCountString":"See subscribers",'
+        '"subscriberCountNumber":0,"rough_num_free_subscribers":"Tens of thousands",'
+        '"bestseller_tier":1000,"profile_set_up_at":"2020-01-21T00:00:00.000Z"}'
+    )
+    info = extract(body)
+    assert info.get('username') == 'astralcodexten'
+    assert 'follower_count' not in info
+    assert info.get('substack_follower_range') == 'Tens of thousands'
+    assert info.get('bestseller_tier') == '1000'
 
 
 def test_youtube_ytinitialdata_about_and_socials():

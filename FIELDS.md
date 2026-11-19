@@ -116,6 +116,9 @@ gaia_id               # Google Account ID
 karma                 # Reddit/Habr/Lesswrong
 heart_count           # TikTok
 streak                # Duolingo
+substack_follower_range  # Substack's own coarse band, which it reports
+                         # even for profiles that hide the exact count
+bestseller_tier       # Substack, the paid-subscriber floor behind the badge
 
 # Wrong -- should use standard names:
 xvideos_user_id       # -> uid
