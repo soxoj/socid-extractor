@@ -1762,16 +1762,6 @@ schemes = {
         'flags': ['OK.startupData'],
         'regex': r'path:"/(profile/)?(?P<ok_user_name_id>.+?)",state:".+?friendId=(?P<ok_id>\d+?)"',
     },
-    'Habrahabr HTML (old)': {
-        'url_hints': ('habr.com', 'habracdn'),
-        'flags': ['habracdn.net'],
-        'bs': True,
-        'fields': {
-            'uid': lambda x: x.find('div', {'class': 'user-info__stats'}).parent.attrs['class'][-1].split('_')[-1],
-            'username': lambda x: x.find('a', {'class': 'media-obj__image'}).get('href').split('/')[-2],
-            'image': lambda x: 'http:' + x.find('div', {'class': 'user-info__stats'}).find('img').get('src'),
-        },
-    },
     'Habrahabr JSON': {
         'url_hints': ('habr.com', 'habrastorage'),
         # both are structural: habrastorage.org used to be here as well, but it
@@ -3653,11 +3643,6 @@ schemes = {
         'url_hints': ('amazon.com', 'amazon.co.uk', 'amazon.de'),
         'flags': ['stores/author/', 'AuthorSubHeader'],
         'regex': r'"authorName":"(?P<author_name>[^"]+)"[\s\S]*?"authorId":"(?P<author_id>[^"]+)"[\s\S]*?"storeId":"(?P<store_id>[^"]+)"',
-    },
-    'Habr': {
-        'url_hints': ('habr.com',),
-        'flags': ['og:site_name" content="Хабр"', 'habr.com/ru/users/'],
-        'regex': r'<meta property="og:title" content="(?P<fullname>.+?) aka (?P<username>\w+)\s*[\n\s]*-?\s*"[\s\S]*?<meta property="og:url" content="(?P<website>[^"]+)"',
     },
     'Taplink': {
         'url_hints': ('taplink.cc',),
