@@ -1785,10 +1785,10 @@ schemes = {
             # read followStats a second time instead of the count inside it, so
             # this field came back empty on every profile
             'following_count': lambda x: (x.get('followStats') or {}).get('followCount'),
-            'registered_at': lambda x: x.get('registerDateTime'),
-            'last_activity_at': lambda x: x.get('lastActivityDateTime'),
-            'post_count': lambda x: (x.get('counterStats') or {}).get('postCount'),
-            'comment_count': lambda x: (x.get('counterStats') or {}).get('commentCount'),
+            'created_at': lambda x: x.get('registerDateTime'),
+            'latest_activity_at': lambda x: x.get('lastActivityDateTime'),
+            'posts_count': lambda x: (x.get('counterStats') or {}).get('postCount'),
+            'comments_count': lambda x: (x.get('counterStats') or {}).get('commentCount'),
         }
     },
     'My Mail.ru': {

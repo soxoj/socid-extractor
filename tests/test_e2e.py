@@ -154,10 +154,10 @@ def test_habr():
         "image") == "//habrastorage.org/getpro/habr/avatars/4ec/bd0/85d/4ecbd085d692835a931d03174ff19539.png"
     # the whole scheme went empty when Habr started sending "reach": null, which
     # the regex it used to cut authorRefs out with required to be a string
-    assert info.get("registered_at") == "2016-12-13T13:34:40+00:00"
+    assert info.get("created_at") == "2016-12-13T13:34:40+00:00"
     # read out of followStats, which the field used to re-read instead of its count
     assert info.get("following_count") == "6"
-    assert int(info.get("post_count")) >= 689
+    assert int(info.get("posts_count")) >= 689
 
 
 @pytest.mark.github_failed
@@ -171,7 +171,7 @@ def test_habr_no_image():
     # habrastorage.org used to be a flag of this scheme, and an author with no
     # avatar is exactly the page that does not carry it
     assert info.get('_extractor') == 'Habrahabr JSON'
-    assert info.get('registered_at') == '2018-08-07T10:04:01+00:00'
+    assert info.get('created_at') == '2018-08-07T10:04:01+00:00'
 
 
 @pytest.mark.skip(reason="down")
