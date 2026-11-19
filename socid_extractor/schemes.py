@@ -570,8 +570,8 @@ def _bbpress_profile(page):
         'fullname': html.unescape(_search_group(r'title=["\']([^"\']+)["\']', avatar) or '').strip(),
         'image': html.unescape(image) if image else None,
         # core prints an age relative to now; some boards print a date instead
-        'registered_ago': ages[0] if ages else None,
-        'registered_at': tail((paras('bbp-user-member-since') or [None])[0]),
+        'created_ago': ages[0] if ages else None,
+        'created_at': tail((paras('bbp-user-member-since') or [None])[0]),
         'role': names[0] if names else None,
         'topics_count': count('bbp-user-topic-count'),
         'replies_count': count('bbp-user-reply-count'),
@@ -621,7 +621,7 @@ def _buddypress_profile(page):
         # no use to whoever reads this
         'image': ('https:' + image if image.startswith('//') else image) or None,
         # the one value on the page that is not written in the board's language
-        'last_activity_at': _search_group(r'data-livestamp=["\']([^"\']+)', page),
+        'latest_activity_at': _search_group(r'data-livestamp=["\']([^"\']+)', page),
     }.items() if v})
 
 
@@ -668,7 +668,7 @@ def _vanilla_profile(page):
             r'class=["\'][^"\']*(?:ProfilePhotoLarge|ProfilePhoto|PhotoWrap)[^"\']*["\'][\s\S]{0,300}?<img[^>]*\ssrc=["\']([^"\']+)',
             page) or ''),
         'created_at': stamp('Joined'),
-        'last_active_at': stamp('LastActive'),
+        'latest_activity_at': stamp('LastActive'),
         'visits_count': digits('Visits'),
         'points': digits('Points'),
         'role': text(field('Roles')),
@@ -6160,8 +6160,8 @@ schemes = {
             'username': lambda x: x.get('username'),
             'fullname': lambda x: x.get('fullname'),
             'image': lambda x: x.get('image'),
-            'registered_ago': lambda x: x.get('registered_ago'),
-            'registered_at': lambda x: x.get('registered_at'),
+            'created_ago': lambda x: x.get('created_ago'),
+            'created_at': lambda x: x.get('created_at'),
             'role': lambda x: x.get('role'),
             'topics_count': lambda x: x.get('topics_count'),
             'replies_count': lambda x: x.get('replies_count'),
@@ -6180,7 +6180,7 @@ schemes = {
             'username': lambda x: x.get('username'),
             'fullname': lambda x: x.get('fullname'),
             'image': lambda x: x.get('image'),
-            'last_activity_at': lambda x: x.get('last_activity_at'),
+            'latest_activity_at': lambda x: x.get('latest_activity_at'),
         },
     },
     'Vanilla': {
@@ -6193,7 +6193,7 @@ schemes = {
             'username': lambda x: x.get('username'),
             'image': lambda x: x.get('image'),
             'created_at': lambda x: x.get('created_at'),
-            'last_active_at': lambda x: x.get('last_active_at'),
+            'latest_activity_at': lambda x: x.get('latest_activity_at'),
             'visits_count': lambda x: x.get('visits_count'),
             'points': lambda x: x.get('points'),
             'role': lambda x: x.get('role'),

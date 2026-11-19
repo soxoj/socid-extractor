@@ -1952,7 +1952,7 @@ def test_bbpress():
     assert info.get('_extractor') == 'bbPress'
     assert info.get('username') == 'matt'
     assert info.get('fullname') == 'Matt Mullenweg'
-    assert info.get('registered_at') == 'April 4th, 2003'
+    assert info.get('created_at') == 'April 4th, 2003'
     # the role is in the board's own language, and this board speaks English
     assert info.get('role') == 'Keymaster'
     assert info.get('topics_count', '').isdigit()
@@ -1975,7 +1975,7 @@ def test_buddypress():
     assert info.get('username') == 'boonebgorges'
     # the title reads "Boone Gorges \u00b7 BuddyPress.org"; the board's name is not part of it
     assert info.get('fullname') == 'Boone Gorges'
-    assert info.get('last_activity_at') == '2020-04-21T20:05:45+0000'
+    assert info.get('latest_activity_at') == '2020-04-21T20:05:45+0000'
     # the avatar is linked without a scheme here, and is given back with one
     assert info.get('image', '').startswith('https://www.gravatar.com/avatar/')
 
@@ -2000,7 +2000,7 @@ def test_vanilla_about_panel():
 
     assert info.get('username') == 'David'
     assert info.get('created_at') == '2014-03-29T05:33:15+00:00'
-    assert info.get('last_active_at') == '2020-07-27T20:57:44+00:00'
+    assert info.get('latest_activity_at') == '2020-07-27T20:57:44+00:00'
     assert info.get('role') == 'Member'
     assert info.get('visits_count', '').isdigit()
 
