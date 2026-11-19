@@ -487,6 +487,69 @@ def _gitea_profile(page):
     })
 
 
+def _bbpress_profile(page):
+    """Read what a bbPress forum shows about one member.
+
+    bbPress has no API, and the WordPress REST user route is shut on nearly
+    every board that runs it, so the profile page is all there is. Themes
+    reskin that page freely, but the paragraphs below come from bbPress core
+    and carry classes of their own, so they are found by class and never by
+    position or by their labels, which are translated per board.
+
+    Two of them share the class bbp-user-forum-role: core prints the
+    registration age in the first and the forum role in the second. A board
+    that prints only one of the two breaks that order, so they are told apart
+    by content instead -- an age carries digits and a role does not.
+    """
+    # the block holds the member's link and picture; it ends at that link's
+    # close, which bounds it whatever a lazy-loading plugin puts in the img
+    avatar = _search_group(r'(<div[^>]*id=["\']bbp-user-avatar["\'][\s\S]*?</a>)', page)
+
+    def text(fragment):
+        plain = html.unescape(re.sub(r'<[^>]+>', ' ', fragment or ''))
+        return re.sub(r'\s+', ' ', plain).strip() or None
+
+    def paras(cls):
+        found = re.findall(r'<p[^>]*class=["\'][^"\']*\b%s\b[^"\']*["\'][^>]*>([\s\S]*?)</p>' % cls, page)
+        return [p for p in (text(f) for f in found) if p]
+
+    def tail(value):
+        # the labels are translated per board; the value follows the last colon
+        return value.split(':')[-1].strip() if value and ':' in value else value
+
+    def count(cls):
+        # "Replies Created: 2,001" -- the separator is the board's, not ours
+        found = re.findall(r'([\d][\d,.\u00a0\s]*)\s*$', ' '.join(paras(cls)) or '')
+        return re.sub(r'\D', '', found[-1]) if found else None
+
+    roles = paras('bbp-user-forum-role')
+    ages = [tail(p) for p in roles if re.search(r'\d', p)]
+    names = [tail(p) for p in roles if not re.search(r'\d', p)]
+
+    # an @nicename heading is bbPress core, but a theme can put its own text
+    # there, and the slug is also in the link the avatar block always carries
+    heading = text(_search_group(r'<h2[^>]*entry-title[^>]*>\s*(@[\s\S]*?)</h2>', page))
+
+    # a lazy-loading plugin leaves a placeholder in src and the real file in
+    # data-lazy-src, so the first source that is not inlined is the picture
+    sources = re.findall(r'(?:data-lazy-)?src=["\']([^"\']+)["\']', avatar or '')
+    image = next((s for s in sources if not s.startswith('data:')), None)
+
+    return json.dumps({k: v for k, v in {
+        'username': (heading or '').lstrip('@')
+                    or _search_group(r'href=["\'][^"\']*/users/([^/"\'?#]+)', avatar),
+        'fullname': html.unescape(_search_group(r'title=["\']([^"\']+)["\']', avatar) or '').strip(),
+        'image': html.unescape(image) if image else None,
+        # core prints an age relative to now; some boards print a date instead
+        'registered_ago': ages[0] if ages else None,
+        'registered_at': tail((paras('bbp-user-member-since') or [None])[0]),
+        'role': names[0] if names else None,
+        'topics_count': count('bbp-user-topic-count'),
+        'replies_count': count('bbp-user-reply-count'),
+        'bio': (paras('bbp-user-description') or [None])[0],
+    }.items() if v})
+
+
 def _paragraph_fullname(blog):
     """Prefer the blog's own name over a displayName that is just the wallet.
 
@@ -5912,6 +5975,26 @@ schemes = {
             'created_at': lambda x: x.get('created_at'),
             'follower_count': lambda x: x.get('follower_count'),
             'following_count': lambda x: x.get('following_count'),
+        },
+    },
+    'bbPress': {
+        # a WordPress plugin, so the forum lives wherever the site keeps it;
+        # these are the path pieces bbPress itself puts in a profile URL
+        'url_hints': ('/forums/users/', '/forums/profile/', 'bbpress'),
+        'flags': ['bbpress-forums', 'bbp-user-profile'],
+        'regex': r'^([\s\S]+)$',
+        'extract_json': True,
+        'transforms': [_bbpress_profile],
+        'fields': {
+            'username': lambda x: x.get('username'),
+            'fullname': lambda x: x.get('fullname'),
+            'image': lambda x: x.get('image'),
+            'registered_ago': lambda x: x.get('registered_ago'),
+            'registered_at': lambda x: x.get('registered_at'),
+            'role': lambda x: x.get('role'),
+            'topics_count': lambda x: x.get('topics_count'),
+            'replies_count': lambda x: x.get('replies_count'),
+            'bio': lambda x: x.get('bio'),
         },
     },
 }

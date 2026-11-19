@@ -1926,6 +1926,28 @@ def test_gitea_forgejo():
     assert info.get('following_count', '').isdigit()
 
 
+def test_bbpress():
+    """bbPress"""
+    # the WordPress support forums are the largest bbPress board there is, and
+    # the only reason this account is the fixture: it was opened in 2003 and the
+    # board prints that date outright, where bbPress core prints "N years ago"
+    info = extract(parse('https://wordpress.org/support/users/matt/', timeout=15)[0])
+
+    assert info.get('_extractor') == 'bbPress'
+    assert info.get('username') == 'matt'
+    assert info.get('fullname') == 'Matt Mullenweg'
+    assert info.get('registered_at') == 'April 4th, 2003'
+    # the role is in the board's own language, and this board speaks English
+    assert info.get('role') == 'Keymaster'
+    assert info.get('topics_count', '').isdigit()
+    # the counter is printed with a thousands separator at this size
+    assert int(info.get('replies_count')) > 1000
+    # Gravatar serves a sha256 of the address here; taking the first half of it
+    # for an md5 is what the postprocessor used to do
+    assert len(info.get('gravatar_email_sha256_hash', '')) == 64
+    assert info.get('gravatar_url', '').endswith(info.get('gravatar_email_sha256_hash', 'x'))
+
+
 def test_mediawiki_api():
     """MediaWiki API"""
     # the /w/ candidate is the one Wikipedia answers; the root one 404s

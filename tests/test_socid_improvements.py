@@ -168,6 +168,23 @@ def test_gravatar_postprocessor_requires_md5_hash():
     assert bad == {}
 
 
+def test_gravatar_postprocessor_keeps_sha256_whole():
+    """
+    Verifies **Gravatar** postprocessor reads a 64-char sha256 `/avatar/{hash}` whole, instead of
+    taking its first 32 characters and reporting them as an MD5.
+
+    **Check:** a sha256 avatar yields `gravatar_email_sha256_hash` and a profile URL built on the
+    full hash; the truncated form 404s on gravatar.com, so half a hash is worse than none.
+    """
+    sha = 'ab12' * 16
+    assert is_valid_gravatar_email_hash(sha) is True
+
+    out = Gravatar({'username': 'me', 'image': 'https://secure.gravatar.com/avatar/' + sha + '?s=150'}).process()
+    assert out.get('gravatar_email_sha256_hash') == sha
+    assert 'gravatar_email_md5_hash' not in out
+    assert out.get('gravatar_url') == 'https://gravatar.com/' + sha
+
+
 def test_gravatar_postprocessor_is_offline(monkeypatch):
     """
     Verifies **Gravatar** postprocessor emits its fields with the network unavailable: the username

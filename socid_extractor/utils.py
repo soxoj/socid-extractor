@@ -137,10 +137,12 @@ def is_bare_gravatar_root_url(url):
 
 
 def is_valid_gravatar_email_hash(value):
+    # Gravatar identifies an address by its sha256 now and by its md5 on older
+    # installs, and serves both lengths side by side today.
     if not value or not isinstance(value, str):
         return False
     v = value.lower()
-    return len(v) == 32 and all(c in '0123456789abcdef' for c in v)
+    return len(v) in (32, 64) and all(c in '0123456789abcdef' for c in v)
 
 
 def imgur_profile_avatar_url(username):
