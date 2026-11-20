@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.1.2] - 2026-11-20
+**Highlights:**
+
 * Substack profiles now also give subscriber counts -- a rounded number, Substack's own bucket word for it, and the bestseller tier
 * Fix Habr extraction, which had gone silently empty, and add registration, last activity, post and comment counts
 * Drop two dead Habr schemes, `Habr` and `Habrahabr HTML (old)`, which looked for markup the site no longer sends
@@ -13,6 +17,61 @@
 * Mastodon extraction now works on any instance, instead of the list of hosts it used to carry
 * Add extraction for bbPress forums (username, fullname, image, registration, forum role, topic and reply counts)
 * Add extraction for the bunq.me fundraiser-profile API (uid, username, fullname, image, country_code, iban, bunq_invite_username, account_type)
+
+**All changes:**
+
+* Extend Instagram GraphQL scheme with bio links, tagged usernames, post count by @tgalery in https://github.com/soxoj/socid-extractor/pull/262
+* Add 6 profile schemes; extend Substack and YouTube extraction by @soxoj in https://github.com/soxoj/socid-extractor/pull/263
+* Add osu! scheme. by @TecnoCreeper in https://github.com/soxoj/socid-extractor/pull/264
+* Added Fansly, fixed 500px, BlueSky, Pinterest by @soxoj in https://github.com/soxoj/socid-extractor/pull/265
+* Add QQ Qzone/Bilibili schemes and fix revision.py crash by @soxoj in https://github.com/soxoj/socid-extractor/pull/266
+* Threads: extract more data by @TecnoCreeper in https://github.com/soxoj/socid-extractor/pull/267
+* Add Lens Protocol (Hey/Orb/Buttrfly) scheme by @soxoj in https://github.com/soxoj/socid-extractor/pull/269
+* Added AI fallback extractor by @soxoj in https://github.com/soxoj/socid-extractor/pull/270
+* Added ReadTheDocs documentation in English and Chinese by @soxoj in https://github.com/soxoj/socid-extractor/pull/272
+* Gravatar postprocessor issue fix by @soxoj in https://github.com/soxoj/socid-extractor/pull/274
+* SoundCloud: updated scheme and fixed test by @TecnoCreeper in https://github.com/soxoj/socid-extractor/pull/271
+* feat: add HuggingFace API extraction scheme to support profile parsing by @kaifcodec in https://github.com/soxoj/socid-extractor/pull/275
+* Update openai requirement from <3.0,>=1.0 to >=1.0,<4.0 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/277
+* feat: update HackerNews extraction to avoid API timeout and use HTML parsing by @kaifcodec in https://github.com/soxoj/socid-extractor/pull/276
+* Added Teletype.in by @ayxkaddd in https://github.com/soxoj/socid-extractor/pull/281
+* Merge the extended plugin pack into the built-in schemes by @soxoj in https://github.com/soxoj/socid-extractor/pull/280
+* Discourse: one scheme for every instance, not a list of hosts by @soxoj in https://github.com/soxoj/socid-extractor/pull/283
+* Update the counts in README and the docs by @soxoj in https://github.com/soxoj/socid-extractor/pull/284
+* Patreon: rewrite scheme for Next.js, add App Router variant by @soxoj in https://github.com/soxoj/socid-extractor/pull/286
+* Don't let one scheme's transform error kill the whole extraction by @soxoj in https://github.com/soxoj/socid-extractor/pull/285
+* Install as socid-extractor too, not just socid_extractor by @soxoj in https://github.com/soxoj/socid-extractor/pull/287
+* XenForo: one scheme for all 319 forums in maigret's database by @soxoj in https://github.com/soxoj/socid-extractor/pull/288
+* Skip the 500px test while their API is migrating by @soxoj in https://github.com/soxoj/socid-extractor/pull/297
+* Un-skip 500px, repoint Snapchat, skip the broken Fragment test by @soxoj in https://github.com/soxoj/socid-extractor/pull/300
+* Skip four e2e tests that master is red on by @soxoj in https://github.com/soxoj/socid-extractor/pull/306
+* Mention ShareTrace in the README and the docs index by @soxoj in https://github.com/soxoj/socid-extractor/pull/305
+* feat: extract vBulletin profile identifiers by @tomatotomata in https://github.com/soxoj/socid-extractor/pull/296
+* feat: extract Lemmy v3 profile metadata by @GreedyC in https://github.com/soxoj/socid-extractor/pull/299
+* Treat a scheme's ValueError as a miss, not a crash by @soxoj in https://github.com/soxoj/socid-extractor/pull/301
+* Add NodeBB profile extraction by @packetcanvas in https://github.com/soxoj/socid-extractor/pull/298
+* Gravatar: resolve the username through url_mutations, not in the postprocessor by @paoValle in https://github.com/soxoj/socid-extractor/pull/304
+* phpBB: one scheme for the 151 forums in maigret's database by @VamikaSinghal in https://github.com/soxoj/socid-extractor/pull/303
+* osu!: assert the instant, not how osu! spells it by @soxoj in https://github.com/soxoj/socid-extractor/pull/308
+* MediaWiki: cover every wiki, not just Wikipedia by @soxoj in https://github.com/soxoj/socid-extractor/pull/289
+* Update python-dateutil requirement from <3.0,>=2.8.1 to >=2.8.1,<4.0 by @dependabot[bot] in https://github.com/soxoj/socid-extractor/pull/307
+* Raise the default read timeout from 3 to 10 seconds by @soxoj in https://github.com/soxoj/socid-extractor/pull/309
+* Snapchat: rewrite for schema.org, fix Paragraph fullname and the NodeBB fixture by @soxoj in https://github.com/soxoj/socid-extractor/pull/313
+* GitLab and Mastodon: one scheme per engine instead of a list of hosts by @soxoj in https://github.com/soxoj/socid-extractor/pull/314
+* Gitea / Forgejo: one scheme for the 417 instances in maigret's database by @delilzagros in https://github.com/soxoj/socid-extractor/pull/312
+* Add bunq.me fundraiser-profile API scheme by @7677865466 in https://github.com/soxoj/socid-extractor/pull/311
+* bbPress: one scheme for the 64 boards in maigret's database by @soxoj in https://github.com/soxoj/socid-extractor/pull/315
+* BuddyPress and Vanilla: one scheme each for the boards maigret knows by @soxoj in https://github.com/soxoj/socid-extractor/pull/316
+* Added Flarum Scheme by @CallahanB-cpu in https://github.com/soxoj/socid-extractor/pull/310
+* Habr: read the Pinia store, and drop the two dead schemes by @soxoj in https://github.com/soxoj/socid-extractor/pull/317
+* Field names: follow FIELDS.md, and check new ones in the suite by @soxoj in https://github.com/soxoj/socid-extractor/pull/318
+* NodeBB: the test board went down, move to one that is up by @soxoj in https://github.com/soxoj/socid-extractor/pull/320
+* Substack: read the subscriber counts the profile API already gives by @soxoj in https://github.com/soxoj/socid-extractor/pull/319
+* Point the 500px scheme at the API that is still up by @soxoj in https://github.com/soxoj/socid-extractor/pull/321
+* Four small fixes: ok.ru timeout, docs version, method count, TLS check by @soxoj in https://github.com/soxoj/socid-extractor/pull/322
+
+
+**Full Changelog**: https://github.com/soxoj/socid-extractor/compare/v0.1.1...v0.1.2
 
 ## [0.1.1] - 2026-07-13
 * Add extraction for BuyMeACoffee and fix Weibo test docstring by @kaifcodec in https://github.com/soxoj/socid-extractor/pull/251
