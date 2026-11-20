@@ -1871,16 +1871,17 @@ def test_visnesscard_api_e2e():
 
 def test_nodebb_api():
     """NodeBB API"""
-    # The previous fixture was a board that went down for maintenance and took
-    # this test with it. NodeBB runs on self-hosted forums only and its own
-    # community site sits behind Cloudflare, so there is no flagship instance to
-    # lean on: this is a founder account (uid 1) on a board that has stayed up.
-    url, _ = mutate_url('https://forum.easy-english-study.com/user/admin')[0]
+    # Second board to go down under this test: NodeBB runs on self-hosted
+    # forums only and its own community site sits behind Cloudflare, so there
+    # is no flagship instance to lean on. The rule of thumb that is left is a
+    # founder account (uid 1) on a board with years of posts behind it.
+    url, _ = mutate_url('https://efelsefe.com/user/phi')[0]
     info = extract(parse(url, timeout=15)[0])
     assert info.get('_extractor') == 'NodeBB API'
     assert info.get('uid') == '1'
-    assert info.get('username') == 'admin'
-    assert info.get('created_at') == '2025-01-20 06:23:57.089 UTC'
+    assert info.get('username') == 'phi'
+    assert info.get('created_at') == '2022-01-02 18:27:05.595 UTC'
+    assert int(info.get('posts_count')) >= 2301
 
 
 def test_discourse_api():
