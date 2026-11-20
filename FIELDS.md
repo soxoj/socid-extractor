@@ -25,7 +25,7 @@ If `name` is a login/handle, map it to `username`.
 | `image_bg` | Background / banner image URL | `banner`, `cover`, `bannerImageURL`, `cover_250_url` |
 | `website` | Personal website URL | `url`, `domain_url`, `external_url`, `blog_url` |
 | `email` | Public email | -- |
-| `occupation` | Job title / profession | `jobTitle`, `role`, `work` |
+| `occupation` | Job title / profession | `jobTitle`, `work`, `speciality` |
 | `company` | Employer / organization | `company_name`, `organization`, `worksFor` |
 | `interests` | Interests / hobbies (free text) | `interest_names` |
 
@@ -46,7 +46,8 @@ If `name` is a login/handle, map it to `username`.
 |-------|-------------|----------------------|
 | `created_at` | Registration / account creation date | `joinedAt`, `registration`, `registration_date`, `history.joined`, `joined` (unix), `created_time` (unix), `createdAt` |
 | `updated_at` | Last profile update date | `modifyDate`, `updatedAt` |
-| `latest_activity_at` | Last visit / activity / online time | `last_online` (unix), `last_seen_at`, `active` |
+| `latest_activity_at` | Last visit / activity / online time | `last_online` (unix), `last_seen_at`, `active`, `last_activity`, `LastActive` |
+| `created_ago` | Registration given as an age rather than a date, when that is all the page prints | `Registered 3 years, 2 months ago` |
 
 ## Counters
 
@@ -62,6 +63,9 @@ If `name` is a login/handle, map it to `username`.
 | `videos_count` | Number of videos | `videos_total`, `nb_videos` |
 | `photos_count` | Number of photos | `photoCount`, `photos_count` |
 | `friends_count` | Friends (mutual relationship) | `totalFriends` |
+| `topics_count` | Threads started (forums, where a topic differs from a reply to one) | `bbp-user-topic-count` |
+| `replies_count` | Replies written (forums; prefer `comments_count` where the platform calls them comments) | `bbp-user-reply-count` |
+| `visits_count` | Number of visits / logins | `CountVisits` |
 
 **Rule:** Always use singular noun + `_count`:
 `follower_count` (not `followers_count`), `video_count` / `videos_count`.
@@ -77,6 +81,8 @@ If `name` is a login/handle, map it to `username`.
 | `is_suspended` | Suspended account | `suspended` |
 | `is_business` | Business account | -- |
 | `is_employee` | Platform employee | `isEmployee`, `scratchteam` |
+| `is_bot` | Automated account | `bot` |
+| `is_locked` | Account requires approval to be followed | `locked` |
 
 **Rule:** Boolean fields start with `is_` and are stored as strings `'True'`/`'False'`.
 Never use bare `verified` — always `is_verified`.
@@ -116,6 +122,7 @@ gaia_id               # Google Account ID
 karma                 # Reddit/Habr/Lesswrong
 heart_count           # TikTok
 streak                # Duolingo
+role                  # rank or account kind on the platform: Moderator, Member, employer
 
 # Wrong -- should use standard names:
 xvideos_user_id       # -> uid
