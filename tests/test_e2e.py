@@ -441,19 +441,19 @@ def test_behance():
     assert 'appreciations' in info
 
 
-@pytest.mark.skip(reason="broken")  # the API moved to api-neo.500px.com, scheme not updated yet
 def test_500px():
     """500px GraphQL API"""
-    mutated_url = mutate_url('https://500px.com/p/the-maksimov')
+    mutated_url = mutate_url('https://500px.com/p/iansobolev')
     url, add_headers = mutated_url[0]
     info = extract(parse(url, headers=add_headers)[0])
 
-    assert info.get('uid') == 'dXJpOm5vZGU6VXNlcjoyMDQxNzc1MQ=='
-    assert info.get('legacy_id') == '20417751'
-    assert info.get('username') == 'the-maksimov'
-    assert info.get('fullname') == 'Max Max'
-    assert info.get('account_type') == 'BASIC'
-    assert info.get('created_at') == '2016-11-30T08:14:52.000+00:00'
+    assert info.get('uid') == 'HRA5PXRDuG'
+    assert info.get('username') == 'iansobolev'
+    assert info.get('fullname') == 'Ian Sobolev'
+    assert info.get('city') == 'Toronto'
+    assert info.get('country') == 'Canada'
+    assert info.get('image').startswith('https://cdn-static-prod-com.500px.cloud/user-avatar/')
+    assert int(info.get('follower_count')) > 0
 
 
 def test_google_documents():  # Does work on the second try

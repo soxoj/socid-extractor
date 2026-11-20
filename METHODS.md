@@ -52,7 +52,7 @@
 47 | D3.ru | [d3](https://github.com/soxoj/socid-extractor/search?q=test_d3) | requests from GitHub Actions CI servers are blocked |
 48 | Gitlab |  |  |
 49 | 500px userByUsername API |  |  |
-50 | 500px GraphQL API | [500px](https://github.com/soxoj/socid-extractor/search?q=test_500px) | broken |
+50 | 500px GraphQL API | [500px](https://github.com/soxoj/socid-extractor/search?q=test_500px) |  |
 51 | Google Document API | [google_documents](https://github.com/soxoj/socid-extractor/search?q=test_google_documents) |  |
 52 | Google Document |  |  |
 53 | Google Maps contributions |  |  |
@@ -275,4 +275,4 @@
 270 | BuddyPress | [buddypress](https://github.com/soxoj/socid-extractor/search?q=test_buddypress) |  |
 271 | Vanilla | [vanilla](https://github.com/soxoj/socid-extractor/search?q=test_vanilla), [vanilla_about_panel](https://github.com/soxoj/socid-extractor/search?q=test_vanilla_about_panel) |  |
 
-The table has been updated at 2026-11-19 16:22:44.230847 UTC
+The table has been updated at 2026-11-20 12:28:22.745496 UTC
