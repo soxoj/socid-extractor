@@ -3434,6 +3434,16 @@ schemes = {
             'publication_subdomain': lambda x: ((x.get('publicationUsers') or [{}])[0].get('publication') or {}).get('subdomain') or None,
             'publication_name': lambda x: ((x.get('publicationUsers') or [{}])[0].get('publication') or {}).get('name') or None,
             'publication_bio': lambda x: ((x.get('publicationUsers') or [{}])[0].get('publication') or {}).get('hero_text') or None,
+            # Substack calls these subscribers, which is FIELDS.md's follower_count.
+            # The number is rounded by Substack itself, not by us: a profile with
+            # 1437 readers reports 1400, and one that hides the count reports 0
+            'follower_count': lambda x: x.get('subscriberCountNumber') or None,
+            # a bucket word -- Tens, Thousands, Hundreds of thousands -- which
+            # arrives even on profiles that hide the number above. Prefixed because
+            # an unprefixed follower_range would read as a standard counter field
+            'substack_follower_range': lambda x: x.get('rough_num_free_subscribers') or None,
+            # the paid-subscriber floor behind Substack's bestseller badge, 1000 or 10000
+            'bestseller_tier': lambda x: x.get('bestseller_tier') or None,
             'image_cdn': lambda x: 'https://substackcdn.com/image/fetch/w_224,h_224,c_fill,f_webp,q_auto:good,fl_progressive:steep/' + __import__('urllib.parse', fromlist=['quote']).quote(x.get('photo_url', ''), safe='') if x.get('photo_url') else None,
         },
         'url_mutations': [{
