@@ -1,6 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 
 import os
+import re
 
 # -- Project information
 
@@ -8,9 +9,13 @@ project = 'socid_extractor'
 copyright = '2025, soxoj'
 author = 'soxoj'
 
-# Tracks socid_extractor.__version__ (see socid_extractor/__init__.py).
-release = '0.1.1'
-version = '0.1'
+# Read out of socid_extractor/__init__.py rather than kept in step by hand.
+# Deliberately a text read and not an import: the docs build should not need
+# the package's runtime dependencies installed.
+_init = os.path.join(os.path.dirname(__file__), '..', '..', 'socid_extractor', '__init__.py')
+with open(_init) as f:
+    release = re.search(r"__version__\s*=\s*'([^']+)'", f.read()).group(1)
+version = '.'.join(release.split('.')[:2])
 
 # -- Internationalization
 #

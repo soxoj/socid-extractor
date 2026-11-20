@@ -128,7 +128,9 @@ def test_medium():
 
 
 def test_odnoklassniki():
-    info = extract(parse('https://ok.ru/profile/46054003')[0])
+    # ok.ru answers in under a second from most places but times out on CI
+    # runners with parse()'s 3s default
+    info = extract(parse('https://ok.ru/profile/46054003', timeout=10)[0])
 
     assert info.get('ok_id') == '46054003'
 
@@ -1856,7 +1858,7 @@ def test_donatty_api_e2e():
 def test_visnesscard_api_e2e():
     """VisnessCard API"""
     import requests as req
-    r = req.get('https://my.visnesscard.com/Home/GetCard/JOHN', verify=False, timeout=10)
+    r = req.get('https://my.visnesscard.com/Home/GetCard/JOHN', timeout=10)
     info = extract(r.text)
 
     assert info.get('uid') == '6700'
