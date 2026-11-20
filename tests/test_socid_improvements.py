@@ -1188,22 +1188,6 @@ def test_picsart_no_facebook_uid_when_no_graph_url():
     assert not info.get('facebook_uid')
 
 
-def test_habr_profile_extraction():
-    """Habr: extract fullname, username, and profile URL from og meta tags."""
-    html = (
-        '<!DOCTYPE html><html><head>'
-        '<meta property="og:site_name" content="Хабр">'
-        '<meta property="og:title" content="Иван Петров aka ipetrov  '
-        '\n- "'
-        '<meta property="og:url" content="https://habr.com/ru/users/ipetrov/">'
-        '</head><body>habr.com/ru/users/ipetrov</body></html>'
-    )
-    info = extract(html)
-    assert info.get('fullname') == 'Иван Петров'
-    assert info.get('username') == 'ipetrov'
-    assert 'habr.com/ru/users/ipetrov' in info.get('website', '')
-
-
 def test_taplink_profile_extraction():
     """Taplink: extract image, fullname, and username from og meta tags."""
     html = (
@@ -1853,21 +1837,6 @@ def test_picsart_no_facebook_uid_for_regular_avatar():
     info = extract(body)
     assert not info.get('facebook_uid')
     assert info.get('picsart_id') == '99'
-
-
-def test_habr_og_profile():
-    """Habr: extract fullname and username from og:title meta tag."""
-    html = (
-        '<!DOCTYPE html><html><head>'
-        '<meta property="og:site_name" content="Хабр">'
-        '<meta property="og:title" content="Олег Бунин aka olegbunin\n     - ">'
-        '<meta property="og:url" content="https://habr.com/ru/users/olegbunin/">'
-        '</head><body></body></html>'
-    )
-    info = extract(html)
-    assert info.get('fullname') == 'Олег Бунин'
-    assert info.get('username') == 'olegbunin'
-    assert 'habr.com' in info.get('website', '')
 
 
 def test_product_hunt_og_profile():

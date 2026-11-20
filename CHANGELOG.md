@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 * Substack profiles now also give subscriber counts -- a rounded number, Substack's own bucket word for it, and the bestseller tier
+* Fix Habr extraction, which had gone silently empty, and add registration, last activity, post and comment counts
+* Drop two dead Habr schemes, `Habr` and `Habrahabr HTML (old)`, which looked for markup the site no longer sends
 * Add extraction for Flarum forums (uid, username, fullname, image, registration) by @CallahanB-cpu in https://github.com/soxoj/socid-extractor/pull/310
 * Add extraction for BuddyPress member pages (uid, username, fullname, image, last activity)
 * Add extraction for Vanilla forums (username, image, registration, last activity, visits, points, role)
