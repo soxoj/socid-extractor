@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Allow `python-dateutil` 4.x.
+
 ## [0.1.2] - 2026-11-20
 **Highlights:**
 
